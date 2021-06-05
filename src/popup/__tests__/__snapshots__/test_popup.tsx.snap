@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`component renders 1`] = `
+<div
+  className="popup-container"
+>
+  <h2>
+    Point Network
+  </h2>
+</div>
+`;
