@@ -1,4 +1,4 @@
-##Point Browser Extension
+## Point Browser Extension
 
 **Getting Started**
 
