@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const path = require("path");
 
 module.exports = {
@@ -28,6 +29,17 @@ module.exports = {
                     },
                     {
                         loader: "sass-loader", // Compiles Sass to CSS
+                    },
+                ],
+            },
+            {
+                test: /\.(png|woff(2)?|eot|ttf|svg|gif|jpe?g)(\?[a-z0-9=\.]+)?$/,
+                use: [
+                    {
+                        loader: "url-loader",
+                        options: {
+                            limit: 100000,
+                        },
                     },
                 ],
             },

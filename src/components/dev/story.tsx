@@ -1,6 +1,4 @@
 import React, { FunctionComponent } from "react";
-import "@src/scss/app.scss";
-
 
 interface StoryProps {
     children: React.ReactNode;

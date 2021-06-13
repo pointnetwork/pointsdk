@@ -1,18 +1,24 @@
-import React, { FunctionComponent } from "react";
+import React from "react";
 import { browser } from "webextension-polyfill-ts";
-import "./styles.scss";
+import { Toolbar } from "@src/components/toolbar";
+import { Navigation } from "@src/components/navigation";
+import { Apps } from "@src/components/apps";
+import { AppProvider } from "@src/context";
+import "./style.scss";
 
-
-export const Popup: FunctionComponent = () => {
+export const Popup: React.FC = () => {
     // Sends the `popupMounted` event
     React.useEffect(() => {
         browser.runtime.sendMessage({ popupMounted: true });
     }, []);
 
-    // Renders the component tree
     return (
-        <div className="popup-container">
-            <h2>Point Network</h2>
-        </div>
+        <AppProvider>
+            <div className="popup_container">
+                <Navigation />
+                <Toolbar />
+                <Apps />
+            </div>
+        </AppProvider>
     );
 };

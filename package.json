@@ -51,9 +51,11 @@
         "webpack-merge": "^4.2.2"
     },
     "dependencies": {
+        "file-loader": "^6.2.0",
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
-        "react-test-renderer": "^16.13.1"
+        "react-test-renderer": "^16.13.1",
+        "url-loader": "^4.1.1"
     },
     "scripts": {
         "build": "webpack --config webpack.prod.js",
