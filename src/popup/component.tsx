@@ -11,7 +11,6 @@ export const Popup: React.FC = () => {
     React.useEffect(() => {
         browser.runtime.sendMessage({ popupMounted: true });
     }, []);
-
     return (
         <AppProvider>
             <div className="popup_container">

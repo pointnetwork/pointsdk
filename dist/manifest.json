@@ -14,8 +14,18 @@
     "icons": {
         "16": "icon-16.png",
         "48": "icon-48.png",
-        "64": "icon-64.png",
+        "64": "icon-88.png",
         "128": "icon-128.png"
     },
-    "permissions": ["tabs", "activeTab", "notifications", "http://*/", "https://*/"]
+    "permissions": ["tabs", "activeTab", "notifications", "http://*/", "https://*/"],
+    "content_scripts": [
+        {
+          "matches": ["http://*/*", "https://*/*"],
+          "js": [
+            "js/inject.js",
+            "js/script.js"
+          ],
+          "all_frames": true
+        }
+    ]
 }
