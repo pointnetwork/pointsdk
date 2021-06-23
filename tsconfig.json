@@ -2,11 +2,16 @@
     "compilerOptions": {
         "baseUrl": "./",
         "paths": {
-            "@src/*": ["src/*"]
+            "~/*": ["src/*"]
         },
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
+        "allowJs": false,
+        "strictNullChecks": true,
+        "noUncheckedIndexedAccess": true,
+        "downlevelIteration": true,
+        "noImplicitAny": true,
         "rootDir": "./src",
         "outDir": "dist/js",
         "strict": true,

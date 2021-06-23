@@ -1,8 +1,8 @@
-dist/js/*
 .vscode
 storybook-static/*
-
+/dist
 /node_modules
 npm-debug.log
 
 .DS_Store
+
