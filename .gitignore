@@ -1,8 +1,7 @@
 .vscode
-storybook-static/*
 /dist
 /node_modules
 npm-debug.log
-
+/.parcel-cache
 .DS_Store
 

@@ -1,5 +1,5 @@
-import { ManageViewActions } from "@src/types/manageView";
-// import { Types } from "@src/types/shared";
+import { ManageViewActions } from "pointsdk/types/manageView";
+// import { Types } from "pointsdk/types/shared";
 
 export const ManageViewReducer = (state: string, action: ManageViewActions) => {
     switch (action.type) {

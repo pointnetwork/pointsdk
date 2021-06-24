@@ -1,15 +1,19 @@
-/* eslint-disable @typescript-eslint/no-var-requires */
-
-export const ICON_WALLET = require("@src/assets/icons/wallet.svg");
-export const ICON_POINT = require("@src/assets/icons/point.png");
-export const ICON_DRIVE = require("@src/assets/icons/drive.svg");
-export const ICON_SOCIAL = require("@src/assets/icons/social.svg");
-export const ICON_EMAIL = require("@src/assets/icons/email.svg");
-export const ICON_MESSAGING = require("@src/assets/icons/messaging.svg");
-export const ICON_NOTIFICATION = require("@src/assets/icons/notification.svg");
-export const ICON_CLOSE_X = require("@src/assets/icons/closeX.svg");
-export const ICON_CONFIRMATION = require("@src/assets/icons/confirmation.svg");
-export const ICON_NO_PROFILE = require("@src/assets/icons/no-profile.png");
-export const ICON_TERMINAL = require("@src/assets/icons/terminal.svg");
-export const ICON_BUY = require("@src/assets/icons/buy.svg");
-export const ICON_SELL = require("@src/assets/icons/sell.svg");
+export { default as buyPng } from 'url:pointsdk/assets/icons/buy.png'
+export { default as buy } from 'url:pointsdk/assets/icons/buy.svg'
+export { default as closeX } from 'url:pointsdk/assets/icons/closeX.svg'
+export { default as confirmation } from 'url:pointsdk/assets/icons/confirmation.svg'
+export { default as drive } from 'url:pointsdk/assets/icons/drive.svg'
+export { default as email } from 'url:pointsdk/assets/icons/email.svg'
+export { default as icon16 } from 'url:pointsdk/assets/icons/icon-16.png'
+export { default as icon48 } from 'url:pointsdk/assets/icons/icon-48.png'
+export { default as icon88 } from 'url:pointsdk/assets/icons/icon-88.png'
+export { default as icon128 } from 'url:pointsdk/assets/icons/icon-128.png'
+export { default as messaging } from 'url:pointsdk/assets/icons/messaging.svg'
+export { default as noProfile } from 'url:pointsdk/assets/icons/no-profile.png'
+export { default as notification } from 'url:pointsdk/assets/icons/notification.svg'
+export { default as point } from 'url:pointsdk/assets/icons/point.png'
+export { default as sellPng } from 'url:pointsdk/assets/icons/sell.png'
+export { default as sell } from 'url:pointsdk/assets/icons/sell.svg'
+export { default as social } from 'url:pointsdk/assets/icons/social.svg'
+export { default as terminal } from 'url:pointsdk/assets/icons/terminal.svg'
+export { default as wallet } from 'url:pointsdk/assets/icons/wallet.svg'

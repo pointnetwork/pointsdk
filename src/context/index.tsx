@@ -1,7 +1,7 @@
 import React, { createContext, useReducer } from "react";
 import { ManageViewReducer, WalletReducer } from "./reducers";
-import { ManageViewActions } from "@src/types/manageView";
-import { WalletActions } from "@src/types/wallet";
+import { ManageViewActions } from "pointsdk/types/manageView";
+import { WalletActions } from "pointsdk/types/wallet";
 
 type WalletType = {
     address: string;

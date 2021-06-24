@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { ICON_BUY, ICON_SELL } from "@src/utils/constants/icons";
-import { AppContext } from "@src/context";
+import { buy, sell } from "pointsdk/utils/constants/icons";
+import { AppContext } from "pointsdk/context";
 import "./style.scss";
 
 export const Wallet: React.FC = () => {
@@ -22,7 +22,7 @@ export const Wallet: React.FC = () => {
                 <div className="wallet_action">
                     <img
                         className="wallet_icon"
-                        src={ICON_SELL.default}
+                        src={sell}
                         alt="point-sell"
                     />
                     <span>Sell</span>
@@ -30,7 +30,7 @@ export const Wallet: React.FC = () => {
                 <div className="wallet_action">
                     <img
                         className="wallet_icon"
-                        src={ICON_BUY.default}
+                        src={buy}
                         alt="point-buy"
                     />
                     <span>Buy</span>
