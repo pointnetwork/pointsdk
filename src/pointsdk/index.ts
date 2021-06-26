@@ -1,4 +1,4 @@
-import { PointType } from "pointsdk/types/point";
+import { PointType } from './index.d';
 
 class PointSDKRequestError extends Error {};
 
@@ -19,7 +19,10 @@ const apiCall = async (path: string, config?: RequestInit) => {
 
         if (!response.ok) {
             const {ok, status, statusText, headers} = response;
-            console.error('SDK call failed:', {ok, status, statusText, headers: [...headers.entries()] })
+            console.error('SDK call failed:', {
+                // @ts-ignore
+                ok, status, statusText, headers: Object.fromEntries([ ...headers.entries() ])
+            });
             throw new PointSDKRequestError('Point SDK request failed');
         }
         return response;
