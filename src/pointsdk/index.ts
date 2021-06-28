@@ -13,11 +13,11 @@ export default (): PointType => {
                 cache: 'no-cache',
                 credentials: 'include',
                 keepalive: true,
+                ...config,
                 headers: {
                     'Content-Type': 'application/json',
                     ...config?.headers
-                },
-                ...config,
+                }
             });
 
             if (!response.ok) {
