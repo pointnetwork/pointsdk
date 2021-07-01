@@ -1,4 +1,4 @@
-// @ts-ignore 
+// @ts-ignore
 import polyfill from 'webextension-polyfill';
 
 global.browser = polyfill;

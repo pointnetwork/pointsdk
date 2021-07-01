@@ -6,16 +6,17 @@
         "pointsdk": "./src"
     },
     "targets": {
-        "webext-dev": {
+        "dev": {
             "sourceMap": {
                 "inline": true,
                 "inlineSources": true
             }
         },
-        "webext-prod": {}
+        "prod": {}
     },
     "devDependencies": {
         "@parcel/config-webextension": "^2.0.0-beta.3.1",
+        "@parcel/runtime-browser-hmr": "^2.0.0-beta.3.1",
         "@parcel/transformer-image": "^2.0.0-beta.3.1",
         "@parcel/transformer-sass": "^2.0.0-beta.3.1",
         "@types/chrome": "^0.0.124",
@@ -49,8 +50,8 @@
         "webextension-polyfill": "^0.7.0"
     },
     "scripts": {
-        "start": "npm run cleanup && parcel src/manifest.json --host localhost --target webext-dev",
-        "build": "npm run cleanup && parcel src/manifest.json --target webext-prod",
+        "start": "npm run cleanup && parcel src/manifest.json --host localhost --target dev",
+        "build": "npm run cleanup && parcel src/manifest.json --target prod",
         "cleanup": "rm -rf dist .cache .parcel-cache",
         "test": "jest --config=jest.config.js",
         "lint": "eslint --fix -c ./.eslintrc.js \"src/**/*.ts*\"",

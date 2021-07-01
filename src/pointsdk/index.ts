@@ -42,7 +42,7 @@ export default (): PointType => {
     };
 
     const api = {
-        get(pathname: string, query?: {[key: string]: string | number}, headers?: RequestInit['headers']) {
+        get(pathname: string, query?: {[key: string]: string | number} | {}, headers?: RequestInit['headers']) {
             const search = Object.entries(query || {}).reduce((s, [k, v]) => `${s}${s ? '&' : '?'}${k}=${v}`, '');
             return apiCall(`${ pathname }${ search ? '/' : '' }${ search }`, { method: 'GET', headers });
         },
@@ -60,7 +60,7 @@ export default (): PointType => {
             send: (args) => api.post('contract/send', args, getAuthHeaders()),
         },
         storage: {
-            get: async () => true,
+            get: ({ id, ...args }) => api.get(`storage/get/${ id }`, args, getAuthHeaders()),
         },
         wallet: {
             address: () => api.get('wallet/address'),

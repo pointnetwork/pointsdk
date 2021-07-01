@@ -10,6 +10,10 @@ export type ContractSendRequest = {
     params?: unknown[],
 };
 
+export type StorageGetRequest = {
+    id: string,
+    encoding?: string,
+};
 
 export type PointType = {
     status: {
@@ -20,7 +24,7 @@ export type PointType = {
         send: (request: ContractSendRequest) => Promise<unknown>;
     };
     storage: {
-        get: () => Promise<boolean>;
+        get: (request: StorageGetRequest) => Promise<unknown>;
     };
     wallet: {
         address: () => Promise<string>;
