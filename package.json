@@ -51,7 +51,7 @@
     },
     "scripts": {
         "start": "npm run cleanup && parcel src/manifest.json --host localhost --target dev",
-        "build": "npm run cleanup && parcel src/manifest.json --target prod",
+        "build": "npm run cleanup && parcel build src/manifest.json --target prod",
         "cleanup": "rm -rf dist .cache .parcel-cache",
         "test": "jest --config=jest.config.js",
         "lint": "eslint --fix -c ./.eslintrc.js \"src/**/*.ts*\"",
