@@ -20,7 +20,7 @@ export default (host: string): PointType => {
     const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await content.fetch(`${ host }/v1/api/${ path }`, {
+            const response = await window.top.fetch(`${ host }/v1/api/${ path }`, {
                 cache: 'no-cache',
                 credentials: 'include',
                 keepalive: true,
@@ -54,7 +54,7 @@ export default (host: string): PointType => {
 
     const api = {
         get<T>(pathname: string, query?: URLSearchQuery, headers?: HeadersInit): Promise<T> {
-            return apiCall<T>(`${ pathname }${ query ? '/' : '' }${ new URLSearchParams(query).toString() }`, {
+            return apiCall<T>(`${ pathname }${ query ? '?' : '' }${ new URLSearchParams(query).toString() }`, {
                 method: 'GET',
                 headers,
             });
@@ -74,7 +74,7 @@ export default (host: string): PointType => {
         ContractEvent: 'subscribeContractEvent',
     };
 
-    const getMessageQueue = <T>({ type, params: { contract, event }}: ContractEventMessageMetaData): T[] => {
+    const getMessageQueue = <T>({ type, params: { contract, event } = {}}: ContractEventMessageMetaData): T[] => {
         if (type !== MessageTypes.ContractEvent) {
             return messageQueuesById.default as T[];
         }
@@ -108,6 +108,8 @@ export default (host: string): PointType => {
             }
         }) as ZProxyWS);
 
+        ws.onerror = (e) => console.error('WS error:', e);
+
         ws.onclose = (e) => {
             delete socketsByHost[host];
             if (e.code === 1000) {
@@ -118,7 +120,7 @@ export default (host: string): PointType => {
         };
 
         ws.onmessage = (e) => {
-            const { type, params, data }: ContractEventMessage<unknown> = e.data;
+            const { type, params, data }: ContractEventMessage<unknown> = JSON.parse(e.data);
             getMessageQueue({ type, params }).push(data);
         };
     });
@@ -138,7 +140,7 @@ export default (host: string): PointType => {
                     throw new PointSDKRequestError(`Invalid event ${ event }`);
                 }
 
-                const socket = await wsConnect(host);
+                const socket = await wsConnect(host.replace(/https?/, 'ws'));
 
                 if (!socket) {
                     throw new PointSDKRequestError(`Failed to establish web socket connection`);
