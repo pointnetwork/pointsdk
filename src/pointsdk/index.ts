@@ -1,15 +1,26 @@
-import { PointType } from './index.d';
+import {
+    ZProxyWS,
+    PointType,
+    MessageQueues,
+    URLSearchQuery,
+    StorageGetRequest,
+    ContractCallRequest,
+    ContractSendRequest,
+    ContractEventMessage,
+    ContractEventSubscription,
+    ContractEventMessageMetaData,
+} from './index.d';
 
-export default (): PointType => {
+export default (host: string): PointType => {
     class PointSDKRequestError extends Error {};
 
     // const getAuthHeaders = () => ({ Authorization: 'Basic ' + btoa('WALLETID-PASSCODE') });
-    const getAuthHeaders = () => ({ 'wallet-token': 'WALLETID-PASSCODE' });
+    const getAuthHeaders = (): HeadersInit => ({ 'wallet-token': 'WALLETID-PASSCODE' });
 
-    const apiCall = async (path: string, config?: RequestInit) => {
+    const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await content.fetch(`${ window.location.origin }/v1/api/${path}`, {
+            const response = await content.fetch(`${ host }/v1/api/${ path }`, {
                 cache: 'no-cache',
                 credentials: 'include',
                 keepalive: true,
@@ -30,7 +41,7 @@ export default (): PointType => {
             }
 
             try {
-                return await response.json();
+                return await response.json() as T;
             } catch (e) {
                 console.error('Point API response parsing error:', e);
                 throw e;
@@ -42,29 +53,106 @@ export default (): PointType => {
     };
 
     const api = {
-        get(pathname: string, query?: {[key: string]: string | number} | {}, headers?: RequestInit['headers']) {
-            const search = Object.entries(query || {}).reduce((s, [k, v]) => `${s}${s ? '&' : '?'}${k}=${v}`, '');
-            return apiCall(`${ pathname }${ search ? '/' : '' }${ search }`, { method: 'GET', headers });
+        get<T>(pathname: string, query?: URLSearchQuery, headers?: HeadersInit): Promise<T> {
+            return apiCall<T>(`${ pathname }${ query ? '/' : '' }${ new URLSearchParams(query).toString() }`, {
+                method: 'GET',
+                headers,
+            });
         },
-        post(pathname: string, body: Parameters<typeof JSON.stringify>[0], headers?: RequestInit['headers']) {
-            return apiCall(pathname, { method: 'POST', headers, body: JSON.stringify(body) })
+        post<T>(pathname: string, body: any, headers?: HeadersInit): Promise<T> {
+            return apiCall<T>(pathname, { method: 'POST', headers, body: JSON.stringify(body) })
         },
     };
 
+    function sleep(ms: number): Promise<undefined> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    const socketsByHost: Record<string, WebSocket> = {};
+    const messageQueuesById: MessageQueues = { default: [] };
+    const MessageTypes = {
+        ContractEvent: 'subscribeContractEvent',
+    };
+
+    const getMessageQueue = <T>({ type, params: { contract, event }}: ContractEventMessageMetaData): T[] => {
+        if (type !== MessageTypes.ContractEvent) {
+            return messageQueuesById.default as T[];
+        }
+
+        const queueId = type + contract + event;
+        return messageQueuesById[queueId] || (messageQueuesById[queueId] = []) as T[];
+    };
+
+    const wsConnect = (host: string): Promise<ZProxyWS | undefined> => new Promise((resolve, reject) => {
+        if (socketsByHost[host] !== undefined) {
+            resolve(socketsByHost[host] as ZProxyWS);
+        }
+
+        const ws = new WebSocket(host);
+
+        ws.onopen = () => resolve(Object.assign(socketsByHost[host] = ws, {
+            async subscribeToContractEvent<T>(params: ContractEventSubscription): Promise<() => Promise<T>> {
+                const metaData = { type: MessageTypes.ContractEvent, params };
+                await ws.send(JSON.stringify(metaData));
+
+                const queue = getMessageQueue<T>(metaData);
+                return async (): Promise<T> => {
+                    while (true) {
+                        if (queue.length) {
+                            return queue.shift() as T;
+                        } else {
+                            await sleep(100);
+                        }
+                    }
+                };
+            }
+        }) as ZProxyWS);
+
+        ws.onclose = (e) => {
+            delete socketsByHost[host];
+            if (e.code === 1000) {
+                resolve(undefined); // closed intentionally
+            } else {
+                reject();
+            }
+        };
+
+        ws.onmessage = (e) => {
+            const { type, params, data }: ContractEventMessage<unknown> = e.data;
+            getMessageQueue({ type, params }).push(data);
+        };
+    });
+
     return {
         status: {
-            ping: () => api.get('status/ping', undefined, getAuthHeaders()),
+            ping: () => api.get<'pong'>('status/ping', undefined, getAuthHeaders()),
         },
         contract: {
-            call: (args) => api.post('contract/call', args, getAuthHeaders()),
-            send: (args) => api.post('contract/send', args, getAuthHeaders()),
+            call: <T>(args: ContractCallRequest) => api.post<T>('contract/call', args, getAuthHeaders()),
+            send: <T>(args: ContractSendRequest) => api.post<T>('contract/send', args, getAuthHeaders()),
+            async subscribe<T>({ contract, event, ...options }: ContractEventSubscription) {
+                if (typeof contract !== 'string') {
+                    throw new PointSDKRequestError(`Invalid contract ${ contract }`);
+                }
+                if (typeof event !== 'string') {
+                    throw new PointSDKRequestError(`Invalid event ${ event }`);
+                }
+
+                const socket = await wsConnect(host);
+
+                if (!socket) {
+                    throw new PointSDKRequestError(`Failed to establish web socket connection`);
+                }
+
+                return socket.subscribeToContractEvent<T>({ contract, event, ...options });
+            }
         },
         storage: {
-            get: ({ id, ...args }) => api.get(`storage/get/${ id }`, args, getAuthHeaders()),
+            get: <T>({ id, ...args }: StorageGetRequest) => api.get<T>(`storage/get/${ id }`, args, getAuthHeaders()),
         },
         wallet: {
-            address: () => api.get('wallet/address'),
-            hash: () => api.get('wallet/hash'),
+            address: () => api.get<string>('wallet/address'),
+            hash: () => api.get<string>('wallet/hash'),
         },
     };
 }
