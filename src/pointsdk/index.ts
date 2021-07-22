@@ -2,17 +2,22 @@ import {
     ZProxyWS,
     PointType,
     MessageQueues,
+    ErrorsByQueue,
     URLSearchQuery,
+    ZProxyWSOptions,
     StorageGetRequest,
+    MessageQueueConfig,
     ContractCallRequest,
     ContractSendRequest,
     ContractEventMessage,
     ContractEventSubscription,
-    ContractEventMessageMetaData,
 } from './index.d';
 
 export default (host: string): PointType => {
     class PointSDKRequestError extends Error {};
+    class MessageQueueOverflow extends Error {};
+    class ZProxyWSConnectionError extends Error {};
+    class ZProxyWSConnectionClosed extends Error {};
 
     // const getAuthHeaders = () => ({ Authorization: 'Basic ' + btoa('WALLETID-PASSCODE') });
     const getAuthHeaders = (): HeadersInit => ({ 'wallet-token': 'WALLETID-PASSCODE' });
@@ -69,21 +74,27 @@ export default (host: string): PointType => {
     }
 
     const socketsByHost: Record<string, WebSocket> = {};
-    const messageQueuesById: MessageQueues = { default: [] };
+    const messageQueuesById: MessageQueues = {};
+    const errorsByQueueId: ErrorsByQueue = {};
     const MessageTypes = {
         ContractEvent: 'subscribeContractEvent',
     };
 
-    const getMessageQueue = <T>({ type, params: { contract, event } = {}}: ContractEventMessageMetaData): T[] => {
-        if (type !== MessageTypes.ContractEvent) {
-            return messageQueuesById.default as T[];
+    const getMessageQueueId = ({ type, params: { contract = '', event = '' } = {}}: MessageQueueConfig): string => {
+        switch (type) {
+            case MessageTypes.ContractEvent: return type + contract + event;
+            default: return 'default'
         }
+    }
 
-        const queueId = type + contract + event;
-        return messageQueuesById[queueId] || (messageQueuesById[queueId] = []) as T[];
-    };
+    const getMessageQueue = <T>(queueId: string): T[] => (
+        messageQueuesById[queueId] || (messageQueuesById[queueId] = [])
+    );
 
-    const wsConnect = (host: string): Promise<ZProxyWS | undefined> => new Promise((resolve, reject) => {
+    const wsConnect = (
+        host: string,
+        { messageQueueSizeLimit = 1000 } = {} as ZProxyWSOptions
+    ): Promise<ZProxyWS | undefined> => new Promise((resolve, reject) => {
         if (socketsByHost[host] !== undefined) {
             resolve(socketsByHost[host] as ZProxyWS);
         }
@@ -95,10 +106,14 @@ export default (host: string): PointType => {
                 const metaData = { type: MessageTypes.ContractEvent, params };
                 await ws.send(JSON.stringify(metaData));
 
-                const queue = getMessageQueue<T>(metaData);
+                const queueId = getMessageQueueId(metaData);
+                const queue = getMessageQueue<T>(queueId);
                 return async (): Promise<T> => {
                     while (true) {
-                        if (queue.length) {
+                        const queueError = errorsByQueueId[queueId];
+                        if (queueError) {
+                            throw queueError;
+                        } if (queue.length) {
                             return queue.shift() as T;
                         } else {
                             await sleep(100);
@@ -108,10 +123,23 @@ export default (host: string): PointType => {
             }
         }) as ZProxyWS);
 
-        ws.onerror = (e) => console.error('WS error:', e);
+        ws.onerror = (e) => {
+            for (const queueId in messageQueuesById) {
+                if (!errorsByQueueId[queueId]) {
+                    errorsByQueueId[queueId] = new ZProxyWSConnectionError(e.toString());
+                }
+            }
+        };
 
         ws.onclose = (e) => {
             delete socketsByHost[host];
+
+            for (const queueId in messageQueuesById) {
+                if (!errorsByQueueId[queueId]) {
+                    errorsByQueueId[queueId] = new ZProxyWSConnectionClosed(e.toString());
+                }
+            }
+
             if (e.code === 1000) {
                 resolve(undefined); // closed intentionally
             } else {
@@ -121,7 +149,18 @@ export default (host: string): PointType => {
 
         ws.onmessage = (e) => {
             const { type, params, data }: ContractEventMessage<unknown> = JSON.parse(e.data);
-            getMessageQueue({ type, params }).push(data);
+            const queueId = getMessageQueueId({ type, params });
+            if (errorsByQueueId[queueId]) {
+                return;
+            }
+
+            const queue = getMessageQueue(queueId);
+
+            if (queue.length > messageQueueSizeLimit) {
+                errorsByQueueId[queueId] = new MessageQueueOverflow('ZProxy WS message queue overflow');
+            } else {
+                queue.push(data);
+            }
         };
     });
 

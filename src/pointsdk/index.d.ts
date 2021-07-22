@@ -6,13 +6,21 @@ export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];
 
 export type StorageGetRequest = { id: string, encoding?: string } & Record<string, string>;
 
-export type ContractEventSubscription = { contract: string, event: string } & unknown /* options */;
+export type ContractEventSubscription = { contract: string, event: string } & Record<string, unknown> /* options */;
 
 export type ContractEventMessageMetaData = { type: string, params: ContractEventSubscription };
+
+export type MessageQueueConfig = { type: string, params?: ContractEventSubscription | Record<string, unknown> };
 
 export type ContractEventMessage<T> = ContractEventMessageMetaData & { data: T };
 
 export type MessageQueues = { [name: string]: any[] };
+
+export type ErrorsByQueue = { [name: string]: Error | null };
+
+export type ZProxyWSOptions = {
+    messageQueueSizeLimit?: number,
+};
 
 export type ZProxyWS = WebSocket & {
     subscribeToContractEvent: <T>(cfg: ContractEventSubscription) => Promise<() => Promise<T>>,
