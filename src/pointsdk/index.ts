@@ -140,7 +140,7 @@ export default (host: string): PointType => {
                     throw new PointSDKRequestError(`Invalid event ${ event }`);
                 }
 
-                const socket = await wsConnect(host.replace(/https?/, 'ws'));
+                const socket = await wsConnect(host.replace(/https?/, 'wss'));
 
                 if (!socket) {
                     throw new PointSDKRequestError(`Failed to establish web socket connection`);
