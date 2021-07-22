@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { Wallet } from "@src/components/wallet";
-import { AppContext } from "@src/context";
+import { Wallet } from "pointsdk/components/wallet";
+import { AppContext } from "pointsdk/context";
 import {
     WALLET,
     DRIVE,
@@ -8,7 +8,7 @@ import {
     MESSENGER,
     TERMINAL,
     NOTIFICATION,
-} from "@src/utils/constants";
+} from "pointsdk/utils/constants";
 import "./style.scss";
 
 export const Apps: React.FC = () => {

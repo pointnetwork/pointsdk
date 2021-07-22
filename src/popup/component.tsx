@@ -1,9 +1,9 @@
 import React from "react";
 import { browser } from "webextension-polyfill-ts";
-import { Toolbar } from "@src/components/toolbar";
-import { Navigation } from "@src/components/navigation";
-import { Apps } from "@src/components/apps";
-import { AppProvider } from "@src/context";
+import { Toolbar } from "pointsdk/components/toolbar";
+import { Navigation } from "pointsdk/components/navigation";
+import { Apps } from "pointsdk/components/apps";
+import { AppProvider } from "pointsdk/context";
 import "./style.scss";
 
 export const Popup: React.FC = () => {

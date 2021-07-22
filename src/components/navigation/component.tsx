@@ -1,5 +1,5 @@
 import React from "react";
-import { ICON_POINT } from "@src/utils/constants/icons";
+import { point, noProfile } from "pointsdk/utils/constants/icons";
 import "./style.scss";
 
 export const Navigation: React.FC = () => {
@@ -7,7 +7,7 @@ export const Navigation: React.FC = () => {
         <div className="navigation">
             <img
                 className="navigation_logo"
-                src={ICON_POINT.default}
+                src={point}
                 alt="point-network"
             />
             <div className="navigation_dropdown">
@@ -15,7 +15,7 @@ export const Navigation: React.FC = () => {
             </div>
             <img
                 className="navigation_profile_photo"
-                src="https://d338t8kmirgyke.cloudfront.net/icons/icon_pngs/000/004/088/original/user.png"
+                src={noProfile}
                 alt="point-profile"
             />
         </div>

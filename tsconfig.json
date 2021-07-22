@@ -2,20 +2,29 @@
     "compilerOptions": {
         "baseUrl": "./",
         "paths": {
-            "@src/*": ["src/*"]
+            "pointsdk/*": ["src/*"]
         },
         "target": "es5",
         "module": "commonjs",
         "moduleResolution": "node",
+        "allowJs": false,
+        "strictNullChecks": true,
+        "noUncheckedIndexedAccess": true,
+        "downlevelIteration": true,
+        "noImplicitAny": true,
         "rootDir": "./src",
         "outDir": "dist/js",
         "strict": true,
         "sourceMap": true,
         "jsx": "react",
         "esModuleInterop": true,
-        "lib": ["es2015", "dom"],
+        "lib": ["es2019", "dom"],
         "experimentalDecorators": true,
         "allowSyntheticDefaultImports": true,
-        "typeRoots" : ["node_modules/@types", "node_modules/web-ext-types", "src/types"]
+        "typeRoots" : [
+            "node_modules/@types",
+            "node_modules/webextension-polyfill-ts",
+            "src/types"
+        ]
     }
 }

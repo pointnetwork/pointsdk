@@ -1,5 +1,5 @@
-import { WalletType, WalletActions } from "@src/types/wallet";
-// import { Types } from "@src/types/shared";
+import { WalletType, WalletActions } from "pointsdk/types/wallet";
+// import { Types } from "pointsdk/types/shared";
 
 export const WalletReducer = (state: WalletType, action: WalletActions) => {
     switch (action.type) {
