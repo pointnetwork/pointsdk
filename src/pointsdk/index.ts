@@ -97,6 +97,7 @@ export default (host: string): PointType => {
     ): Promise<ZProxyWS | undefined> => new Promise((resolve, reject) => {
         if (socketsByHost[host] !== undefined) {
             resolve(socketsByHost[host] as ZProxyWS);
+            return;
         }
 
         const ws = new WebSocket(host);
