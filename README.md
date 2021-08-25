@@ -46,3 +46,5 @@ web-ext run --firefox-profile=website_owner --source-dir dist/prod --url https:/
 Please check the Firefox docs more details on the [`web-ext` command line tool](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/)
 
 **NOTE: It appears the page will load BEFORE the extention so simply refresh the page on the first load!**
+
+
