@@ -40,7 +40,7 @@ npm install --global web-ext
 Now you can start up Firefox using a specific Profile that you have already created (e.g. `website_owner` which has the proxy already configured for pointing to the `website_owner` node instance). Make sure to specify the source directory where the extentions built `manifiest.json` file is located. You can also optionally, provide a url of a website you want to open by default (e.g. `https://store.z/`).
 
 ```
-web-ext run --firefox-profile=website_owner --source-dir dist/prod --url https://store.z/
+web-ext run --firefox-profile=website_owner --keep-profile-changes --source-dir dist/prod --url https://store.z/
 ```
 
 Please check the Firefox docs more details on the [`web-ext` command line tool](https://extensionworkshop.com/documentation/develop/getting-started-with-web-ext/)
