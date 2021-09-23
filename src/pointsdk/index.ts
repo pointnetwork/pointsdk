@@ -5,6 +5,7 @@ import {
     URLSearchQuery,
     ZProxyWSOptions,
     StorageGetRequest,
+    StoragePutStringRequest,
     SubscriptionErrors,
     MessageQueueConfig,
     ContractLoadRequest,
@@ -408,6 +409,8 @@ export default (host: string): PointType => {
         storage: {
             get: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/get/${id}`, args, getAuthHeaders()),
+            putString: <T>(data : StoragePutStringRequest) =>
+                api.post<T>(`storage/putString`, data, getAuthHeaders()),
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),

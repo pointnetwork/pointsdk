@@ -27,6 +27,11 @@ export type StorageGetRequest = { id: string; encoding?: string } & Record<
     string
 >;
 
+export type StoragePutStringRequest = { id: string; encoding?: string } & Record<
+    string,
+    string
+>;
+
 export type SubscriptionOptions = Record<string, unknown>;
 
 export type SubscriptionParams = {
@@ -78,6 +83,7 @@ export type PointType = {
     };
     storage: {
         get: <T>(request: StorageGetRequest) => Promise<T>;
+        putString: <T>(request: StoragePutStringRequest) => Promise<T>;
     };
     wallet: {
         address: () => Promise<string>;
