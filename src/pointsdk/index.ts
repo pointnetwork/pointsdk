@@ -13,63 +13,85 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-} from './index.d';
+} from "./index.d";
 
 export default (host: string): PointType => {
-    class PointSDKRequestError extends Error {};
-    class MessageQueueOverflow extends Error {};
-    class ZProxyWSConnectionError extends Error {};
-    class ZProxyWSConnectionClosed extends Error {};
-    class SubscriptionRequestTimeout extends Error {};
-    class SubscriptionError extends Error {};
+    class PointSDKRequestError extends Error {}
+    class MessageQueueOverflow extends Error {}
+    class ZProxyWSConnectionError extends Error {}
+    class ZProxyWSConnectionClosed extends Error {}
+    class SubscriptionRequestTimeout extends Error {}
+    class SubscriptionError extends Error {}
 
     // const getAuthHeaders = () => ({ Authorization: 'Basic ' + btoa('WALLETID-PASSCODE') });
-    const getAuthHeaders = (): HeadersInit => ({ 'wallet-token': 'WALLETID-PASSCODE' });
+    const getAuthHeaders = (): HeadersInit => ({
+        "wallet-token": "WALLETID-PASSCODE",
+    });
 
     const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await window.top.fetch(`${ host }/v1/api/${ path }`, {
-                cache: 'no-cache',
-                credentials: 'include',
+            const response = await window.top.fetch(`${host}/v1/api/${path}`, {
+                cache: "no-cache",
+                credentials: "include",
                 keepalive: true,
                 ...config,
                 headers: {
-                    'Content-Type': 'application/json',
-                    ...config?.headers
-                }
+                    "Content-Type": "application/json",
+                    ...config?.headers,
+                },
             });
 
             if (!response.ok) {
-                const {ok, status, statusText, headers} = response;
-                console.error('SDK call failed:', {
+                const { ok, status, statusText, headers } = response;
+                console.error("SDK call failed:", {
                     // @ts-ignore
-                    ok, status, statusText, headers: Object.fromEntries([ ...headers.entries() ])
+                    ok,
+                    status,
+                    statusText,
+                    headers: Object.fromEntries([...headers.entries()]),
                 });
-                throw new PointSDKRequestError('Point SDK request failed');
+                throw new PointSDKRequestError("Point SDK request failed");
             }
 
             try {
-                return await response.json() as T;
+                return (await response.json()) as T;
             } catch (e) {
-                console.error('Point API response parsing error:', e);
+                console.error("Point API response parsing error:", e);
                 throw e;
             }
         } catch (e) {
-            console.error('Point API call failed:', e);
+            console.error("Point API call failed:", e);
             throw e;
         }
     };
 
     const api = {
-        get<T>(pathname: string, query?: URLSearchQuery, headers?: HeadersInit): Promise<T> {
-            return apiCall<T>(`${ pathname }${ query ? '?' : '' }${ new URLSearchParams(query).toString() }`, {
-                method: 'GET',
-                headers,
-            });
+        get<T>(
+            pathname: string,
+            query?: URLSearchQuery,
+            headers?: HeadersInit,
+        ): Promise<T> {
+            return apiCall<T>(
+                `${pathname}${query ? "?" : ""}${new URLSearchParams(
+                    query,
+                ).toString()}`,
+                {
+                    method: "GET",
+                    headers,
+                },
+            );
         },
-        post<T>(pathname: string, body: any, headers?: HeadersInit): Promise<T> {
-            return apiCall<T>(pathname, { method: 'POST', headers, body: JSON.stringify(body) })
+        post<T>(
+            pathname: string,
+            body: any,
+            headers?: HeadersInit,
+        ): Promise<T> {
+            return apiCall<T>(pathname, {
+                method: "POST",
+                headers,
+                body: JSON.stringify(body),
+            });
         },
     };
 
@@ -81,19 +103,30 @@ export default (host: string): PointType => {
         let resolve = (() => {}) as (value: T | PromiseLike<T>) => void;
         let reject = (() => {}) as (reason: Error | string | undefined) => void;
 
-        return Object.assign(new Promise<T>((_resolve, _reject) => {
-            resolve = _resolve;
-            reject = _reject;
-        }), {
-            resolve,
-            reject
-        });
+        return Object.assign(
+            new Promise<T>((_resolve, _reject) => {
+                resolve = _resolve;
+                reject = _reject;
+            }),
+            {
+                resolve,
+                reject,
+            },
+        );
     }
 
     function SubscriptionTimeout(ms: number): Promise<undefined> {
-        return new Promise((_, reject) => setTimeout(() => reject(
-            new SubscriptionRequestTimeout(`Subscription confirmation timeout`)
-        ), ms))
+        return new Promise((_, reject) =>
+            setTimeout(
+                () =>
+                    reject(
+                        new SubscriptionRequestTimeout(
+                            `Subscription confirmation timeout`,
+                        ),
+                    ),
+                ms,
+            ),
+        );
     }
 
     const socketsByHost: Record<string, WebSocket> = {};
@@ -101,215 +134,283 @@ export default (host: string): PointType => {
     const errorsBySubscriptionId: SubscriptionErrors = {};
 
     const SUBSCRIPTION_EVENT_TYPES = {
-        CONFIRMATION: 'subscription_confirmation',
-        CANCELLATION: 'subscription_cancellation',
-        EVENT: 'subscription_event',
-        ERROR: 'subscription_error',
+        CONFIRMATION: "subscription_confirmation",
+        CANCELLATION: "subscription_cancellation",
+        EVENT: "subscription_event",
+        ERROR: "subscription_error",
     };
 
     const SUBSCRIPTION_REQUEST_TYPES = {
-        SUBSCRIBE: 'subscribeContractEvent',
-        UNSUBSCRIBE: 'removeSubscriptionById',
+        SUBSCRIBE: "subscribeContractEvent",
+        UNSUBSCRIBE: "removeSubscriptionById",
     };
 
-    const getSubscriptionRequestId = ({ type, params: { contract, event } = {}}: MessageQueueConfig) => (
-        `${ type }_${ contract }_${ event }`
-    );
+    const getSubscriptionRequestId = ({
+        type,
+        params: { contract, event } = {},
+    }: MessageQueueConfig) => `${type}_${contract}_${event}`;
 
-    const getMessageQueue = <T>(subscriptionId: string): T[] => (
-        messagesBySubscriptionId[subscriptionId] || (messagesBySubscriptionId[subscriptionId] = [])
-    );
+    const getMessageQueue = <T>(subscriptionId: string): T[] =>
+        messagesBySubscriptionId[subscriptionId] ||
+        (messagesBySubscriptionId[subscriptionId] = []);
 
-    const subscriptionIdsByRequestId: Record<string, PromisedValue<string>> = {};
+    const subscriptionIdsByRequestId: Record<string, PromisedValue<string>> =
+        {};
 
     const wsConnect = (
         host: string,
-        { messageQueueSizeLimit = 1000 } = {} as ZProxyWSOptions
-    ): Promise<ZProxyWS | undefined> => new Promise((resolve, reject) => {
-        if (socketsByHost[host] !== undefined) {
-            resolve(socketsByHost[host] as ZProxyWS);
-            return;
-        }
-
-        const ws = new WebSocket(host);
-
-        ws.onopen = () => resolve(Object.assign(socketsByHost[host] = ws, {
-            async subscribeToContractEvent<T>(params: SubscriptionParams): Promise<() => Promise<T>> {
-                const metaData = { type: SUBSCRIPTION_REQUEST_TYPES.SUBSCRIBE, params };
-                const requestId = getSubscriptionRequestId(metaData);
-
-                subscriptionIdsByRequestId[requestId] = Promised<string>();
-
-                await ws.send(JSON.stringify(metaData));
-
-                const subscriptionId = await Promise.race([
-                    subscriptionIdsByRequestId[requestId],
-                    SubscriptionTimeout(10000),
-                ]) as string;
-
-                const queue = getMessageQueue<T>(subscriptionId);
-
-                return Object.assign(async (): Promise<T> => {
-                    while (true) {
-                        try {
-                            const queueError = errorsBySubscriptionId[subscriptionId];
-                            if (queueError) {
-                                throw queueError;
-                            } if (queue.length) {
-                                return queue.shift() as T;
-                            } else {
-                                await sleep(100);
-                            }
-                        } catch (e) {
-                            console.error('subscribed message error:', e);
-                            throw e;
-                        }
-                    }
-                }, {
-                    unsubscribe() {
-                        return ws.send(JSON.stringify({
-                            type: SUBSCRIPTION_REQUEST_TYPES.UNSUBSCRIBE,
-                            params: {subscriptionId},
-                        }));
-                    }
-                });
-            }
-        }) as ZProxyWS);
-
-        ws.onerror = (e) => {
-            for (const queueId in messagesBySubscriptionId) {
-                if (!errorsBySubscriptionId[queueId]) {
-                    errorsBySubscriptionId[queueId] = new ZProxyWSConnectionError(e.toString());
-                }
-            }
-        };
-
-        ws.onclose = (e) => {
-            delete socketsByHost[host];
-
-            for (const queueId in messagesBySubscriptionId) {
-                if (!errorsBySubscriptionId[queueId]) {
-                    errorsBySubscriptionId[queueId] = new ZProxyWSConnectionClosed(e.toString());
-                }
+        { messageQueueSizeLimit = 1000 } = {} as ZProxyWSOptions,
+    ): Promise<ZProxyWS | undefined> =>
+        new Promise((resolve, reject) => {
+            if (socketsByHost[host] !== undefined) {
+                resolve(socketsByHost[host] as ZProxyWS);
+                return;
             }
 
-            if (e.code === 1000) {
-                resolve(undefined); // closed intentionally
-            } else {
-                reject();
-            }
-        };
+            const ws = new WebSocket(host);
 
-        ws.onmessage = (e) => {
-            try {
-                const { type, request, subscriptionId, data }: SubscriptionEvent<unknown> = JSON.parse(e.data);
+            ws.onopen = () =>
+                resolve(
+                    Object.assign((socketsByHost[host] = ws), {
+                        async subscribeToContractEvent<T>(
+                            params: SubscriptionParams,
+                        ): Promise<() => Promise<T>> {
+                            const metaData = {
+                                type: SUBSCRIPTION_REQUEST_TYPES.SUBSCRIBE,
+                                params,
+                            };
+                            const requestId =
+                                getSubscriptionRequestId(metaData);
 
-                switch (type) {
-                    case SUBSCRIPTION_EVENT_TYPES.CONFIRMATION: {
-                        const requestId = getSubscriptionRequestId(request);
-                        const {resolve, reject} = subscriptionIdsByRequestId[requestId] || {};
+                            subscriptionIdsByRequestId[requestId] =
+                                Promised<string>();
 
-                        if (typeof subscriptionId !== 'string') {
-                            if (typeof reject === 'function') {
-                                reject(new SubscriptionError(
-                                    `Invalid subscription id "${subscriptionId}" for request id: "${requestId}"`
-                                ));
-                            }
-                        } else if (typeof resolve === 'function') {
-                            resolve(subscriptionId as string);
-                        }
-                        break;
-                    }
+                            await ws.send(JSON.stringify(metaData));
 
-                    case SUBSCRIPTION_EVENT_TYPES.CANCELLATION: {
-                        if (subscriptionId) {
-                            console.info({type, request, subscriptionId, data});
+                            const subscriptionId = (await Promise.race([
+                                subscriptionIdsByRequestId[requestId],
+                                SubscriptionTimeout(10000),
+                            ])) as string;
 
-                            delete messagesBySubscriptionId[subscriptionId];
-                            delete errorsBySubscriptionId[subscriptionId];
-                        }
-                        break;
-                    }
+                            const queue = getMessageQueue<T>(subscriptionId);
 
-                    case SUBSCRIPTION_EVENT_TYPES.EVENT: {
-                        if (subscriptionId) {
-                            const queue = getMessageQueue(subscriptionId);
-
-                            if (queue.length > messageQueueSizeLimit) {
-                                errorsBySubscriptionId[subscriptionId] = new MessageQueueOverflow(
-                                    'ZProxy WS message queue overflow'
-                                );
-                            } else {
-                                queue.push(data);
-                            }
-                        } else {
-                            console.error(`Unable to identify subscription channel`, {
-                                subscriptionId,
-                                request,
-                                data,
-                            });
-                        }
-                        break;
-                    }
-
-                    case SUBSCRIPTION_EVENT_TYPES.ERROR: {
-                        if (subscriptionId) {
-                            errorsBySubscriptionId[subscriptionId] = new SubscriptionError(
-                                JSON.stringify(data)
+                            return Object.assign(
+                                async (): Promise<T> => {
+                                    while (true) {
+                                        try {
+                                            const queueError =
+                                                errorsBySubscriptionId[
+                                                    subscriptionId
+                                                ];
+                                            if (queueError) {
+                                                throw queueError;
+                                            }
+                                            if (queue.length) {
+                                                return queue.shift() as T;
+                                            } else {
+                                                await sleep(100);
+                                            }
+                                        } catch (e) {
+                                            console.error(
+                                                "subscribed message error:",
+                                                e,
+                                            );
+                                            throw e;
+                                        }
+                                    }
+                                },
+                                {
+                                    unsubscribe() {
+                                        return ws.send(
+                                            JSON.stringify({
+                                                type: SUBSCRIPTION_REQUEST_TYPES.UNSUBSCRIBE,
+                                                params: { subscriptionId },
+                                            }),
+                                        );
+                                    },
+                                },
                             );
-                        } else {
-                            console.error(`Unable to identify subscription channel`, {
-                                subscriptionId,
+                        },
+                    }) as ZProxyWS,
+                );
+
+            ws.onerror = (e) => {
+                for (const queueId in messagesBySubscriptionId) {
+                    if (!errorsBySubscriptionId[queueId]) {
+                        errorsBySubscriptionId[queueId] =
+                            new ZProxyWSConnectionError(e.toString());
+                    }
+                }
+            };
+
+            ws.onclose = (e) => {
+                delete socketsByHost[host];
+
+                for (const queueId in messagesBySubscriptionId) {
+                    if (!errorsBySubscriptionId[queueId]) {
+                        errorsBySubscriptionId[queueId] =
+                            new ZProxyWSConnectionClosed(e.toString());
+                    }
+                }
+
+                if (e.code === 1000) {
+                    resolve(undefined); // closed intentionally
+                } else {
+                    reject();
+                }
+            };
+
+            ws.onmessage = (e) => {
+                try {
+                    const {
+                        type,
+                        request,
+                        subscriptionId,
+                        data,
+                    }: SubscriptionEvent<unknown> = JSON.parse(e.data);
+
+                    switch (type) {
+                        case SUBSCRIPTION_EVENT_TYPES.CONFIRMATION: {
+                            const requestId = getSubscriptionRequestId(request);
+                            const { resolve, reject } =
+                                subscriptionIdsByRequestId[requestId] || {};
+
+                            if (typeof subscriptionId !== "string") {
+                                if (typeof reject === "function") {
+                                    reject(
+                                        new SubscriptionError(
+                                            `Invalid subscription id "${subscriptionId}" for request id: "${requestId}"`,
+                                        ),
+                                    );
+                                }
+                            } else if (typeof resolve === "function") {
+                                resolve(subscriptionId as string);
+                            }
+                            break;
+                        }
+
+                        case SUBSCRIPTION_EVENT_TYPES.CANCELLATION: {
+                            if (subscriptionId) {
+                                console.info({
+                                    type,
+                                    request,
+                                    subscriptionId,
+                                    data,
+                                });
+
+                                delete messagesBySubscriptionId[subscriptionId];
+                                delete errorsBySubscriptionId[subscriptionId];
+                            }
+                            break;
+                        }
+
+                        case SUBSCRIPTION_EVENT_TYPES.EVENT: {
+                            if (subscriptionId) {
+                                const queue = getMessageQueue(subscriptionId);
+
+                                if (queue.length > messageQueueSizeLimit) {
+                                    errorsBySubscriptionId[subscriptionId] =
+                                        new MessageQueueOverflow(
+                                            "ZProxy WS message queue overflow",
+                                        );
+                                } else {
+                                    queue.push(data);
+                                }
+                            } else {
+                                console.error(
+                                    `Unable to identify subscription channel`,
+                                    {
+                                        subscriptionId,
+                                        request,
+                                        data,
+                                    },
+                                );
+                            }
+                            break;
+                        }
+
+                        case SUBSCRIPTION_EVENT_TYPES.ERROR: {
+                            if (subscriptionId) {
+                                errorsBySubscriptionId[subscriptionId] =
+                                    new SubscriptionError(JSON.stringify(data));
+                            } else {
+                                console.error(
+                                    `Unable to identify subscription channel`,
+                                    {
+                                        subscriptionId,
+                                        request,
+                                        data,
+                                    },
+                                );
+                            }
+                            break;
+                        }
+
+                        default: {
+                            console.error("Unsupported event type:", {
+                                type,
                                 request,
+                                subscriptionId,
                                 data,
                             });
                         }
-                        break;
                     }
-
-                    default: {
-                        console.error('Unsupported event type:', {type, request, subscriptionId, data});
-                    }
+                } catch (e) {
+                    console.log("Web Socket onmessage error:", e);
                 }
-            } catch (e) {
-                console.log('Web Socket onmessage error:', e);
-            }
-        };
-    });
+            };
+        });
 
     return {
         status: {
-            ping: () => api.get<'pong'>('status/ping', undefined, getAuthHeaders()),
+            ping: () =>
+                api.get<"pong">("status/ping", undefined, getAuthHeaders()),
         },
         contract: {
-            load: <T>({ contract, ...args }: ContractLoadRequest) => api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
-            call: <T>(args: ContractCallRequest) => api.post<T>('contract/call', args, getAuthHeaders()),
-            send: <T>(args: ContractSendRequest) => api.post<T>('contract/send', args, getAuthHeaders()),
-            async subscribe<T>({ contract, event, ...options }: SubscriptionParams) {
-                if (typeof contract !== 'string') {
-                    throw new PointSDKRequestError(`Invalid contract ${ contract }`);
+            load: <T>({ contract, ...args }: ContractLoadRequest) =>
+                api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
+            call: <T>(args: ContractCallRequest) =>
+                api.post<T>("contract/call", args, getAuthHeaders()),
+            send: <T>(args: ContractSendRequest) =>
+                api.post<T>("contract/send", args, getAuthHeaders()),
+            async subscribe<T>({
+                contract,
+                event,
+                ...options
+            }: SubscriptionParams) {
+                if (typeof contract !== "string") {
+                    throw new PointSDKRequestError(
+                        `Invalid contract ${contract}`,
+                    );
                 }
-                if (typeof event !== 'string') {
-                    throw new PointSDKRequestError(`Invalid event ${ event }`);
+                if (typeof event !== "string") {
+                    throw new PointSDKRequestError(`Invalid event ${event}`);
                 }
 
                 const url = new URL(host);
-                url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+                url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
                 const socket = await wsConnect(url.toString());
 
                 if (!socket) {
-                    throw new PointSDKRequestError(`Failed to establish web socket connection`);
+                    throw new PointSDKRequestError(
+                        `Failed to establish web socket connection`,
+                    );
                 }
 
-                return socket.subscribeToContractEvent<T>({ contract, event, ...options });
-            }
+                return socket.subscribeToContractEvent<T>({
+                    contract,
+                    event,
+                    ...options,
+                });
+            },
         },
         storage: {
-            get: <T>({ id, ...args }: StorageGetRequest) => api.get<T>(`storage/get/${ id }`, args, getAuthHeaders()),
+            get: <T>({ id, ...args }: StorageGetRequest) =>
+                api.get<T>(`storage/get/${id}`, args, getAuthHeaders()),
         },
         wallet: {
-            address: () => api.get<string>('wallet/address'),
-            hash: () => api.get<string>('wallet/hash'),
+            address: () => api.get<string>("wallet/address"),
+            hash: () => api.get<string>("wallet/hash"),
         },
     };
-}
+};
