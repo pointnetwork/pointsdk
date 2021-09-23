@@ -362,6 +362,7 @@ export default (host: string): PointType => {
         });
 
     return {
+        version: "0.0.1",
         status: {
             ping: () =>
                 api.get<"pong">("status/ping", undefined, getAuthHeaders()),

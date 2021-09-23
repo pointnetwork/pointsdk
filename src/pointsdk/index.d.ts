@@ -64,6 +64,7 @@ export type ZProxyWS = WebSocket & {
 };
 
 export type PointType = {
+    version: String,
     status: {
         ping: () => Promise<"pong">;
     };
