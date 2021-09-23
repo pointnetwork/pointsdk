@@ -7,6 +7,7 @@ import {
     StorageGetRequest,
     SubscriptionErrors,
     MessageQueueConfig,
+    ContractLoadRequest,
     ContractCallRequest,
     ContractSendRequest,
     SubscriptionMessages,
@@ -281,6 +282,7 @@ export default (host: string): PointType => {
             ping: () => api.get<'pong'>('status/ping', undefined, getAuthHeaders()),
         },
         contract: {
+            load: <T>({ contract, ...args }: ContractLoadRequest) => api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
             call: <T>(args: ContractCallRequest) => api.post<T>('contract/call', args, getAuthHeaders()),
             send: <T>(args: ContractSendRequest) => api.post<T>('contract/send', args, getAuthHeaders()),
             async subscribe<T>({ contract, event, ...options }: SubscriptionParams) {
@@ -290,7 +292,7 @@ export default (host: string): PointType => {
                 if (typeof event !== 'string') {
                     throw new PointSDKRequestError(`Invalid event ${ event }`);
                 }
-                
+
                 const url = new URL(host);
                 url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
                 const socket = await wsConnect(url.toString());

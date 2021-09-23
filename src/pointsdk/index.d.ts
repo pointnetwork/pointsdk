@@ -3,6 +3,8 @@ export type PromisedValue<T> = Promise<T> & {
     reject: (reason: Error | string | undefined) => void,
 };
 
+export type ContractLoadRequest = { contract: string, params?: unknown[] } & Record<string, string>;
+
 export type ContractCallRequest = { contract: string, method: string, params?: unknown[] };
 
 export type ContractSendRequest = { contract: string, method: string, params?: unknown[] };
@@ -40,6 +42,7 @@ export type PointType = {
         ping: () => Promise<'pong'>,
     },
     contract: {
+        load: <T>(request: ContractLoadRequest) => Promise<T>,
         call: <T>(request: ContractCallRequest) => Promise<T>,
         send: <T>(request: ContractSendRequest) => Promise<T>,
         subscribe: <T>(request: SubscriptionParams) => Promise<() => Promise<T>>,
