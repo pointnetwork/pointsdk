@@ -67,6 +67,41 @@ export default (host: string): PointType => {
         }
     };
 
+    const zproxyStorageCall = async <T>(path: string, config?: RequestInit) => {
+        try {
+            // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
+            const response = await window.top.fetch(`${host}/${path}`, {
+                cache: "no-cache",
+                credentials: "include",
+                keepalive: true,
+                ...config,
+                //
+            });
+
+            if (!response.ok) {
+                const { ok, status, statusText, headers } = response;
+                console.error("SDK ZProxy call failed:", {
+                    // @ts-ignore
+                    ok,
+                    status,
+                    statusText,
+                    headers: Object.fromEntries([...headers.entries()]),
+                });
+                throw new PointSDKRequestError("Point SDK request failed");
+            }
+
+            try {
+                return (await response.json()) as T;
+            } catch (e) {
+                console.error("Point API response parsing error:", e);
+                throw e;
+            }
+        } catch (e) {
+            console.error("Point API call failed:", e);
+            throw e;
+        }
+    };
+
     const api = {
         get<T>(
             pathname: string,
@@ -94,6 +129,16 @@ export default (host: string): PointType => {
                 body: JSON.stringify(body),
             });
         },
+        postFile<T>(
+            pathname: string,
+            file: FormData
+        ): Promise<T> {
+            return zproxyStorageCall<T>(pathname, {
+                method: "POST",
+                body: file
+                // headers NOT required when passing FormData object
+            })
+        }
     };
 
     function sleep(ms: number): Promise<undefined> {
@@ -407,8 +452,10 @@ export default (host: string): PointType => {
             },
         },
         storage: {
-            get: <T>({ id, ...args }: StorageGetRequest) =>
-                api.get<T>(`storage/get/${id}`, args, getAuthHeaders()),
+            putFile: <T>(file : FormData) =>
+                api.postFile<T>(`_storage/`, file),
+            getString: <T>({ id, ...args }: StorageGetRequest) =>
+                api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
             putString: <T>(data : StoragePutStringRequest) =>
                 api.post<T>(`storage/putString`, data, getAuthHeaders()),
         },
