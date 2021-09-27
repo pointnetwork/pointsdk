@@ -82,7 +82,7 @@ export type PointType = {
         ) => Promise<() => Promise<T>>;
     };
     storage: {
-        putFile: <T>(request: FormData) => Promise<T>;
+        postFile: <T>(request: FormData) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
     };

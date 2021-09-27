@@ -452,7 +452,7 @@ export default (host: string): PointType => {
             },
         },
         storage: {
-            putFile: <T>(file : FormData) =>
+            postFile: <T>(file : FormData) =>
                 api.postFile<T>(`_storage/`, file),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
