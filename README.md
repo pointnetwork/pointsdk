@@ -8,8 +8,7 @@ npm install
 
 **Scripts**
 
--   `npm run dev` - run `webpack` in `watch` mode
--   `npm run storybook` - runs the Storybook server
+-   `npm run start` - run `webpack` in `watch` mode
 -   `npm run build` - builds the production-ready unpacked extension
 -   `npm test -u` - runs Jest + updates test snapshots
 -   `npm run lint` - runs EsLint

@@ -20,19 +20,11 @@ export const Wallet: React.FC = () => {
             </div>
             <div className="wallet_icon_actions">
                 <div className="wallet_action">
-                    <img
-                        className="wallet_icon"
-                        src={sell}
-                        alt="point-sell"
-                    />
+                    <img className="wallet_icon" src={sell} alt="point-sell" />
                     <span>Sell</span>
                 </div>
                 <div className="wallet_action">
-                    <img
-                        className="wallet_icon"
-                        src={buy}
-                        alt="point-buy"
-                    />
+                    <img className="wallet_icon" src={buy} alt="point-buy" />
                     <span>Buy</span>
                 </div>
             </div>
