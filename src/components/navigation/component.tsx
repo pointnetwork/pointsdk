@@ -5,15 +5,20 @@ import "./style.scss";
 export const Navigation: React.FC = () => {
     return (
         <div className="navigation">
-            <img className="navigation_logo" src={point} alt="point-network" />
+            <a href="https://point/">
+                <img className="navigation_logo" src={point} alt="point-network" />
+            </a>
             <div className="navigation_dropdown">
-                <span> Point Test Net </span>
+                <span><h3>Point Network</h3></span>
             </div>
-            <img
-                className="navigation_profile_photo"
-                src={noProfile}
-                alt="point-profile"
-            />
+
+            <a className="navigation_profile_photo_link" href="https://point/">
+                <img
+                    className="navigation_profile_photo"
+                    src={noProfile}
+                    alt="point-profile"
+                />
+            </a>
         </div>
     );
 };
