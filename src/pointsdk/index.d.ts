@@ -27,6 +27,12 @@ export type StorageGetRequest = { id: string; encoding?: string } & Record<
     string
 >;
 
+export type OwnerToIdentityRequest = { owner: string; } & Record<
+    string,
+    string
+>;
+
+
 export type StoragePutStringRequest = { id: string; encoding?: string } & Record<
     string,
     string
@@ -89,5 +95,8 @@ export type PointType = {
     wallet: {
         address: () => Promise<string>;
         hash: () => Promise<string>;
+    };
+    identity: {
+        ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
     };
 };

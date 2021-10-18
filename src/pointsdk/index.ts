@@ -6,6 +6,7 @@ import {
     ZProxyWSOptions,
     StorageGetRequest,
     StoragePutStringRequest,
+    OwnerToIdentityRequest,
     SubscriptionErrors,
     MessageQueueConfig,
     ContractLoadRequest,
@@ -463,5 +464,9 @@ export default (host: string): PointType => {
             address: () => api.get<string>("wallet/address"),
             hash: () => api.get<string>("wallet/hash"),
         },
+        identity: {
+            ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
+                api.get<T>(`identity/ownerToIdentity/${owner}`, args, getAuthHeaders()),
+        }
     };
 };
