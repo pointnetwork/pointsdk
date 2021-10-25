@@ -1,6 +1,6 @@
 const createCsrfHandler = (csrfToken) => {
     return addCsrfHeader = (e) => {
-        const csrfTokenHeader = {name: 'csrf-token', value: csrfToken}
+        const csrfTokenHeader = {name: 'X-CSRF-TOKEN', value: csrfToken}
         e.requestHeaders.push(csrfTokenHeader);
         return {requestHeaders: e.requestHeaders};
     }
