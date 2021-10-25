@@ -9,7 +9,8 @@
   },
   "background": {
     "scripts": [
-      "/index.js"
+      "/index.js",
+      "/csrf/background.js"
     ],
     "persistent": true
   },
@@ -20,6 +21,8 @@
     "128": "/assets/icons/icon-128.png"
   },
   "permissions": [
+    "webRequest",
+    "webRequestBlocking",
     "<all_urls>",
     "tabs"
   ],
@@ -29,7 +32,8 @@
         "<all_urls>"
       ],
       "js": [
-        "/index.js"
+        "/index.js",
+        "/csrf/client.js"
       ],
       "match_about_blank": true,
       "all_frames": true,
