@@ -17,6 +17,9 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
+import {version} from "../manifest.json";
+import { browser } from "webextension-polyfill-ts";
+
 export default (host: string): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
@@ -30,41 +33,43 @@ export default (host: string): PointType => {
         "wallet-token": "WALLETID-PASSCODE",
     });
 
+    const version = browser.runtime.getManifest().version;
+
     const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
-            // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await window.top.fetch(`${host}/v1/api/${path}`, {
+	    // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
+	    const response = await window.top.fetch(`${host}/v1/api/${path}`, {
                 cache: "no-cache",
                 credentials: "include",
                 keepalive: true,
                 ...config,
                 headers: {
-                    "Content-Type": "application/json",
-                    ...config?.headers,
+		    "Content-Type": "application/json",
+		    ...config?.headers,
                 },
-            });
+	    });
 
-            if (!response.ok) {
+	    if (!response.ok) {
                 const { ok, status, statusText, headers } = response;
                 console.error("SDK call failed:", {
-                    // @ts-ignore
-                    ok,
-                    status,
-                    statusText,
-                    headers: Object.fromEntries([...headers.entries()]),
+		    // @ts-ignore
+		    ok,
+		    status,
+		    statusText,
+		    headers: Object.fromEntries([...headers.entries()]),
                 });
                 throw new PointSDKRequestError("Point SDK request failed");
-            }
+	    }
 
-            try {
+	    try {
                 return (await response.json()) as T;
-            } catch (e) {
+	    } catch (e) {
                 console.error("Point API response parsing error:", e);
                 throw e;
-            }
+	    }
         } catch (e) {
-            console.error("Point API call failed:", e);
-            throw e;
+	    console.error("Point API call failed:", e);
+	    throw e;
         }
     };
 
@@ -111,12 +116,12 @@ export default (host: string): PointType => {
         ): Promise<T> {
             return apiCall<T>(
                 `${pathname}${query ? "?" : ""}${new URLSearchParams(
-                    query,
-                ).toString()}`,
+query,
+).toString()}`,
                 {
-                    method: "GET",
-                    headers,
-                },
+    method: "GET",
+    headers,
+},
             );
         },
         post<T>(
@@ -409,7 +414,7 @@ export default (host: string): PointType => {
         });
 
     return {
-        version: "0.0.1",
+        version: version,
         status: {
             ping: () =>
                 api.get<"pong">("status/ping", undefined, getAuthHeaders()),
