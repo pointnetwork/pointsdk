@@ -17,7 +17,6 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
-import { version } from "../manifest.json";
 import { browser } from "webextension-polyfill-ts";
 
 export default (host: string): PointType => {
