@@ -17,7 +17,7 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
-import {version} from "../manifest.json";
+import { version } from "../manifest.json";
 import { browser } from "webextension-polyfill-ts";
 
 export default (host: string): PointType => {
@@ -37,39 +37,39 @@ export default (host: string): PointType => {
 
     const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
-	    // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-	    const response = await window.top.fetch(`${host}/v1/api/${path}`, {
+            // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
+            const response = await window.top.fetch(`${host}/v1/api/${path}`, {
                 cache: "no-cache",
                 credentials: "include",
                 keepalive: true,
                 ...config,
                 headers: {
-		    "Content-Type": "application/json",
-		    ...config?.headers,
+                    "Content-Type": "application/json",
+                    ...config?.headers,
                 },
-	    });
+            });
 
-	    if (!response.ok) {
+            if (!response.ok) {
                 const { ok, status, statusText, headers } = response;
                 console.error("SDK call failed:", {
-		    // @ts-ignore
-		    ok,
-		    status,
-		    statusText,
-		    headers: Object.fromEntries([...headers.entries()]),
+                    // @ts-ignore
+                    ok,
+                    status,
+                    statusText,
+                    headers: Object.fromEntries([...headers.entries()]),
                 });
                 throw new PointSDKRequestError("Point SDK request failed");
-	    }
+            }
 
-	    try {
+            try {
                 return (await response.json()) as T;
-	    } catch (e) {
+            } catch (e) {
                 console.error("Point API response parsing error:", e);
                 throw e;
-	    }
+            }
         } catch (e) {
-	    console.error("Point API call failed:", e);
-	    throw e;
+            console.error("Point API call failed:", e);
+            throw e;
         }
     };
 
@@ -116,12 +116,12 @@ export default (host: string): PointType => {
         ): Promise<T> {
             return apiCall<T>(
                 `${pathname}${query ? "?" : ""}${new URLSearchParams(
-query,
-).toString()}`,
+                    query,
+                ).toString()}`,
                 {
-    method: "GET",
-    headers,
-},
+                    method: "GET",
+                    headers,
+                },
             );
         },
         post<T>(
@@ -135,16 +135,13 @@ query,
                 body: JSON.stringify(body),
             });
         },
-        postFile<T>(
-            pathname: string,
-            file: FormData
-        ): Promise<T> {
+        postFile<T>(pathname: string, file: FormData): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
                 method: "POST",
-                body: file
+                body: file,
                 // headers NOT required when passing FormData object
-            })
-        }
+            });
+        },
     };
 
     function sleep(ms: number): Promise<undefined> {
@@ -173,7 +170,7 @@ query,
                 () =>
                     reject(
                         new SubscriptionRequestTimeout(
-                            `Subscription confirmation timeout`,
+                            "Subscription confirmation timeout",
                         ),
                     ),
                 ms,
@@ -336,7 +333,7 @@ query,
                                     );
                                 }
                             } else if (typeof resolve === "function") {
-                                resolve(subscriptionId as string);
+                                resolve(subscriptionId);
                             }
                             break;
                         }
@@ -370,7 +367,7 @@ query,
                                 }
                             } else {
                                 console.error(
-                                    `Unable to identify subscription channel`,
+                                    "Unable to identify subscription channel",
                                     {
                                         subscriptionId,
                                         request,
@@ -387,7 +384,7 @@ query,
                                     new SubscriptionError(JSON.stringify(data));
                             } else {
                                 console.error(
-                                    `Unable to identify subscription channel`,
+                                    "Unable to identify subscription channel",
                                     {
                                         subscriptionId,
                                         request,
@@ -446,7 +443,7 @@ query,
 
                 if (!socket) {
                     throw new PointSDKRequestError(
-                        `Failed to establish web socket connection`,
+                        "Failed to establish web socket connection",
                     );
                 }
 
@@ -458,12 +455,11 @@ query,
             },
         },
         storage: {
-            postFile: <T>(file : FormData) =>
-                api.postFile<T>(`_storage/`, file),
+            postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
-            putString: <T>(data : StoragePutStringRequest) =>
-                api.post<T>(`storage/putString`, data, getAuthHeaders()),
+            putString: <T>(data: StoragePutStringRequest) =>
+                api.post<T>("storage/putString", data, getAuthHeaders()),
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
@@ -471,7 +467,11 @@ query,
         },
         identity: {
             ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
-                api.get<T>(`identity/ownerToIdentity/${owner}`, args, getAuthHeaders()),
-        }
+                api.get<T>(
+                    `identity/ownerToIdentity/${owner}`,
+                    args,
+                    getAuthHeaders(),
+                ),
+        },
     };
 };
