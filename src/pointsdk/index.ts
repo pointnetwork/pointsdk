@@ -17,9 +17,7 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
-import { browser } from "webextension-polyfill-ts";
-
-export default (host: string): PointType => {
+export default (host: string, version: string): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
     class ZProxyWSConnectionError extends Error {}
@@ -31,8 +29,6 @@ export default (host: string): PointType => {
     const getAuthHeaders = (): HeadersInit => ({
         "wallet-token": "WALLETID-PASSCODE",
     });
-
-    const version = browser.runtime.getManifest().version;
 
     const apiCall = async <T>(path: string, config?: RequestInit) => {
         try {
