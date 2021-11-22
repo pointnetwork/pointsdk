@@ -17,7 +17,7 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
-export default (host: string): PointType => {
+export default (host: string, version: string): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
     class ZProxyWSConnectionError extends Error {}
@@ -130,16 +130,13 @@ export default (host: string): PointType => {
                 body: JSON.stringify(body),
             });
         },
-        postFile<T>(
-            pathname: string,
-            file: FormData
-        ): Promise<T> {
+        postFile<T>(pathname: string, file: FormData): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
                 method: "POST",
-                body: file
+                body: file,
                 // headers NOT required when passing FormData object
-            })
-        }
+            });
+        },
     };
 
     function sleep(ms: number): Promise<undefined> {
@@ -168,7 +165,7 @@ export default (host: string): PointType => {
                 () =>
                     reject(
                         new SubscriptionRequestTimeout(
-                            `Subscription confirmation timeout`,
+                            "Subscription confirmation timeout",
                         ),
                     ),
                 ms,
@@ -331,7 +328,7 @@ export default (host: string): PointType => {
                                     );
                                 }
                             } else if (typeof resolve === "function") {
-                                resolve(subscriptionId as string);
+                                resolve(subscriptionId);
                             }
                             break;
                         }
@@ -365,7 +362,7 @@ export default (host: string): PointType => {
                                 }
                             } else {
                                 console.error(
-                                    `Unable to identify subscription channel`,
+                                    "Unable to identify subscription channel",
                                     {
                                         subscriptionId,
                                         request,
@@ -382,7 +379,7 @@ export default (host: string): PointType => {
                                     new SubscriptionError(JSON.stringify(data));
                             } else {
                                 console.error(
-                                    `Unable to identify subscription channel`,
+                                    "Unable to identify subscription channel",
                                     {
                                         subscriptionId,
                                         request,
@@ -409,7 +406,7 @@ export default (host: string): PointType => {
         });
 
     return {
-        version: "0.0.1",
+        version: version,
         status: {
             ping: () =>
                 api.get<"pong">("status/ping", undefined, getAuthHeaders()),
@@ -441,7 +438,7 @@ export default (host: string): PointType => {
 
                 if (!socket) {
                     throw new PointSDKRequestError(
-                        `Failed to establish web socket connection`,
+                        "Failed to establish web socket connection",
                     );
                 }
 
@@ -453,12 +450,11 @@ export default (host: string): PointType => {
             },
         },
         storage: {
-            postFile: <T>(file : FormData) =>
-                api.postFile<T>(`_storage/`, file),
+            postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
-            putString: <T>(data : StoragePutStringRequest) =>
-                api.post<T>(`storage/putString`, data, getAuthHeaders()),
+            putString: <T>(data: StoragePutStringRequest) =>
+                api.post<T>("storage/putString", data, getAuthHeaders()),
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
@@ -466,7 +462,11 @@ export default (host: string): PointType => {
         },
         identity: {
             ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
-                api.get<T>(`identity/ownerToIdentity/${owner}`, args, getAuthHeaders()),
-        }
+                api.get<T>(
+                    `identity/ownerToIdentity/${owner}`,
+                    args,
+                    getAuthHeaders(),
+                ),
+        },
     };
 };

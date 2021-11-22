@@ -5,4 +5,6 @@ global.browser = polyfill;
 
 import point from "pointsdk/pointsdk";
 
-window.eval(`window.point = (${point.toString()})(window.location.origin);`);
+const version = browser.runtime.getManifest().version;
+
+window.eval(`window.point = (${point.toString()})(window.location.origin, '${version}');`);
