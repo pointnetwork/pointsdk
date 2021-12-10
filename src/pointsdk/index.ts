@@ -405,68 +405,65 @@ export default (host: string, version: string): PointType => {
             };
         });
 
-    return {
-        version: version,
-        status: {
-            ping: () =>
-                api.get<"pong">("status/ping", undefined, getAuthHeaders()),
-        },
-        contract: {
-            load: <T>({ contract, ...args }: ContractLoadRequest) =>
-                api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
-            call: <T>(args: ContractCallRequest) =>
-                api.post<T>("contract/call", args, getAuthHeaders()),
-            send: <T>(args: ContractSendRequest) =>
-                api.post<T>("contract/send", args, getAuthHeaders()),
-            async subscribe<T>({
-                contract,
-                event,
-                ...options
-            }: SubscriptionParams) {
-                if (typeof contract !== "string") {
-                    throw new PointSDKRequestError(
-                        `Invalid contract ${contract}`,
-                    );
-                }
-                if (typeof event !== "string") {
-                    throw new PointSDKRequestError(`Invalid event ${event}`);
-                }
+    const build = (): any => {
+        const specification = [{
+            route: 'status/ping',
+            method: 'GET',
+            params: [],
+            props: ['status', 'ping']
+        }, {
+            route: 'contract/load',
+            method: 'GET',
+            params: ['contract'],
+            props: ['contract', 'load']
+        }, {
+            route: 'contract/call',
+            method: 'POST',
+            params: [],
+            props: ['contract', 'call']
+        }, {
+            route: 'contract/send',
+            method: 'POST',
+            params: [],
+            props: ['contract', 'send']
+        }, {
+            route: 'wallet/address',
+            method: 'GET',
+            params: [],
+            props: ['wallet', 'address']
+        }, {
+            route: 'wallet/hash',
+            method: 'GET',
+            params: [],
+            props: ['wallet', 'hash']
+        }];
+        // We can successfully retrieve the spec from the endpoint, but `window.point` is not `await`ing.
+        // const res = await api.get<T>("specification", undefined, getAuthHeaders());
+        // const specification = res.data.spec;
+        let obj = {version: version};
 
-                const url = new URL(host);
-                url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-                const socket = await wsConnect(url.toString());
+        specification.forEach((spec) => {
+            const prop1 = spec.props[0];
+            const prop2 = spec.props[1];
 
-                if (!socket) {
-                    throw new PointSDKRequestError(
-                        "Failed to establish web socket connection",
-                    );
+            if (obj[prop1] === undefined) {
+                obj[prop1] = {};
+            }
+            obj[prop1][prop2] = (...args) => {
+                const paramsLen = spec.params.length;
+                let route = spec.route;
+                for (let i = 0; i < paramsLen; i++) {
+                    route += `/${args[i]}`;
                 }
+                if (spec.method == 'POST') {
+                    return api.post<T>(route, args.slice(paramsLen), getAuthHeaders());
+                }
+                return api.get<T>(route, args.slice(paramsLen), getAuthHeaders());
+            };
+        });
 
-                return socket.subscribeToContractEvent<T>({
-                    contract,
-                    event,
-                    ...options,
-                });
-            },
-        },
-        storage: {
-            postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
-            getString: <T>({ id, ...args }: StorageGetRequest) =>
-                api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
-            putString: <T>(data: StoragePutStringRequest) =>
-                api.post<T>("storage/putString", data, getAuthHeaders()),
-        },
-        wallet: {
-            address: () => api.get<string>("wallet/address"),
-            hash: () => api.get<string>("wallet/hash"),
-        },
-        identity: {
-            ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
-                api.get<T>(
-                    `identity/ownerToIdentity/${owner}`,
-                    args,
-                    getAuthHeaders(),
-                ),
-        },
-    };
+        return obj;
+    }
+
+    return build();
 };
