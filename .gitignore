@@ -4,4 +4,5 @@
 npm-debug.log
 /.parcel-cache
 .DS_Store
+web-ext-artifacts
 
