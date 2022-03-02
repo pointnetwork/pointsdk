@@ -22,13 +22,12 @@ const manifestFilePath = require('path').resolve(__dirname, '..', 'src', manifes
 const {execSync} = require('child_process');
 
 try {
-    execSync(`npm version ${version}`).toString();
     execSync(`sed -i '' 's/"version":.*$/"version": "${version}",/' ${manifestFilePath}`).toString();
 
     if (execSync('git diff --name-only').toString().includes(manifestFile)) {
         execSync(`git add ${manifestFilePath} && git commit -m 'Update manifest version'`).toString();
     }
-
+    execSync(`npm version ${version}`).toString();
     execSync(`git push && git push origin v${version}`).toString();
     console.info(`Successfully pushed new addon version "v${version}".`);
 } catch (e) {
