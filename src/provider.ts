@@ -1,59 +1,36 @@
-const path = require('path');
-const PROTO_PATH = path.resolve(__dirname, './node.proto');
-
-const GRPCClient = require('node-grpc-client');
-
-const url = 'https://web3.test:9999';
-
-const myClient = new GRPCClient(PROTO_PATH, 'packageservice', 'Services', url);
-interface RequestArguments {
-    readonly method: string;
-    readonly params?: readonly unknown[] | object;
-}
-
-interface ExpectedResponse {
-    readonly type: string;
-    readonly data: unknown;
-}
+import { JSONRPCClient } from "json-rpc-2.0";
 
 interface ProviderInterface {
     request: Function;
-    isConnected: Function;
+    notify: Function;
 }
 
-
-
-// options is optional and is supported from version 1.5.0
-const options = {
-    metadata: {
-        info: 'test'
-    }
-};
-
-
-const provider: ProviderInterface = {
-    request: async function (request: RequestArguments) {
-        try {
-            const response: ExpectedResponse = await myClient.requestSync(request, options);
-            console.log('The answer of request: ', response);
-                
-        } catch (error) {
-            console.error(error);
-            return error
-        }
+// JSONRPCClient needs to know how to send a JSON-RPC request.
+// Tell it by passing a function to its constructor. The function must take a JSON-RPC request and send it.
+const client: any = new JSONRPCClient((jsonRPCRequest) =>
+  fetch("http://localhost/json-rpc", {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
     },
-    isConnected: async function () {
-        try {
-            const response: ExpectedResponse = await myClient.requestSync();
-            console.log('The answer of isConnected: ', response);
-                
-        } catch (error) {
-            console.error(error);
-            return error
-        }
+    body: JSON.stringify(jsonRPCRequest),
+  }).then((response) => {
+    if (response.status === 200) {
+      // Use client.receive when you received a JSON-RPC response.
+      return response
+        .json()
+        .then((jsonRPCResponse) => client.receive(jsonRPCResponse));
+    } else if (jsonRPCRequest.id !== undefined) {
+      return Promise.reject(new Error(response.statusText));
     }
-};
+  })
+);
 
+// That way we only expose the need it methods 
+const provider: ProviderInterface = {
+    request: client.request,
+    notify: client.notify
+};
 
 
 window.wrappedJSObject.provider = cloneInto(
