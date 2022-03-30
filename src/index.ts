@@ -5,7 +5,7 @@ global.browser = polyfill;
 
 import point from "pointsdk/pointsdk";
 
-const defaultCode = require('./inject.ts');
+const defaultCode = require('./provider.ts');
 
 async function register( code: string) {
   return await browser.contentScripts.register({
