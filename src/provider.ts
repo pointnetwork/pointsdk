@@ -35,7 +35,7 @@ const provider: ProviderInterface = {
     request: async function (request: RequestArguments) {
         try {
             const response: ExpectedResponse = await myClient.requestSync(request, options);
-            console.log('The answer of request 1: ', response);
+            console.log('The answer of request: ', response);
                 
         } catch (error) {
             console.error(error);
@@ -45,7 +45,7 @@ const provider: ProviderInterface = {
     isConnected: async function () {
         try {
             const response: ExpectedResponse = await myClient.requestSync();
-            console.log('The answer of request 1: ', response);
+            console.log('The answer of isConnected: ', response);
                 
         } catch (error) {
             console.error(error);
