@@ -17,6 +17,9 @@ import {
     SubscriptionParams,
 } from "./index.d";
 
+// Find a better way to handle this or move this to a different constants file or create a getter/setter method to set this variable in a class
+let walletAccess = false;
+
 export default (host: string, version: string): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
@@ -416,8 +419,21 @@ export default (host: string, version: string): PointType => {
                 api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
             call: <T>(args: ContractCallRequest) =>
                 api.post<T>("contract/call", args, getAuthHeaders()),
-            send: <T>(args: ContractSendRequest) =>
-                api.post<T>("contract/send", args, getAuthHeaders()),
+            send: <T>(args: ContractSendRequest) => {
+                // This is a sample approach which uses the native window dialogs to alert the user of the send transaction happening
+                const choice = window.confirm(
+                    `This site is trying to send a transaction for the ${args.method} method for the ${args.contract} contract. Allow this action?`,
+                );
+                if (!choice) {
+                    alert("Transaction not sent");
+                    throw new Error("Send method not allowed");
+                }
+                if (!walletAccess) {
+                    alert("Wallet access denied");
+                    throw new Error("Wallet access denied");
+                }
+                return api.post<T>("contract/send", args, getAuthHeaders());
+            },
             async subscribe<T>({
                 contract,
                 event,
@@ -457,7 +473,22 @@ export default (host: string, version: string): PointType => {
                 api.post<T>("storage/putString", data, getAuthHeaders()),
         },
         wallet: {
-            address: () => api.get<string>("wallet/address"),
+            address: () => {
+                // This is a sample approach which uses the native window dialogs to alert the user of the site trying to access wallet address
+                // In the future, the idea should be that in the local point node, we save whether the user has granted the visited site access to their wallet address or not.
+                // Then when the user visits the site again, we check if access is already given or not, if yes then we allow the site to access the wallet address when it requests it, else we prevent that from happening with perhaps an appropriate dialog. Same goes for the send transaction methods
+                const choice = window.confirm(
+                    "Allow the site to access your wallet address?",
+                );
+                if (!choice) {
+                    walletAccess = false;
+                    alert("Wallet access denied");
+                    throw new Error("Wallet access denied");
+                }
+                walletAccess = true;
+                window.alert("This site has access to your wallet address now");
+                return api.get<string>("wallet/address");
+            },
             hash: () => api.get<string>("wallet/hash"),
         },
         identity: {
