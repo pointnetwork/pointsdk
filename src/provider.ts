@@ -8,7 +8,7 @@ interface ProviderInterface {
 // JSONRPCClient needs to know how to send a JSON-RPC request.
 // Tell it by passing a function to its constructor. The function must take a JSON-RPC request and send it.
 const client: any = new JSONRPCClient((jsonRPCRequest) =>
-  fetch("http://localhost/json-rpc", {
+  fetch("https://web3.test/", {
     method: "POST",
     headers: {
       "content-type": "application/json",
