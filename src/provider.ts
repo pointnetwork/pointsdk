@@ -1,39 +1,69 @@
-import { JSONRPCClient } from "json-rpc-2.0";
+import axios from "axios";
+
+const URL = 'https://web3.test:9999/';
+// const URL = 'https://product-details.mozilla.org/1.0/firefox_versions.json'; test is connected
+
+interface RequestArguments {
+    readonly method: string;
+    readonly params?: readonly unknown[] | object;
+}
+
+interface ProviderRpcError extends Error {
+    code: number;
+    data?: unknown;
+}
+
+interface ProviderMessage {
+    readonly type: string;
+    readonly data: unknown;
+}
 
 interface ProviderInterface {
     request: Function;
-    notify: Function;
+    isConnected: Function;
 }
 
-// JSONRPCClient needs to know how to send a JSON-RPC request.
-// Tell it by passing a function to its constructor. The function must take a JSON-RPC request and send it.
-const client: any = new JSONRPCClient((jsonRPCRequest) =>
-  fetch("https://web3.test/", {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(jsonRPCRequest),
-  }).then((response) => {
-    if (response.status === 200) {
-      // Use client.receive when you received a JSON-RPC response.
-      return response
-        .json()
-        .then((jsonRPCResponse) => client.receive(jsonRPCResponse));
-    } else if (jsonRPCRequest.id !== undefined) {
-      return Promise.reject(new Error(response.statusText));
-    }
-  })
-);
 
-// That way we only expose the need it methods 
 const ethereum: ProviderInterface = {
-    request: client.request,
-    notify: client.notify
+    request: async function (request: RequestArguments) {
+        try {
+            const response = await axios.post(URL, request);
+            if (response.data){
+                console.log(response.data);
+                const message: ProviderMessage = response.data;
+                return message
+            }
+
+            if (response.status !== 200){
+                console.log(response);
+                const messageError: ProviderRpcError = response.data;
+                return messageError
+            }
+
+        } catch (error) {
+            console.error(error);
+            return error
+        }
+    },
+    isConnected: async function () {
+        try {
+            const response = await axios.get(URL);
+            console.log(response)
+            if (response.status = 200) {
+                return true
+            }
+            return false
+        } catch (error) {
+            console.log(error)
+            return false
+        }
+    }
 };
 
 
-window.wrappedJSObject.provider = cloneInto(
+
+window.wrappedJSObject.ethereum = cloneInto(
     ethereum,
     window,
-    { cloneFunctions: true });
+    { cloneFunctions: true }); 
+
