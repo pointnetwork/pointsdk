@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const URL = 'https://web3.test:9999/';
+const URL = 'https://web3.test/';
 // const URL = 'https://product-details.mozilla.org/1.0/firefox_versions.json'; test is connected
 
 interface RequestArguments {
