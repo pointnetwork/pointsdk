@@ -27,13 +27,13 @@ const client: any = new JSONRPCClient((jsonRPCRequest) =>
 );
 
 // That way we only expose the need it methods 
-const provider: ProviderInterface = {
+const ethereum: ProviderInterface = {
     request: client.request,
     notify: client.notify
 };
 
 
 window.wrappedJSObject.provider = cloneInto(
-    provider,
+    ethereum,
     window,
     { cloneFunctions: true });
