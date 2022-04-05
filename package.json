@@ -45,9 +45,6 @@
         "webextension-polyfill-ts": "^0.25.0"
     },
     "dependencies": {
-        "axios": "^0.26.1",
-        "json-rpc-2.0": "^1.1.0",
-        "node-grpc-client": "^1.5.0",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
         "webextension-polyfill": "^0.7.0"
