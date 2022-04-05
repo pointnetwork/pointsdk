@@ -5,18 +5,10 @@ global.browser = polyfill;
 
 import point from "pointsdk/pointsdk";
 
-const defaultCode = require('./provider.ts');
+import ethereum from "./provider";
 
-async function register( code: string) {
-  return await browser.contentScripts.register({
-    matches: ["<all_urls>"],
-    js: [{code}],
-    runAt: "document_start"
-  });
-}
-
-register(defaultCode);
 
 const version = browser.runtime.getManifest().version;
 
+window.eval(`window.ethereum = (${ethereum.toString()})();`)
 window.eval(`window.point = (${point.toString()})(window.location.origin, '${version}');`);
