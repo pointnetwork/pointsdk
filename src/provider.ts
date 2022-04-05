@@ -8,12 +8,14 @@ export default () => {
             try {
                 // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
                   const response = await window.top.fetch(URL, {
+                    method: 'POST',
                     cache: "no-cache",
                     credentials: "include",
                     keepalive: true,
                     headers: {
                         "Content-Type": "application/json",
                     },
+                    body: JSON.stringify(request)
                 });
                 if (response){
                     console.log(response);
