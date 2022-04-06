@@ -1,8 +1,8 @@
 name: "Release"
 on:
   push:
-#    tags:
-#      - 'v*'
+    tags:
+      - 'v*'
 
 jobs:
   sign:
@@ -36,23 +36,23 @@ jobs:
         run: npm run build
 
 
-#      - name: "web-ext build"
-#        id: web-ext-build
-#        uses: kewisch/action-web-ext@v1
-#        with:
-#          cmd: build
-#          source: dist/prod
+      - name: "web-ext build"
+        id: web-ext-build
+        uses: kewisch/action-web-ext@v1
+        with:
+          cmd: build
+          source: dist/prod
 
-#      - name: "web-ext sign"
-#        id: web-ext-sign
-#        uses: kewisch/action-web-ext@v1
-#        with:
-#          cmd: sign
-#          source: ${{ steps.web-ext-build.outputs.target }}
-#          channel: unlisted
-#          apiKey: ${{ secrets.FIREFOX_API_KEY }}
-#          apiSecret: ${{ secrets.FIREFOX_API_SECRET }}
-#          timeout: 900000
+      - name: "web-ext sign"
+        id: web-ext-sign
+        uses: kewisch/action-web-ext@v1
+        with:
+          cmd: sign
+          source: ${{ steps.web-ext-build.outputs.target }}
+          channel: unlisted
+          apiKey: ${{ secrets.FIREFOX_API_KEY }}
+          apiSecret: ${{ secrets.FIREFOX_API_SECRET }}
+          timeout: 900000
 
       - name: Get the Source Tag
         id: get_source_tag
@@ -64,9 +64,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: ./src/manifest.json
-#           ${{ steps.web-ext-sign.outputs.target }}
+          files: |
+            ./src/manifest.json
+            ${{ steps.web-ext-sign.outputs.target }}
           tag_name: ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
           release_name: Release ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
-          draft: true
-          prerelease: true
+          draft: false
+          prerelease: false
