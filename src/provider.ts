@@ -17,11 +17,8 @@ export default (host: string) => {
                     },
                 );
 
-                if (response) {
-                    console.log(response);
-                    const message = response;
-                    return message;
-                }
+                const data = await response.json();
+                return data;
             } catch (error) {
                 console.error(error);
                 return error;
