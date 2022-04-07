@@ -22,7 +22,10 @@ export default (host: string) => {
                 });
                 let data = await response.json();
                 console.log("wallet_getPermissions", data);
-                if (!data.data || !data.data.contains(request.method)) {
+                if (
+                    !data.data ||
+                    !data.data.parentCapabilities.includes(request.method)
+                ) {
                     // If not, then we open a confirmation dialog to ask whether user wants to give permissions
                     const choice = window.confirm(
                         `This site is asking for permissions to send transaction on your behalf. Do you want to allow this action?`,
@@ -31,7 +34,11 @@ export default (host: string) => {
                     if (choice) {
                         response = await apiCall({
                             method: "wallet_requestPermissions",
-                            params: [request],
+                            params: [
+                                {
+                                    [request.method]: {},
+                                },
+                            ],
                         });
                         data = await response.json();
                         console.log("wallet_requestPermissions", data);
