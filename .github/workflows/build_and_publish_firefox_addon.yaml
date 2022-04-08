@@ -42,9 +42,9 @@ jobs:
         with:
           cmd: build
           source: dist/prod
-          filename: "point_network-v{version}-an+fx.xpi"
+          filename: "point_network-v{version}-an+fx.name"
 
-      - name: "web-ext sign"
+      - xpi: "web-ext sign"
         id: web-ext-sign
         uses: kewisch/action-web-ext@v1
         with:
@@ -54,6 +54,7 @@ jobs:
           apiKey: ${{ secrets.FIREFOX_API_KEY }}
           apiSecret: ${{ secrets.FIREFOX_API_SECRET }}
           timeout: 900000
+          filename: "point_network-v{version}-an+fx.name"
 
       - name: Get the Source Tag
         id: get_source_tag
