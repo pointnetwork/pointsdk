@@ -1,6 +1,6 @@
 export default (host: string) => {
-    const apiCall = async (request: any) => {
-        return await window.top.fetch(`${host}/v1/api/blockchain`, {
+    const apiCall = async (request: any): Promise<Response> => {
+        return await fetch(`${host}/v1/api/blockchain`, {
             method: "POST",
             cache: "no-cache",
             credentials: "include",
@@ -23,8 +23,8 @@ export default (host: string) => {
                 let data = await response.json();
                 console.log("wallet_getPermissions", data);
                 if (
-                    !data.data ||
-                    !data.data.parentCapabilities.includes(request.method)
+                    !data ||
+                    !data.parentCapabilities.includes(request.method)
                 ) {
                     // If not, then we open a confirmation dialog to ask whether user wants to give permissions
                     const choice = window.confirm(
