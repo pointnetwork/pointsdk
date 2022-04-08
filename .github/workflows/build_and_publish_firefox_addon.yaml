@@ -1,8 +1,8 @@
 name: "Release"
 on:
   push:
-    tags:
-      - 'v*'
+    # tags:
+    #   - 'v*'
 
 jobs:
   sign:
@@ -42,6 +42,7 @@ jobs:
         with:
           cmd: build
           source: dist/prod
+          filename: "point_network-v{version}-an+fx.xpi"
 
       - name: "web-ext sign"
         id: web-ext-sign
