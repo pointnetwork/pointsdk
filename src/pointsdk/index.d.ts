@@ -27,16 +27,29 @@ export type StorageGetRequest = { id: string; encoding?: string } & Record<
     string
 >;
 
-export type OwnerToIdentityRequest = { owner: string; } & Record<
+export type OwnerToIdentityRequest = { owner: string } & Record<string, string>;
+
+export type IdentityToOwnerRequest = { identity: string } & Record<
     string,
     string
 >;
 
-
-export type StoragePutStringRequest = { id: string; encoding?: string } & Record<
+export type EncryptDataRequest = { publicKey: string; data: string } & Record<
     string,
     string
 >;
+
+export type DecryptDataRequest = { data: string } & Record<string, string>;
+
+export type PublicKeyByIdentityRequest = { identity: string } & Record<
+    string,
+    string
+>;
+
+export type StoragePutStringRequest = {
+    id: string;
+    encoding?: string;
+} & Record<string, string>;
 
 export type SubscriptionOptions = Record<string, unknown>;
 
@@ -75,7 +88,7 @@ export type ZProxyWS = WebSocket & {
 };
 
 export type PointType = {
-    version: String,
+    version: String;
     status: {
         ping: () => Promise<"pong">;
     };
@@ -95,8 +108,16 @@ export type PointType = {
     wallet: {
         address: () => Promise<string>;
         hash: () => Promise<string>;
+        publicKey: () => Promise<string>;
+        balance: () => Promise<number>;
+        encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
+        decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
     };
     identity: {
         ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
+        identityToOwner: <T>(request: IdentityToOwnerRequest) => Promise<T>;
+        publicKeyByIdentity: <T>(
+            request: PublicKeyByIdentityRequest,
+        ) => Promise<T>;
     };
 };

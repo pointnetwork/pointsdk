@@ -7,6 +7,10 @@ import {
     StorageGetRequest,
     StoragePutStringRequest,
     OwnerToIdentityRequest,
+    PublicKeyByIdentityRequest,
+    IdentityToOwnerRequest,
+    EncryptDataRequest,
+    DecryptDataRequest,
     SubscriptionErrors,
     MessageQueueConfig,
     ContractLoadRequest,
@@ -459,8 +463,52 @@ export default (host: string, version: string): PointType => {
         wallet: {
             address: () => api.get<string>("wallet/address"),
             hash: () => api.get<string>("wallet/hash"),
+            publicKey: () =>
+                api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
+            balance: () => api.get<number>("wallet/balance"),
+            encryptData: <T>({
+                publicKey,
+                data,
+                ...args
+            }: EncryptDataRequest) =>
+                api.post<T>(
+                    `wallet/encryptData`,
+                    {
+                        publicKey,
+                        data,
+                        ...args,
+                    },
+                    getAuthHeaders(),
+                ),
+            decryptData: <T>({ data, ...args }: DecryptDataRequest) =>
+                api.post<T>(
+                    `wallet/decryptData`,
+                    {
+                        data,
+                        ...args,
+                    },
+                    getAuthHeaders(),
+                ),
         },
         identity: {
+            publicKeyByIdentity: <T>({
+                identity,
+                ...args
+            }: PublicKeyByIdentityRequest) =>
+                api.get<T>(
+                    `identity/publicKeyByIdentity/${identity}`,
+                    args,
+                    getAuthHeaders(),
+                ),
+            identityToOwner: <T>({
+                identity,
+                ...args
+            }: IdentityToOwnerRequest) =>
+                api.get<T>(
+                    `identity/identityToOwner/${identity}`,
+                    args,
+                    getAuthHeaders(),
+                ),
             ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
                 api.get<T>(
                     `identity/ownerToIdentity/${owner}`,
