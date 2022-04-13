@@ -24,9 +24,9 @@ const theme = createTheme({
 const data = {
     From: "0x916f8e7566dd63d7c444468cadea37e80f7f8048 (Your account)",
     To: "0x916f8e7566dd63d7c444468cadea37e80f7f8048",
-    Value: "0x1bc16d674ec80000",
-    Gas: "0x76c0",
-    "Gas Price": "0x9184e72a000",
+    Value: parseInt("0x1bc16d674ec80000", 16),
+    Gas: parseInt("0x76c0", 16),
+    "Gas Price": parseInt("0x9184e72a000", 16),
     Data: "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675",
 };
 
