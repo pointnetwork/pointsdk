@@ -7,6 +7,8 @@ import point from "pointsdk/pointsdk";
 
 import ethereum from "./provider";
 
+import cfwindow from "./confirmation-window";
+
 const version = browser.runtime.getManifest().version;
 
 window.eval(
@@ -15,3 +17,4 @@ window.eval(
 window.eval(
     `window.point = (${point.toString()})(window.location.origin, '${version}');`,
 );
+window.eval(`${cfwindow()}`);
