@@ -12,6 +12,7 @@ export default (host: string) => {
                         keepalive: true,
                         headers: {
                             "Content-Type": "application/json",
+                            Authorization: "Bearer POINTSDK_TOKEN",
                         },
                         body: JSON.stringify(request),
                     },

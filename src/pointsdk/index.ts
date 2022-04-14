@@ -27,7 +27,7 @@ export default (host: string, version: string): PointType => {
 
     // const getAuthHeaders = () => ({ Authorization: 'Basic ' + btoa('WALLETID-PASSCODE') });
     const getAuthHeaders = (): HeadersInit => ({
-        "wallet-token": "WALLETID-PASSCODE",
+        Authorization: "Bearer POINTSDK_TOKEN",
     });
 
     const apiCall = async <T>(path: string, config?: RequestInit) => {
