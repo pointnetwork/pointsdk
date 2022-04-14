@@ -1,4 +1,4 @@
-import React, { ReactEventHandler, useEffect, useState } from "react";
+import React, { ReactEventHandler } from "react";
 // Components
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -31,103 +31,69 @@ const data = {
 };
 
 const ConfirmationWindow = () => {
-    const [display, setDisplay] = useState<"none" | "block">("none");
-
-    useEffect(() => {
-        const event = "pointsdk:confirm_transaction";
-        const listener = () => {
-            setDisplay("block");
-        };
-
-        window.addEventListener(event, listener);
-
-        setTimeout(() => {
-            window.dispatchEvent(new Event(event));
-        }, 2000);
-
-        return () => {
-            window.removeEventListener(event, listener);
-        };
-    }, []);
-
     const handleAllow: ReactEventHandler = () => {
-        setDisplay("none");
+        console.log("Transaction allowed");
     };
 
     const handleCancel: ReactEventHandler = () => {
-        setDisplay("none");
+        console.log("Transaction rejected");
     };
 
     return (
         <ThemeProvider theme={theme}>
             <Box
-                display={display}
-                height="100vh"
-                width="100vw"
-                zIndex={99999}
+                px="1.25rem"
+                py="1.75rem"
+                width="400px"
+                height="560px"
+                zIndex={999999}
                 position="fixed"
-                bgcolor="rgba(0,0,0,0.5)"
+                bgcolor="white"
+                sx={{ overflowY: "scroll" }}
             >
-                <Box
-                    px="1.25rem"
-                    py="1.75rem"
-                    right={0}
-                    width="400px"
-                    height="100vh"
-                    zIndex={999999}
-                    position="fixed"
-                    bgcolor="white"
-                    sx={{ overflowY: "scroll" }}
-                >
-                    <Typography>
-                        <Typography variant="h5" fontWeight="bold">
-                            {window.location.origin}
-                        </Typography>
-                        is trying to send a transaction
+                <Typography>
+                    <Typography variant="h5" fontWeight="bold">
+                        {window.location.origin}
                     </Typography>
-                    <Box
-                        p="0.8rem"
-                        my="1rem"
-                        bgcolor={blueGrey[50]}
-                        borderRadius={2}
-                    >
-                        {Object.entries(data).map(([key, value], index) => (
-                            <Box
-                                my={
-                                    !index ||
-                                    index === Object.entries(data).length - 1
-                                        ? 0
-                                        : 1
-                                }
+                    is trying to send a transaction
+                </Typography>
+                <Box
+                    p="0.8rem"
+                    my="1rem"
+                    bgcolor={blueGrey[50]}
+                    borderRadius={2}
+                >
+                    {Object.entries(data).map(([key, value], index) => (
+                        <Box
+                            my={
+                                !index ||
+                                index === Object.entries(data).length - 1
+                                    ? 0
+                                    : 1
+                            }
+                        >
+                            <Typography variant="body2" fontWeight="600">
+                                {key}
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                sx={{
+                                    overflowWrap: "break-word",
+                                    wordWrap: "break-word",
+                                }}
                             >
-                                <Typography variant="body2" fontWeight="600">
-                                    {key}
-                                </Typography>
-                                <Typography
-                                    variant="body2"
-                                    sx={{
-                                        overflowWrap: "break-word",
-                                        wordWrap: "break-word",
-                                    }}
-                                >
-                                    {value}
-                                </Typography>
-                            </Box>
-                        ))}
-                    </Box>
-                    <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        gap={1}
-                        mb={3}
-                    >
-                        <Button variant="outlined" onClick={handleAllow}>
-                            Allow
-                        </Button>
-                        <Button variant="contained" onClick={handleCancel}>
-                            Cancel
-                        </Button>
-                    </Box>
+                                {value}
+                            </Typography>
+                        </Box>
+                    ))}
+                </Box>
+                <Box display="flex" justifyContent="flex-end" gap={1} mb={3}>
+                    <Button variant="outlined" onClick={handleAllow}>
+                        Allow
+                    </Button>
+                    <Button variant="contained" onClick={handleCancel}>
+                        Cancel
+                    </Button>
                 </Box>
             </Box>
         </ThemeProvider>
