@@ -5,6 +5,13 @@ global.browser = polyfill;
 
 import point from "pointsdk/pointsdk";
 
+import ethereum from "./provider";
+
 const version = browser.runtime.getManifest().version;
 
-window.eval(`window.point = (${point.toString()})(window.location.origin, '${version}');`);
+window.eval(
+    `window.ethereum = (${ethereum.toString()})(window.location.origin);`,
+);
+window.eval(
+    `window.point = (${point.toString()})(window.location.origin, '${version}');`,
+);
