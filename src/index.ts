@@ -17,4 +17,5 @@ window.eval(
 window.eval(
     `window.point = (${point.toString()})(window.location.origin, '${version}');`,
 );
-window.eval(`${cfwindow()}`);
+
+document.addEventListener("DOMContentLoaded", cfwindow);

@@ -24,6 +24,7 @@
     "content_scripts": [{
         "matches": ["<all_urls>"],
         "js": ["index.ts"],
+        "css": ["confirmation-window/styles.css"],
         "match_about_blank": true,
         "all_frames": true,
         "run_at": "document_start"
