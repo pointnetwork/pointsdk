@@ -1,6 +1,6 @@
 import React, { useContext } from "react";
-import { Wallet } from "pointsdk/components/wallet";
-import { AppContext } from "pointsdk/context";
+import { Wallet } from "pointsdk/popup/components/wallet";
+import { AppContext } from "pointsdk/popup/context";
 import {
     WALLET,
     DRIVE,

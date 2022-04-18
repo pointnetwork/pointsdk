@@ -1,3 +1,4 @@
+import browser from "webextension-polyfill";
 import React, { ReactEventHandler, Fragment } from "react";
 
 const data = {
@@ -10,12 +11,12 @@ const data = {
 };
 
 const ConfirmationWindow = () => {
-    const handleAllow: ReactEventHandler = () => {
-        console.log("Transaction allowed");
+    const handleAllow: ReactEventHandler = async () => {
+        await browser.runtime.sendMessage({ data: "Transaction allowed" });
     };
 
-    const handleCancel: ReactEventHandler = () => {
-        console.log("Transaction rejected");
+    const handleCancel: ReactEventHandler = async () => {
+        await browser.runtime.sendMessage({ data: "Transaction rejected" });
     };
 
     return (

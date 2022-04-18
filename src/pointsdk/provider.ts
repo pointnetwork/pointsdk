@@ -1,4 +1,4 @@
-export default (host: string) => {
+const getProvider = (host: string) => {
     return {
         request: async function (request: any) {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
@@ -30,3 +30,5 @@ export default (host: string) => {
         },
     };
 };
+
+export default getProvider;

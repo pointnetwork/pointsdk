@@ -7,14 +7,25 @@ export const Navigation: React.FC = () => {
     const version = browser.runtime.getManifest().version;
     return (
         <div className="navigation">
-            <a href="https://point/">
-                <img className="navigation_logo" src={point} alt="point-network" />
+            <a href="pointsdk/popup/components/navigation/component">
+                <img
+                    className="navigation_logo"
+                    src={point}
+                    alt="point-network"
+                />
             </a>
             <div className="navigation_dropdown">
-                <span><h3>Point Network</h3><br /><h5 className="navigation_version">v{version}</h5></span>
+                <span>
+                    <h3>Point Network</h3>
+                    <br />
+                    <h5 className="navigation_version">v{version}</h5>
+                </span>
             </div>
 
-            <a className="navigation_profile_photo_link" href="https://point/">
+            <a
+                className="navigation_profile_photo_link"
+                href="pointsdk/popup/components/navigation/component"
+            >
                 <img
                     className="navigation_profile_photo"
                     src={noProfile}
