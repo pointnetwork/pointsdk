@@ -16,6 +16,7 @@ import {
     ContractLoadRequest,
     ContractCallRequest,
     ContractSendRequest,
+    ContractEventsRequest,
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
@@ -422,6 +423,8 @@ export default (host: string, version: string): PointType => {
                 api.post<T>("contract/call", args, getAuthHeaders()),
             send: <T>(args: ContractSendRequest) =>
                 api.post<T>("contract/send", args, getAuthHeaders()),
+            events: <T>(args: ContractEventsRequest) =>
+                api.post<T>("contract/events", args, getAuthHeaders()),
             async subscribe<T>({
                 contract,
                 event,
@@ -514,7 +517,7 @@ export default (host: string, version: string): PointType => {
                     `identity/ownerToIdentity/${owner}`,
                     args,
                     getAuthHeaders(),
-                ),
+                )
         },
     };
 };
