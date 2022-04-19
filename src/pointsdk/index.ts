@@ -2,10 +2,19 @@ import browser from "webextension-polyfill";
 import getSdk from "pointsdk/pointsdk/sdk";
 import getProvider from "pointsdk/pointsdk/provider";
 
-window.point = getSdk(
-    window.location.origin,
-    browser.runtime.getManifest().version,
-);
+const version = browser.runtime.getManifest().version;
+try {
+    window.wrappedJSObject.eval(
+        `window.point = (${getSdk.toString()})(window.location.origin, "${version}");`,
+    );
+} catch (e) {
+    console.error("Failed to inject point sdk: ", e);
+}
 
-// TODO: types
-window.ethereum = getProvider(window.location.origin);
+try {
+    window.wrappedJSObject.eval(
+        `window.ethereum = (${getProvider.toString()})(window.location.origin);`,
+    );
+} catch (e) {
+    console.error("Failed to inject window.ethereum: ", e);
+}
