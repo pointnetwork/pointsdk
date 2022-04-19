@@ -7,18 +7,19 @@ import {
     StorageGetRequest,
     StoragePutStringRequest,
     OwnerToIdentityRequest,
+    PublicKeyByIdentityRequest,
+    IdentityToOwnerRequest,
+    EncryptDataRequest,
+    DecryptDataRequest,
     SubscriptionErrors,
     MessageQueueConfig,
     ContractLoadRequest,
     ContractCallRequest,
     ContractSendRequest,
+    ContractEventsRequest,
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-    EncryptDataRequest,
-    DecryptDataRequest,
-    PublicKeyByIdentityRequest,
-    IdentityToOwnerRequest,
 } from "./index.d";
 
 const getSdk = (host: string, version: string): PointType => {
@@ -422,6 +423,8 @@ const getSdk = (host: string, version: string): PointType => {
                 api.post<T>("contract/call", args, getAuthHeaders()),
             send: <T>(args: ContractSendRequest) =>
                 api.post<T>("contract/send", args, getAuthHeaders()),
+            events: <T>(args: ContractEventsRequest) =>
+                api.post<T>("contract/events", args, getAuthHeaders()),
             async subscribe<T>({
                 contract,
                 event,

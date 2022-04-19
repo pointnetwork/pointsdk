@@ -14,6 +14,13 @@ export type ContractCallRequest = {
     params?: unknown[];
 };
 
+export type ContractEventsRequest = {
+    host: string;
+    contractName: string;
+    event: string;
+    filter?: Object;
+};
+
 export type ContractSendRequest = {
     contract: string;
     method: string;
@@ -96,6 +103,7 @@ export type PointType = {
         load: <T>(request: ContractLoadRequest) => Promise<T>;
         call: <T>(request: ContractCallRequest) => Promise<T>;
         send: <T>(request: ContractSendRequest) => Promise<T>;
+        events: <T>(request: ContractEventsRequest) => Promise<T>;
         subscribe: <T>(
             request: SubscriptionParams,
         ) => Promise<() => Promise<T>>;
