@@ -86,10 +86,10 @@ const ConfirmationWindow = () => {
                     ))}
                 </Box>
                 <Box display="flex" justifyContent="flex-end" gap={1} mb={3}>
-                    <Button variant="contained" onClick={handleCancel}>
+                    <Button variant="contained" onClick={handleAllow}>
                         Allow
                     </Button>
-                    <Button variant="outlined" onClick={handleAllow}>
+                    <Button variant="outlined" onClick={handleCancel}>
                         Cancel
                     </Button>
                 </Box>

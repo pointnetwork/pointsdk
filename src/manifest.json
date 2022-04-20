@@ -29,7 +29,8 @@
         "<all_urls>"
       ],
       "js": [
-        "./pointsdk/index.ts"
+        "./pointsdk/index.ts",
+        "./pointsdk/pageMessaging.ts"
       ],
       "match_about_blank": true,
       "all_frames": true,

@@ -1,33 +1,35 @@
-const getProvider = (host: string) => {
+const getProvider = () => {
     return {
-        request: async function (request: any) {
-            // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await window.top.fetch(
-                `${host}/v1/api/blockchain`,
-                {
-                    method: "POST",
-                    cache: "no-cache",
-                    credentials: "include",
-                    keepalive: true,
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(request),
-                },
-            );
+        request: (request: Record<string, any>) =>
+            new Promise((resolve, reject) => {
+                const id = Math.random();
 
-            const data = await response.json();
-            console.log(data);
+                const handler = (e: MessageEvent) => {
+                    if (
+                        e.data.__page_req_id === id &&
+                        e.data.__direction === "to_page"
+                    ) {
+                        window.removeEventListener("message", handler);
+                        if (e.data.code) {
+                            reject({
+                                code: e.data.code,
+                                message: e.data.message,
+                            });
+                        } else {
+                            resolve(e.data.result);
+                        }
+                    }
+                };
 
-            if (!response.ok) {
-                throw new Error(data.message);
-            }
-            if (!data.result) {
-                throw new Error("No `result` returned from RPC method.");
-            }
+                window.addEventListener("message", handler);
 
-            return data.result;
-        },
+                window.postMessage({
+                    ...request,
+                    __message_type: "rpc",
+                    __page_req_id: id,
+                    __direction: "to_bg",
+                });
+            }),
     };
 };
 
