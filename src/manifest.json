@@ -8,7 +8,9 @@
     "default_popup": "./popup/index.html"
   },
   "background": {
-    "scripts": ["./background/index.ts"],
+    "scripts": [
+      "./background/index.ts"
+    ],
     "persistent": true
   },
   "icons": {
@@ -21,13 +23,19 @@
     "<all_urls>",
     "tabs"
   ],
-  "content_scripts": [{
-    "matches": ["<all_urls>"],
-    "js": ["./pointsdk/index.ts"],
-    "match_about_blank": true,
-    "all_frames": true,
-    "run_at": "document_start"
-  }],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "./pointsdk/index.ts"
+      ],
+      "match_about_blank": true,
+      "all_frames": true,
+      "run_at": "document_start"
+    }
+  ],
   "browser_specific_settings": {
     "gecko": {
       "id": "{c8388105-6543-4833-90c9-beb8c6b19d61}",
@@ -36,7 +44,6 @@
   },
   "web_accessible_resources": [
     "confirmation-window/index.html",
-    "confirmation-window/index.tsx",
-    "confirmation-window/styles.css"
+    "confirmation-window/index.tsx"
   ]
 }
