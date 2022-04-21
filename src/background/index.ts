@@ -1,6 +1,8 @@
 import browser from "webextension-polyfill";
-import confirmationWindowListener from "pointsdk/background/listeners/confirmationWindowListener";
-import rpcListener from "pointsdk/background/listeners/rpcListener";
+import {
+    rpcListener,
+    confirmationWindowListener,
+} from "pointsdk/background/messaging";
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
     if (sender.url?.match("confirmation-window")) {

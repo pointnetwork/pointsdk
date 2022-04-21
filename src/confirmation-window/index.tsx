@@ -1,11 +1,11 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import ConfirmationWindow from "./ConfirmationWindow";
+import App from "./App";
 
 const renderWindow = () => {
     try {
         ReactDOM.render(
-            <ConfirmationWindow />,
+            <App />,
             document.getElementById("point-confirmation-window"),
         );
     } catch (e) {
