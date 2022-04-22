@@ -28,7 +28,6 @@ const getProvider = () => {
                     __message_type: "rpc",
                     __page_req_id: id,
                     __direction: "to_bg",
-                    __hostname: window.location.hostname,
                 });
             }),
     };
