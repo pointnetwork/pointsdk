@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
-import React, { ReactEventHandler } from "react";
+import React, { ReactEventHandler, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 // Components
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -22,22 +23,27 @@ const theme = createTheme({
     },
 });
 
-const data = {
-    From: "0x916f8e7566dd63d7c444468cadea37e80f7f8048 (Your account)",
-    To: "0x916f8e7566dd63d7c444468cadea37e80f7f8048",
-    Value: parseInt("0x1bc16d674ec80000", 16),
-    Gas: parseInt("0x76c0", 16),
-    "Gas Price": parseInt("0x9184e72a000", 16),
-    Data: "0xd46e8dd67c5d32be8d46e8dd67c5d32be8058bb8eb970870f072445675058bb8eb970870f072445675",
-};
-
 const ConfirmationWindow = () => {
+    const { search } = useLocation();
+    const query = useMemo(() => new URLSearchParams(search), [search]);
+    const data = useMemo(
+        () => JSON.parse(decodeURIComponent(query.get("params"))),
+        [query],
+    );
+
     const handleAllow: ReactEventHandler = async () => {
-        await browser.runtime.sendMessage({ data: "Transaction allowed" });
+        await browser.runtime.sendMessage({
+            confirm: true,
+            reqId: query.get("reqId"),
+            pointId: query.get("pointId"),
+        });
     };
 
     const handleCancel: ReactEventHandler = async () => {
-        await browser.runtime.sendMessage({ data: "Transaction rejected" });
+        await browser.runtime.sendMessage({
+            confirm: false,
+            pointId: query.get("pointId"),
+        });
     };
 
     return (
@@ -50,7 +56,7 @@ const ConfirmationWindow = () => {
                     }}
                 >
                     <Typography variant="h5" fontWeight="bold">
-                        {window.location.origin}
+                        {query.get("host")}
                     </Typography>
                     is trying to send a transaction
                 </Typography>
