@@ -1,37 +1,50 @@
 {
-    "manifest_version": 2,
-    "name": "Point Network",
-    "description": "A Browser Extension for Point Network",
-    "version": "0.0.7",
-    "browser_action": {
-        "default_icon": "./assets/icons/icon-16.png",
-        "default_popup": "./index.html"
-    },
-    "background": {
-        "scripts": ["index.ts"],
-        "persistent": true
-    },
-    "icons": {
-        "16": "./assets/icons/icon-16.png",
-        "48": "./assets/icons/icon-48.png",
-        "64": "./assets/icons/icon-88.png",
-        "128": "./assets/icons/icon-128.png"
-    },
-    "permissions": [
-        "<all_urls>",
-        "tabs"
+  "manifest_version": 2,
+  "name": "Point Network",
+  "description": "A Browser Extension for Point Network",
+  "version": "0.0.7",
+  "browser_action": {
+    "default_icon": "./assets/icons/icon-16.png",
+    "default_popup": "./popup/index.html"
+  },
+  "background": {
+    "scripts": [
+      "./background/index.ts"
     ],
-    "content_scripts": [{
-        "matches": ["<all_urls>"],
-        "js": ["index.ts"],
-        "match_about_blank": true,
-        "all_frames": true,
-        "run_at": "document_start"
-    }],
-    "browser_specific_settings": {
-      "gecko": {
-        "id": "{c8388105-6543-4833-90c9-beb8c6b19d61}",
-        "strict_min_version": "42.0"
-      }
+    "persistent": true
+  },
+  "icons": {
+    "16": "./assets/icons/icon-16.png",
+    "48": "./assets/icons/icon-48.png",
+    "64": "./assets/icons/icon-88.png",
+    "128": "./assets/icons/icon-128.png"
+  },
+  "permissions": [
+    "<all_urls>",
+    "tabs"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "./pointsdk/index.ts",
+        "./pointsdk/pageMessaging.ts"
+      ],
+      "match_about_blank": true,
+      "all_frames": true,
+      "run_at": "document_start"
     }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{c8388105-6543-4833-90c9-beb8c6b19d61}",
+      "strict_min_version": "42.0"
+    }
+  },
+  "web_accessible_resources": [
+    "confirmation-window/index.html",
+    "confirmation-window/index.tsx"
+  ]
 }
