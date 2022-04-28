@@ -53,10 +53,17 @@ socket.onerror = (err) => {
 
 export const rpcListener = async (message: any) => {
     const messageId = uuid();
+    const globalChainId = (await browser.storage.local.get("chainIdGlobal"))
+        .chainIdGlobal as string;
+    const { host } = new URL(message.__hostname);
+    const hostChainId = (await browser.storage.local.get(`chainId_${host}`))[
+        `chainId_${host}`
+    ] as string;
 
     socket.send(
         JSON.stringify({
             ...message,
+            network: hostChainId ?? globalChainId,
             type: "rpc",
             __point_id: messageId,
         }),
