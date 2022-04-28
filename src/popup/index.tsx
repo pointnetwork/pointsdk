@@ -3,6 +3,6 @@ import * as ReactDOM from "react-dom";
 import { Popup } from "./component";
 import "pointsdk/reset.scss";
 
-browser.tabs.query({ active: true, currentWindow: true }).then(() => {
+void browser.tabs.query({ active: true, currentWindow: true }).then(() => {
     ReactDOM.render(<Popup />, document.getElementById("popup"));
 });
