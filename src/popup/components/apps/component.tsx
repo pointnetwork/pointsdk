@@ -9,7 +9,6 @@ import {
     TERMINAL,
     NOTIFICATION,
 } from "pointsdk/utils/constants";
-import "./style.scss";
 
 export const Apps: React.FC = () => {
     // Sends the `popupMounted` event
