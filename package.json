@@ -1,6 +1,6 @@
 {
     "name": "pointnetwork-browser-extension",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "description": "Point Browser Extension",
     "alias": {
         "pointsdk": "./src"
