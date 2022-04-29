@@ -22,7 +22,7 @@ const manifestFilePath = require('path').resolve(__dirname, '..', 'src', manifes
 const {execSync} = require('child_process');
 
 try {
-    execSync(`sed -i '' 's/"version":.*$/"version": "${version}",/' ${manifestFilePath}`).toString();
+    execSync(`sed -i 's/"version":.*$/"version": "${version}",/' ${manifestFilePath}`).toString();
 
     if (execSync('git diff --name-only').toString().includes(manifestFile)) {
         execSync(`git add ${manifestFilePath} && git commit -m 'Update manifest version'`).toString();
