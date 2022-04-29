@@ -1,9 +1,12 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { Popup } from "./component";
-import "pointsdk/reset.scss";
-import "./style.scss";
+import App from "./App";
+// PointSDK
+import getSdk from "pointsdk/pointsdk/sdk";
+const version = browser.runtime.getManifest().version;
+const point = getSdk("https://point", version);
 
-browser.tabs.query({ active: true, currentWindow: true }).then(() => {
-    ReactDOM.render(<Popup />, document.getElementById("popup"));
+void browser.tabs.query({ active: true, currentWindow: true }).then(() => {
+    window.point = point;
+    ReactDOM.render(<App />, document.getElementById("popup"));
 });
