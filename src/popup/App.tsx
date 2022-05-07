@@ -6,7 +6,7 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import MenuItem from "@mui/material/MenuItem";
-import Select from "@mui/material/Select";
+import Select, { SelectChangeEvent } from "@mui/material/Select";
 import Typography from "@mui/material/Typography";
 import UIThemeProvider from "pointsdk/shared/UIThemeProvider";
 // Icons
@@ -127,6 +127,9 @@ const App: React.FC = () => {
                         >
                             <MenuItem value="ynet">Ynet</MenuItem>
                             <MenuItem value="rinkeby">Rinkeby</MenuItem>
+                            <MenuItem value="solana_devnet">
+                                Solana Devnet
+                            </MenuItem>
                         </Select>
                         {host && (
                             <>
@@ -156,6 +159,9 @@ const App: React.FC = () => {
                                     <MenuItem value="_unset">Not Set</MenuItem>
                                     <MenuItem value="ynet">Ynet</MenuItem>
                                     <MenuItem value="rinkeby">Rinkeby</MenuItem>
+                                    <MenuItem value="solana_devnet">
+                                        Solana Devnet
+                                    </MenuItem>
                                 </Select>
                             </>
                         )}
