@@ -15,6 +15,8 @@ socket.onopen = () => {
 socket.onmessage = (e) => {
     const payload = JSON.parse(e.data);
 
+    console.log("Message from node: ", payload);
+
     if (!payload?.request?.__point_id) {
         console.error(
             "Unexpected message without __point_id from point node: ",
@@ -29,11 +31,18 @@ socket.onmessage = (e) => {
 
     if (payload.data) {
         if (payload.data.reqId) {
+            const params =
+                payload.request.method === "solana_sendTransaction"
+                    ? {
+                          to: payload.request.params[0],
+                          lamports: payload.request.params[1],
+                      }
+                    : payload.request.params[0];
             displayConfirmationWindow(
                 payload.data.reqId,
                 payload.request.__point_id,
                 payload.request.__hostname,
-                payload.request.params && payload.request.params[0],
+                params,
             );
         } else {
             responseHandlers[payload.request.__point_id](payload.data);
@@ -60,14 +69,14 @@ export const rpcListener = async (message: any) => {
         `chainId_${host}`
     ] as string;
 
-    socket.send(
-        JSON.stringify({
-            ...message,
-            network: hostChainId ?? globalChainId,
-            type: "rpc",
-            __point_id: messageId,
-        }),
-    );
+    const msg = {
+        ...message,
+        network: hostChainId ?? globalChainId,
+        type: "rpc",
+        __point_id: messageId,
+    };
+    console.log("Sending msg to node: ", msg);
+    socket.send(JSON.stringify(msg));
 
     return new Promise<unknown>((resolve) => {
         responseHandlers[messageId] = resolve;
@@ -76,18 +85,18 @@ export const rpcListener = async (message: any) => {
 
 export const confirmationWindowListener = async (message: any) => {
     if (message.confirm) {
-        socket.send(
-            JSON.stringify({
-                method: "eth_confirmTransaction",
-                type: "rpc",
-                __point_id: message.pointId,
-                params: [
-                    {
-                        reqId: message.reqId,
-                    },
-                ],
-            }),
-        );
+        const msg = {
+            method: "eth_confirmTransaction",
+            type: "rpc",
+            __point_id: message.pointId,
+            params: [
+                {
+                    reqId: message.reqId,
+                },
+            ],
+        };
+        console.log("Sending confirmation msg to node, ", msg);
+        socket.send(JSON.stringify(msg));
     } else {
         responseHandlers[message.pointId]({
             code: 4001,

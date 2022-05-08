@@ -14,6 +14,11 @@ const getProvider = () => {
                             code: e.data.code,
                             message: e.data.message,
                         });
+                    } else if (e.data.error) {
+                        reject({
+                            code: e.data.error.code,
+                            message: e.data.error.message,
+                        });
                     } else {
                         resolve(e.data.result);
                     }
