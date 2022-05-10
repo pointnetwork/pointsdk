@@ -127,9 +127,6 @@ const App: React.FC = () => {
                         >
                             <MenuItem value="ynet">Ynet</MenuItem>
                             <MenuItem value="rinkeby">Rinkeby</MenuItem>
-                            <MenuItem value="solana_devnet">
-                                Solana Devnet
-                            </MenuItem>
                         </Select>
                         {host && (
                             <>
@@ -159,9 +156,6 @@ const App: React.FC = () => {
                                     <MenuItem value="_unset">Not Set</MenuItem>
                                     <MenuItem value="ynet">Ynet</MenuItem>
                                     <MenuItem value="rinkeby">Rinkeby</MenuItem>
-                                    <MenuItem value="solana_devnet">
-                                        Solana Devnet
-                                    </MenuItem>
                                 </Select>
                             </>
                         )}

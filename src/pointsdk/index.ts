@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import getSdk from "pointsdk/pointsdk/sdk";
-import getProvider from "pointsdk/pointsdk/provider";
+import getEthProvider from "pointsdk/pointsdk/ethProvider";
+import getSolanaProvider from "pointsdk/pointsdk/solanaProvider";
 
 const version = browser.runtime.getManifest().version;
 try {
@@ -13,8 +14,16 @@ try {
 
 try {
     window.wrappedJSObject.eval(
-        `window.ethereum = (${getProvider.toString()})(window.location.origin);`,
+        `window.ethereum = (${getEthProvider.toString()})();`,
     );
 } catch (e) {
     console.error("Failed to inject window.ethereum: ", e);
+}
+
+try {
+    window.wrappedJSObject.eval(
+        `window.solana = (${getSolanaProvider.toString()})();`,
+    );
+} catch (e) {
+    console.error("Failed to inject window.solana: ", e);
 }

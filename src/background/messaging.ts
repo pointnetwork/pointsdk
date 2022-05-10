@@ -33,10 +33,13 @@ socket.onmessage = (e) => {
         if (payload.data.reqId) {
             const params =
                 payload.request.method === "solana_sendTransaction"
-                    ? {
-                          to: payload.request.params[0],
-                          lamports: payload.request.params[1],
-                      }
+                    ? payload.request.params[0].instructions.reduce(
+                          (acc, cur, idx) => ({
+                              ...acc,
+                              [`Tx ${idx + 1}`]: cur.data,
+                          }),
+                          {},
+                      )
                     : payload.request.params[0];
             displayConfirmationWindow(
                 payload.data.reqId,
@@ -62,16 +65,30 @@ socket.onerror = (err) => {
 
 export const rpcListener = async (message: any) => {
     const messageId = uuid();
-    const globalChainId = (await browser.storage.local.get("chainIdGlobal"))
-        .chainIdGlobal as string;
-    const { host } = new URL(message.__hostname);
-    const hostChainId = (await browser.storage.local.get(`chainId_${host}`))[
-        `chainId_${host}`
-    ] as string;
+    let network;
+    switch (message.__provider) {
+        case "eth":
+            const globalChainId = (
+                await browser.storage.local.get("chainIdGlobal")
+            ).chainIdGlobal as string;
+            const { host } = new URL(message.__hostname);
+            const hostChainId = (
+                await browser.storage.local.get(`chainId_${host}`)
+            )[`chainId_${host}`] as string;
+            network = hostChainId ?? globalChainId;
+            break;
+        case "solana":
+            network = "solana_devnet"; // TODO
+            break;
+        default:
+            throw new Error(
+                `Unknown or missing provider type ${message.__provider}`,
+            );
+    }
 
     const msg = {
         ...message,
-        network: hostChainId ?? globalChainId,
+        network,
         type: "rpc",
         __point_id: messageId,
     };
