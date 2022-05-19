@@ -1,4 +1,4 @@
-const getProvider = () => {
+const getEthProvider = () => {
     function handleRequest(request: Record<string, any>) {
         return new Promise((resolve, reject) => {
             const id = Math.random();
@@ -14,6 +14,11 @@ const getProvider = () => {
                             code: e.data.code,
                             message: e.data.message,
                         });
+                    } else if (e.data.error) {
+                        reject({
+                            code: e.data.error.code,
+                            message: e.data.error.message,
+                        });
                     } else {
                         resolve(e.data.result);
                     }
@@ -24,6 +29,7 @@ const getProvider = () => {
 
             window.postMessage({
                 ...request,
+                __provider: "eth",
                 __message_type: "rpc",
                 __page_req_id: id,
                 __direction: "to_bg",
@@ -37,4 +43,4 @@ const getProvider = () => {
     };
 };
 
-export default getProvider;
+export default getEthProvider;

@@ -15,6 +15,8 @@ socket.onopen = () => {
 socket.onmessage = (e) => {
     const payload = JSON.parse(e.data);
 
+    console.log("Message from node: ", payload);
+
     if (!payload?.request?.__point_id) {
         console.error(
             "Unexpected message without __point_id from point node: ",
@@ -29,11 +31,21 @@ socket.onmessage = (e) => {
 
     if (payload.data) {
         if (payload.data.reqId) {
+            const params =
+                payload.request.method === "solana_sendTransaction"
+                    ? payload.request.params[0].instructions.reduce(
+                          (acc, cur, idx) => ({
+                              ...acc,
+                              [`Tx ${idx + 1}`]: cur.data,
+                          }),
+                          {},
+                      )
+                    : payload.request.params[0];
             displayConfirmationWindow(
                 payload.data.reqId,
                 payload.request.__point_id,
                 payload.request.__hostname,
-                payload.request.params && payload.request.params[0],
+                params,
             );
         } else {
             responseHandlers[payload.request.__point_id](payload.data);
@@ -53,21 +65,35 @@ socket.onerror = (err) => {
 
 export const rpcListener = async (message: any) => {
     const messageId = uuid();
-    const globalChainId = (await browser.storage.local.get("chainIdGlobal"))
-        .chainIdGlobal as string;
-    const { host } = new URL(message.__hostname);
-    const hostChainId = (await browser.storage.local.get(`chainId_${host}`))[
-        `chainId_${host}`
-    ] as string;
+    let network;
+    switch (message.__provider) {
+        case "eth":
+            const globalChainId = (
+                await browser.storage.local.get("chainIdGlobal")
+            ).chainIdGlobal as string;
+            const { host } = new URL(message.__hostname);
+            const hostChainId = (
+                await browser.storage.local.get(`chainId_${host}`)
+            )[`chainId_${host}`] as string;
+            network = hostChainId ?? globalChainId;
+            break;
+        case "solana":
+            network = "solana_devnet"; // TODO
+            break;
+        default:
+            throw new Error(
+                `Unknown or missing provider type ${message.__provider}`,
+            );
+    }
 
-    socket.send(
-        JSON.stringify({
-            ...message,
-            network: hostChainId ?? globalChainId,
-            type: "rpc",
-            __point_id: messageId,
-        }),
-    );
+    const msg = {
+        ...message,
+        network,
+        type: "rpc",
+        __point_id: messageId,
+    };
+    console.log("Sending msg to node: ", msg);
+    socket.send(JSON.stringify(msg));
 
     return new Promise<unknown>((resolve) => {
         responseHandlers[messageId] = resolve;
@@ -76,18 +102,18 @@ export const rpcListener = async (message: any) => {
 
 export const confirmationWindowListener = async (message: any) => {
     if (message.confirm) {
-        socket.send(
-            JSON.stringify({
-                method: "eth_confirmTransaction",
-                type: "rpc",
-                __point_id: message.pointId,
-                params: [
-                    {
-                        reqId: message.reqId,
-                    },
-                ],
-            }),
-        );
+        const msg = {
+            method: "eth_confirmTransaction",
+            type: "rpc",
+            __point_id: message.pointId,
+            params: [
+                {
+                    reqId: message.reqId,
+                },
+            ],
+        };
+        console.log("Sending confirmation msg to node, ", msg);
+        socket.send(JSON.stringify(msg));
     } else {
         responseHandlers[message.pointId]({
             code: 4001,
