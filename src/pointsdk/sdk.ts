@@ -216,7 +216,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return;
             }
 
-            const ws = new WebSocket(host);
+            const ws = new WebSocket(`${host}ws?token=POINTSDK_TOKEN`);
 
             ws.onopen = () =>
                 resolve(
