@@ -25,6 +25,7 @@ export type ContractSendRequest = {
     contract: string;
     method: string;
     params?: unknown[];
+    value: string;
 };
 
 export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];

@@ -419,10 +419,133 @@ const getSdk = (host: string, version: string): PointType => {
         contract: {
             load: <T>({ contract, ...args }: ContractLoadRequest) =>
                 api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
-            call: <T>(args: ContractCallRequest) =>
-                api.post<T>("contract/call", args, getAuthHeaders()),
-            send: <T>(args: ContractSendRequest) =>
-                api.post<T>("contract/send", args, getAuthHeaders()),
+            call: async <T>({
+                contract,
+                method,
+                params,
+            }: ContractCallRequest) => {
+                const {
+                    data: { abi, address },
+                } = await api.get(
+                    `contract/load/${contract}`,
+                    {},
+                    getAuthHeaders(),
+                );
+
+                const jsonInterface = abi.find(
+                    (entry) => entry.name === method,
+                );
+                if (!jsonInterface) {
+                    throw new Error(
+                        `Method ${method} not found in contract ${contract}`,
+                    );
+                }
+
+                const { data } = await api.post(
+                    "contract/encodeFunctionCall",
+                    {
+                        jsonInterface,
+                        params,
+                    },
+                    getAuthHeaders(),
+                );
+
+                switch (jsonInterface.stateMutability) {
+                    case "view":
+                        const rawRes = await window.top.ethereum.request({
+                            method: "eth_call",
+                            params: [
+                                {
+                                    to: address,
+                                    data,
+                                },
+                            ],
+                        });
+
+                        const decodedRes = await api.post(
+                            "contract/decodeParameters",
+                            {
+                                typesArray: jsonInterface.outputs.map(
+                                    (output) => output.type,
+                                ),
+                                hexString: rawRes,
+                            },
+                            getAuthHeaders(),
+                        );
+                        return decodedRes.data;
+                    case "nonpayable":
+                        const accounts = await window.top.ethereum.request({
+                            method: "eth_requestAccounts",
+                        });
+
+                        return window.top.ethereum.request({
+                            method: "eth_sendTransaction",
+                            params: [
+                                {
+                                    from: accounts[0],
+                                    to: address,
+                                    data,
+                                },
+                            ],
+                        });
+                    case "payable":
+                        throw new Error(
+                            "Do not use call for payable functions, use send instead",
+                        );
+                    default:
+                        throw new Error(
+                            `Unexpected function state mutability ${jsonInterface.stateMutability}`,
+                        );
+                }
+            },
+            send: async <T>({
+                contract,
+                method,
+                params,
+                value,
+            }: ContractSendRequest) => {
+                const {
+                    data: { abi, address },
+                } = await api.get(
+                    `contract/load/${contract}`,
+                    {},
+                    getAuthHeaders(),
+                );
+
+                const accounts = await window.top.ethereum.request({
+                    method: "eth_requestAccounts",
+                });
+
+                const jsonInterface = abi.find(
+                    (entry) => entry.name === method,
+                );
+                if (!jsonInterface) {
+                    throw new Error(
+                        `Method ${method} not found in contract ${contract}`,
+                    );
+                }
+
+                if (jsonInterface.stateMutability !== "payable") {
+                    throw new Error(`Method ${method} is not a payable one`);
+                }
+
+                const { data } = await api.post("contract/encodeFunctionCall", {
+                    jsonInterface,
+                    params,
+                });
+
+                return window.top.ethereum.request({
+                    method: "eth_sendTransaction",
+                    params: [
+                        {
+                            from: accounts[0],
+                            to: address,
+                            data,
+                            value,
+                        },
+                    ],
+                });
+            },
             events: <T>(args: ContractEventsRequest) =>
                 api.post<T>("contract/events", args, getAuthHeaders()),
             async subscribe<T>({
