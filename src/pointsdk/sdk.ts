@@ -459,6 +459,7 @@ const getSdk = (host: string, version: string): PointType => {
                                     to: address,
                                     data,
                                 },
+                                "latest",
                             ],
                         });
 
