@@ -466,14 +466,14 @@ const getSdk = (host: string, version: string): PointType => {
                         const decodedRes = await api.post(
                             "contract/decodeParameters",
                             {
-                                typesArray: jsonInterface.outputs.map(
-                                    (output) => output.type,
-                                ),
+                                typesArray: jsonInterface.outputs,
                                 hexString: rawRes,
                             },
                             getAuthHeaders(),
                         );
-                        return decodedRes.data;
+
+                        console.log(decodedRes);
+                        return { data: decodedRes.data[0] };
                     case "nonpayable":
                         const accounts = await window.top.ethereum.request({
                             method: "eth_requestAccounts",
@@ -526,8 +526,11 @@ const getSdk = (host: string, version: string): PointType => {
                     );
                 }
 
-                if (jsonInterface.stateMutability !== "payable") {
-                    throw new Error(`Method ${method} is not a payable one`);
+                // TODO: limit to only payable methods
+                if (jsonInterface.stateMutability === "view") {
+                    throw new Error(
+                        `Method ${method} is a view one, use call instead of send`,
+                    );
                 }
 
                 const { data } = await api.post("contract/encodeFunctionCall", {
