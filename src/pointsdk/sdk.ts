@@ -472,7 +472,6 @@ const getSdk = (host: string, version: string): PointType => {
                             getAuthHeaders(),
                         );
 
-                        console.log(decodedRes);
                         return { data: decodedRes.data[0] };
                     case "nonpayable":
                         const accounts = await window.top.ethereum.request({
