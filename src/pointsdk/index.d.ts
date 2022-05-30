@@ -118,7 +118,7 @@ export type PointType = {
         address: () => Promise<string>;
         hash: () => Promise<string>;
         publicKey: () => Promise<string>;
-        balance: () => Promise<number>;
+        balance: (network?: string) => Promise<number>;
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
     };
