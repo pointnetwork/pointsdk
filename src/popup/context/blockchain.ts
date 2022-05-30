@@ -1,6 +1,7 @@
 import browser from "webextension-polyfill";
 import { createContext, useEffect, useState } from "react";
 import { SelectChangeEvent } from "@mui/material/Select";
+import NETWORKS from "pointsdk/constants/networks";
 
 export const useBlockchain = () => {
     const [loading, setLoading] = useState<boolean>(false);
@@ -8,6 +9,11 @@ export const useBlockchain = () => {
     const [host, setHost] = useState<string | null>(null);
     const [hostChainId, setHostChainId] = useState<string>("_unset");
     const [userData, setUserData] = useState({ address: "", identity: "" });
+    const [balance, setBalance] = useState("");
+
+    const chainId = (
+        !hostChainId || hostChainId === "_unset" ? globalChainId : hostChainId
+    ) as keyof typeof NETWORKS;
 
     const getCurrentChainIds = async () => {
         try {
@@ -40,10 +46,6 @@ export const useBlockchain = () => {
             owner: address,
         });
         const identity: string = identityRes.data.identity;
-        // res = await window.point.wallet.balance();
-        // const balance = Number(
-        //     Number(res.data.balance) / 1000000000000000000,
-        // ).toFixed(8);
         setUserData({ address, identity });
     };
 
@@ -56,6 +58,16 @@ export const useBlockchain = () => {
     useEffect(() => {
         void init();
     }, []);
+
+    const getBalance = async () => {
+        if (!chainId) return;
+        const res = await window.point.wallet.balance(chainId);
+        setBalance(Number(Number(res.data.balance) / 1e18).toFixed(8));
+    };
+
+    useEffect(() => {
+        void getBalance();
+    }, [globalChainId, hostChainId]);
 
     const handleGlobalNetworkChange = async (e: SelectChangeEvent) => {
         await browser.storage.local.set({ chainIdGlobal: e.target.value });
@@ -79,9 +91,11 @@ export const useBlockchain = () => {
         host,
         globalChainId,
         hostChainId,
+        chainId,
         handleGlobalNetworkChange,
         handleHostNetworkChange,
         userData,
+        balance,
     };
 };
 

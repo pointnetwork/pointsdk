@@ -594,7 +594,8 @@ const getSdk = (host: string, version: string): PointType => {
             hash: () => api.get<string>("wallet/hash"),
             publicKey: () =>
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
-            balance: () => api.get<number>("wallet/balance"),
+            balance: (network = "ynet") =>
+                api.get<number>("wallet/balance", { network }),
             encryptData: <T>({
                 publicKey,
                 data,

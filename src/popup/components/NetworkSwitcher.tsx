@@ -4,6 +4,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Box from "@mui/material/Box";
 import { BlockchainContext } from "pointsdk/popup/context/blockchain";
+import NETWORKS from "pointsdk/constants/networks";
 
 const NetworkSwitcher: FunctionComponent = () => {
     const {
@@ -28,8 +29,13 @@ const NetworkSwitcher: FunctionComponent = () => {
                 onChange={handleGlobalNetworkChange}
                 disabled={!globalChainId || loading}
             >
-                <MenuItem value="ynet">Ynet</MenuItem>
-                <MenuItem value="rinkeby">Rinkeby</MenuItem>
+                {(Object.keys(NETWORKS) as (keyof typeof NETWORKS)[]).map(
+                    (key) => (
+                        <MenuItem value={key} key={key}>
+                            {NETWORKS[key].name}
+                        </MenuItem>
+                    ),
+                )}
             </Select>
             {host && (
                 <>
@@ -50,8 +56,13 @@ const NetworkSwitcher: FunctionComponent = () => {
                         disabled={!host || loading}
                     >
                         <MenuItem value="_unset">Not Set</MenuItem>
-                        <MenuItem value="ynet">Ynet</MenuItem>
-                        <MenuItem value="rinkeby">Rinkeby</MenuItem>
+                        {(
+                            Object.keys(NETWORKS) as (keyof typeof NETWORKS)[]
+                        ).map((key) => (
+                            <MenuItem value={key} key={key}>
+                                {NETWORKS[key].name}
+                            </MenuItem>
+                        ))}
                     </Select>
                 </>
             )}
