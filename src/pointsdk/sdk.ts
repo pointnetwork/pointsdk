@@ -441,17 +441,35 @@ const getSdk = (host: string, version: string): PointType => {
                     );
                 }
 
+                const preparedParams = params ?? [];
+                if (preparedParams.length !== jsonInterface.inputs.length) {
+                    throw new Error(
+                        `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
+                    );
+                }
+
+                for (let i = 0; i < preparedParams.length; i++) {
+                    if (
+                        jsonInterface.inputs[i].internalType === "bytes32" &&
+                        typeof preparedParams[i] === "string" &&
+                        !preparedParams[i].startsWith("0x")
+                    ) {
+                        preparedParams[i] = `0x${preparedParams[i]}`;
+                    }
+                }
+
                 const { data } = await api.post(
                     "contract/encodeFunctionCall",
                     {
                         jsonInterface,
-                        params,
+                        params: preparedParams,
                     },
                     getAuthHeaders(),
                 );
 
                 switch (jsonInterface.stateMutability) {
                     case "view":
+                    case "pure":
                         const rawRes = await window.top.ethereum.request({
                             method: "eth_call",
                             params: [
@@ -525,8 +543,24 @@ const getSdk = (host: string, version: string): PointType => {
                     );
                 }
 
-                // TODO: limit to only payable methods
-                if (jsonInterface.stateMutability === "view") {
+                const preparedParams = params ?? [];
+                if (preparedParams.length !== jsonInterface.inputs.length) {
+                    throw new Error(
+                        `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
+                    );
+                }
+
+                for (let i = 0; i < preparedParams.length; i++) {
+                    if (
+                        jsonInterface.inputs[i].internalType === "bytes32" &&
+                        typeof preparedParams[i] === "string" &&
+                        !preparedParams[i].startsWith("0x")
+                    ) {
+                        preparedParams[i] = `0x${preparedParams[i]}`;
+                    }
+                }
+
+                if (["view", "pure"].includes(jsonInterface.stateMutability)) {
                     throw new Error(
                         `Method ${method} is a view one, use call instead of send`,
                     );
@@ -534,7 +568,7 @@ const getSdk = (host: string, version: string): PointType => {
 
                 const { data } = await api.post("contract/encodeFunctionCall", {
                     jsonInterface,
-                    params,
+                    params: params ?? [],
                 });
 
                 return window.top.ethereum.request({
