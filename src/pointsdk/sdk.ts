@@ -467,6 +467,10 @@ const getSdk = (host: string, version: string): PointType => {
                     getAuthHeaders(),
                 );
 
+                const accounts = await window.top.ethereum.request({
+                    method: "eth_requestAccounts",
+                });
+
                 switch (jsonInterface.stateMutability) {
                     case "view":
                     case "pure":
@@ -474,6 +478,7 @@ const getSdk = (host: string, version: string): PointType => {
                             method: "eth_call",
                             params: [
                                 {
+                                    from: accounts[0],
                                     to: address,
                                     data,
                                 },
@@ -492,10 +497,6 @@ const getSdk = (host: string, version: string): PointType => {
 
                         return { data: decodedRes.data[0] };
                     case "nonpayable":
-                        const accounts = await window.top.ethereum.request({
-                            method: "eth_requestAccounts",
-                        });
-
                         return window.top.ethereum.request({
                             method: "eth_sendTransaction",
                             params: [
