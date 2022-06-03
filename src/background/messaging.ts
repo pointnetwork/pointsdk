@@ -32,7 +32,8 @@ socket.onmessage = (e) => {
     if (payload.data) {
         if (payload.data.reqId) {
             const params =
-                payload.request.method === "solana_sendTransaction"
+                payload.request.method === "solana_sendTransaction" &&
+                payload.request.params[0].instructions
                     ? payload.request.params[0].instructions.reduce(
                           (acc, cur, idx) => ({
                               ...acc,

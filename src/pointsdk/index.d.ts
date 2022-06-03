@@ -28,6 +28,12 @@ export type ContractSendRequest = {
     value: string;
 };
 
+export type WalletSendRequest = {
+    to: string;
+    network?: string;
+    value: number;
+};
+
 export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];
 
 export type StorageGetRequest = { id: string; encoding?: string } & Record<
@@ -119,6 +125,7 @@ export type PointType = {
         hash: () => Promise<string>;
         publicKey: () => Promise<string>;
         balance: (network?: string) => Promise<number>;
+        send: <T>(request: WalletSendRequest) => Promise<T>;
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
     };
