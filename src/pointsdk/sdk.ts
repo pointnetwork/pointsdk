@@ -631,6 +631,44 @@ const getSdk = (host: string, version: string): PointType => {
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
             balance: (network = "ynet") =>
                 api.get<number>("wallet/balance", { network }),
+            send: async ({ to, network = "ynet", value }) => {
+                if (!window.point.networks[network]) {
+                    throw new Error(`Unknown network ${network}`);
+                }
+                switch (window.point.networks[network].type) {
+                    case "eth":
+                        const accounts = await window.top.ethereum.request({
+                            method: "eth_requestAccounts",
+                        });
+
+                        return window.top.ethereum.request({
+                            method: "eth_sendTransaction",
+                            params: [
+                                {
+                                    from: accounts[0],
+                                    to,
+                                    value,
+                                },
+                            ],
+                            network,
+                        });
+                    case "solana":
+                        return window.top.solana.request({
+                            method: "solana_sendTransaction",
+                            params: [
+                                {
+                                    to,
+                                    lamports: value,
+                                },
+                            ],
+                            network,
+                        });
+                    default:
+                        throw new Error(
+                            `Unexpected network type ${window.point.networks[network].type}`,
+                        );
+                }
+            },
             encryptData: <T>({
                 publicKey,
                 data,
