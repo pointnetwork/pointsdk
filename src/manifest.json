@@ -49,6 +49,7 @@
     "popup/index.html",
     "popup/index.tsx",
     "confirmation-window/index.html",
-    "confirmation-window/index.tsx"
+    "confirmation-window/index.tsx",
+    "pointsdk/pageMessaging.ts"
   ]
 }

@@ -25,6 +25,7 @@
             "node_modules/@types",
             "node_modules/webextension-polyfill-ts",
             "src/types"
-        ]
+        ],
+      "resolveJsonModule": true
     }
 }
