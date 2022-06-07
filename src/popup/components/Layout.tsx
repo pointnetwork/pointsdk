@@ -10,6 +10,7 @@ import NetworkSwitcher from "./NetworkSwitcher";
 import UserData from "./UserData";
 import Links from "./Links";
 import Balance from "./Balance";
+import Tokens from "pointsdk/popup/components/Tokens";
 
 const Layout: FunctionComponent = () => {
     const { loading } = useContext(BlockchainContext);
@@ -50,6 +51,8 @@ const Layout: FunctionComponent = () => {
                         <Balance />
                         <Divider />
                         <Links />
+                        <Divider />
+                        <Tokens />
                     </Fragment>
                 )}
             </Box>
