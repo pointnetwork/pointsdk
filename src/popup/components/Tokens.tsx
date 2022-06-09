@@ -19,14 +19,14 @@ const Tokens: FunctionComponent = () => {
     const [balances, setBalances] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
-    const { chainId, userData } = useContext(BlockchainContext);
+    const { globalChainId, userData } = useContext(BlockchainContext);
 
     const getBalances = async () => {
         setError(false);
         setLoading(true);
         try {
             const responses = await Promise.all(
-                TOKENS[chainId as "rinkeby"].map(async (token) => {
+                TOKENS[globalChainId as "rinkeby"].map(async (token) => {
                     const contract = new Contract(
                         token.address,
                         ERC20Abi,
@@ -46,19 +46,21 @@ const Tokens: FunctionComponent = () => {
     };
 
     useEffect(() => {
-        if (window.ethereum && chainId && userData.address) {
-            if (TOKENS[chainId]) {
+        if (window.ethereum && globalChainId && userData.address) {
+            if (TOKENS[globalChainId]) {
                 void getBalances();
             } else {
                 setBalances([]);
             }
         }
-    }, [chainId, userData, window.ethereum]);
+    }, [globalChainId, userData, window.ethereum]);
+
+    const tokens = TOKENS[globalChainId as "rinkeby"] ?? [];
 
     return (
         <Box>
             <Typography variant="h5" m={1}>
-                ERC20 tokens ({chainId})
+                ERC20 tokens ({globalChainId})
             </Typography>
             {loading ? (
                 <Box
@@ -72,22 +74,29 @@ const Tokens: FunctionComponent = () => {
             ) : error ? (
                 <p>error</p>
             ) : (
-                (TOKENS[chainId as "rinkeby"] ?? []).map((token, index) => (
-                    <Fragment key={index}>
-                        {index === 0 && <Divider />}
-                        <Box
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="space-between"
-                        >
-                            <Typography variant="h6" ml={1}>
-                                {token.name}
-                            </Typography>
-                            <Typography mr={1}>{balances[index]}</Typography>
-                        </Box>
-                        <Divider />
-                    </Fragment>
-                ))
+                <>
+                    {tokens.length === 0 && (
+                        <Typography ml={1}>No tokens for this chain</Typography>
+                    )}
+                    {tokens.map((token, index) => (
+                        <Fragment key={index}>
+                            {index === 0 && <Divider />}
+                            <Box
+                                display="flex"
+                                alignItems="center"
+                                justifyContent="space-between"
+                            >
+                                <Typography variant="h6" ml={1}>
+                                    {token.name}
+                                </Typography>
+                                <Typography mr={1}>
+                                    {balances[index]}
+                                </Typography>
+                            </Box>
+                            <Divider />
+                        </Fragment>
+                    ))}
+                </>
             )}
         </Box>
     );
