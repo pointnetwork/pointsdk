@@ -47,13 +47,17 @@ const Tokens: FunctionComponent = () => {
 
     useEffect(() => {
         if (window.ethereum && chainId && userData.address) {
-            void getBalances();
+            if (TOKENS[chainId]) {
+                void getBalances();
+            } else {
+                setBalances([]);
+            }
         }
     }, [chainId, userData, window.ethereum]);
 
     return (
-        <Box p={1} mb={1}>
-            <Typography variant="h5" sx={{ margin: "10px 0" }}>
+        <Box>
+            <Typography variant="h5" m={1}>
                 ERC20 tokens ({chainId})
             </Typography>
             {loading ? (
@@ -75,14 +79,11 @@ const Tokens: FunctionComponent = () => {
                             display="flex"
                             alignItems="center"
                             justifyContent="space-between"
-                            alignSelf="stretch"
                         >
-                            <Typography variant="h6" mr={1}>
+                            <Typography variant="h6" ml={1}>
                                 {token.name}
                             </Typography>
-                            <Typography mr={1} align="right">
-                                {balances[index]}
-                            </Typography>
+                            <Typography mr={1}>{balances[index]}</Typography>
                         </Box>
                         <Divider />
                     </Fragment>
