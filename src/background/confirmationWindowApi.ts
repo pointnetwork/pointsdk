@@ -5,11 +5,12 @@ export const displayConfirmationWindow = async (
     reqId: string,
     pointId: string,
     host: string,
+    network: string,
     params = {},
 ) => {
     const win = await browser.windows.create({
         type: "detached_panel",
-        url: `./confirmation-window/index.html?reqId=${reqId}&pointId=${pointId}&host=${host}&params=${encodeURIComponent(
+        url: `./confirmation-window/index.html?reqId=${reqId}&pointId=${pointId}&host=${host}&network=${network}&params=${encodeURIComponent(
             JSON.stringify(params),
         )}`,
         width: 400,

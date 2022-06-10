@@ -34,18 +34,13 @@ socket.onmessage = (e) => {
             const params =
                 payload.request.method === "solana_sendTransaction" &&
                 payload.request.params[0].instructions
-                    ? payload.request.params[0].instructions.reduce(
-                          (acc, cur, idx) => ({
-                              ...acc,
-                              [`Tx ${idx + 1}`]: cur.data,
-                          }),
-                          {},
-                      )
+                    ? payload.request.params[0].instructions[0]
                     : payload.request.params[0];
             displayConfirmationWindow(
                 payload.data.reqId,
                 payload.request.__point_id,
                 payload.request.__hostname,
+                payload.data.network,
                 params,
             );
         } else {
