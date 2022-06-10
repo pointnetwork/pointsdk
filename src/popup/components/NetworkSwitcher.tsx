@@ -22,7 +22,7 @@ const NetworkSwitcher: FunctionComponent = () => {
                 Global Chain ID:
             </Typography>
             <Select
-                sx={{ mt: "2px", mb: 2 }}
+                sx={{ mt: "2px", mb: 2, fontSize: "0.875rem", opacity: 0.7 }}
                 size="small"
                 fullWidth
                 value={globalChainId}
@@ -44,11 +44,16 @@ const NetworkSwitcher: FunctionComponent = () => {
                             Chain ID for:
                         </Typography>
                         <Typography variant="body2" fontWeight="bold" ml="3px">
-                            https://{host}
+                            {host}
                         </Typography>
                     </Box>
                     <Select
-                        sx={{ mt: "2px", mb: 2 }}
+                        sx={{
+                            mt: "2px",
+                            mb: 2,
+                            fontSize: "0.875rem",
+                            opacity: 0.7,
+                        }}
                         size="small"
                         fullWidth
                         value={hostChainId}

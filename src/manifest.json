@@ -23,7 +23,8 @@
     "<all_urls>",
     "tabs",
     "activeTab",
-    "storage"
+    "storage",
+    "webRequest"
   ],
   "content_scripts": [
     {

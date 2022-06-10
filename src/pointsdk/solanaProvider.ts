@@ -20,7 +20,7 @@ const getSolanaProvider = () => {
                             message: e.data.error.message,
                         });
                     } else {
-                        resolve(e.data);
+                        resolve(e.data.result);
                     }
                 }
             };
