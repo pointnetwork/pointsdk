@@ -216,7 +216,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return;
             }
 
-            const ws = new WebSocket(`${host}ws?token=POINTSDK_TOKEN`);
+            const ws = new WebSocket(`${host}?token=POINTSDK_TOKEN`);
 
             ws.onopen = () =>
                 resolve(
@@ -405,7 +405,7 @@ const getSdk = (host: string, version: string): PointType => {
                         }
                     }
                 } catch (e) {
-                    console.log("Web Socket onmessage error:", e);
+                    console.error("Web Socket onmessage error:", e);
                 }
             };
         });
@@ -602,6 +602,7 @@ const getSdk = (host: string, version: string): PointType => {
 
                 const url = new URL(host);
                 url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+                url.pathname += url.pathname.endsWith("/") ? "ws" : "/ws";
                 const socket = await wsConnect(url.toString());
 
                 if (!socket) {
