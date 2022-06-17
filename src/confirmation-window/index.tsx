@@ -5,7 +5,7 @@ import getSdk from "pointsdk/pointsdk/sdk";
 import getEthProvider from "pointsdk/pointsdk/ethProvider";
 import getSolanaProvider from "pointsdk/pointsdk/solanaProvider";
 const version = browser.runtime.getManifest().version;
-const point = getSdk("https://point", version);
+const point = getSdk("https://confirmation-window", version);
 const ethereum = getEthProvider();
 const solana = getSolanaProvider();
 

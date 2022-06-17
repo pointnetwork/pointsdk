@@ -33,7 +33,7 @@ socket.onmessage = (e) => {
         if (payload.data.reqId) {
             const params =
                 payload.request.method === "solana_sendTransaction" &&
-                payload.request.params[0].instructions
+                Array.isArray(payload.request.params[0].instructions)
                     ? payload.request.params[0].instructions[0]
                     : payload.request.params[0];
             displayConfirmationWindow(
