@@ -119,3 +119,8 @@ export const confirmationWindowListener = async (message: any) => {
     }
     await closeConfirmationWindow();
 };
+
+export const registerHandlerListener = async (message: any) =>
+    new Promise<unknown>((resolve) => {
+        responseHandlers[message.messageId] = resolve;
+    });

@@ -410,6 +410,37 @@ const getSdk = (host: string, version: string): PointType => {
             };
         });
 
+    const waitForNodeResponse = (messageId: string) =>
+        new Promise((resolve, reject) => {
+            const id = Math.random();
+
+            const handler = (e: MessageEvent) => {
+                if (
+                    e.data.__page_req_id === id &&
+                    e.data.__direction === "to_page"
+                ) {
+                    window.removeEventListener("message", handler);
+                    if (e.data.code) {
+                        reject({
+                            code: e.data.code,
+                            message: e.data.message,
+                        });
+                    } else {
+                        resolve(e.data.result);
+                    }
+                }
+            };
+
+            window.addEventListener("message", handler);
+
+            window.postMessage({
+                messageId,
+                __message_type: "registerHandler",
+                __page_req_id: id,
+                __direction: "to_bg",
+            });
+        });
+
     return {
         version: version,
         status: {
@@ -720,6 +751,55 @@ const getSdk = (host: string, version: string): PointType => {
                     getAuthHeaders(),
                 ),
         },
+        ...(host === "https://point"
+            ? {
+                  point: {
+                      wallet_send: async ({ to, network, value }) => {
+                          const messageId = String(Math.random());
+                          await Promise.all([
+                              waitForNodeResponse(messageId),
+                              (async () => {
+                                  const res = await api.post("wallet/send", {
+                                      to,
+                                      network,
+                                      value,
+                                      messageId,
+                                  });
+                                  if (res.status !== 200) {
+                                      throw new Error("Failed to send token");
+                                  }
+                              })(),
+                          ]);
+                      },
+                      wallet_send_token: async ({
+                          to,
+                          network,
+                          tokenAddress,
+                          value,
+                      }) => {
+                          const messageId = String(Math.random());
+                          await Promise.all([
+                              waitForNodeResponse(messageId),
+                              (async () => {
+                                  const res = await api.post(
+                                      "wallet/sendToken",
+                                      {
+                                          to,
+                                          network,
+                                          value,
+                                          tokenAddress,
+                                          messageId,
+                                      },
+                                  );
+                                  if (res.status !== 200) {
+                                      throw new Error("Failed to send token");
+                                  }
+                              })(),
+                          ]);
+                      },
+                  },
+              }
+            : {}),
     };
 };
 
