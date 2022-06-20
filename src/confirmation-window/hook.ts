@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { formatEther } from "@ethersproject/units";
 import NETWORKS from "pointsdk/constants/networks";
 import { BigNumber } from "@ethersproject/bignumber";
+import { generate } from "geopattern";
 
 const useConfirmationWindow = (
     rawParams: Record<string, string>,
@@ -84,8 +85,19 @@ const useConfirmationWindow = (
         setParams(processedParams);
         setLoading(false);
     }, [rawParams, network, setParams, setLoading]);
+
+    const drawBg = useCallback(async () => {
+        try {
+            const hash = await window.point.wallet.hash();
+            const pattern = generate(String(hash)).toDataUrl();
+            document.body.style.backgroundImage = pattern;
+        } catch (e) {
+            console.error(e);
+        }
+    }, []);
     useEffect(() => {
         void processParams();
+        void drawBg();
     }, [rawParams]);
 
     return {

@@ -658,7 +658,11 @@ const getSdk = (host: string, version: string): PointType => {
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
-            hash: () => api.get<string>("wallet/hash"),
+            ...(host === "https://confirmation-window"
+                ? {
+                      hash: () => api.get<string>("wallet/hash"),
+                  }
+                : {}),
             publicKey: () =>
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
             balance: (network = "ynet") =>
