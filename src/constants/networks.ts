@@ -2,17 +2,17 @@ const NETWORKS = {
     ynet: {
         name: "Ynet",
         type: "eth",
-        currency: "Point",
+        currency: "yPoint",
     },
     rinkeby: {
         name: "Rinkeby",
         type: "eth",
-        currency: "Eth",
+        currency: "rinkebyEth",
     },
     solana_devnet: {
         name: "Solana Devnet",
         type: "solana",
-        currency: "Sol",
+        currency: "DevSol",
     },
     // solana: {
     //     name: "Solana",
