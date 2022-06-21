@@ -35,19 +35,26 @@ const getSdk = (host: string, version: string): PointType => {
         "wallet-token": "WALLETID-PASSCODE",
     });
 
-    const apiCall = async <T>(path: string, config?: RequestInit) => {
+    const apiCall = async <T>(
+        path: string,
+        config?: RequestInit,
+        internal?: boolean,
+    ) => {
         try {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await window.top.fetch(`${host}/v1/api/${path}`, {
-                cache: "no-cache",
-                credentials: "include",
-                keepalive: true,
-                ...config,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...config?.headers,
+            const response = await window.top.fetch(
+                `${host}${internal ? "/point_api/" : "/v1/api/"}${path}`,
+                {
+                    cache: "no-cache",
+                    credentials: "include",
+                    keepalive: true,
+                    ...config,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...config?.headers,
+                    },
                 },
-            });
+            );
 
             if (!response.ok) {
                 const { ok, status, statusText, headers } = response;
@@ -113,6 +120,7 @@ const getSdk = (host: string, version: string): PointType => {
             pathname: string,
             query?: URLSearchQuery,
             headers?: HeadersInit,
+            internal?: boolean,
         ): Promise<T> {
             return apiCall<T>(
                 `${pathname}${query ? "?" : ""}${new URLSearchParams(
@@ -122,18 +130,24 @@ const getSdk = (host: string, version: string): PointType => {
                     method: "GET",
                     headers,
                 },
+                internal,
             );
         },
         post<T>(
             pathname: string,
             body: any,
             headers?: HeadersInit,
+            internal?: boolean,
         ): Promise<T> {
-            return apiCall<T>(pathname, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(body),
-            });
+            return apiCall<T>(
+                pathname,
+                {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify(body),
+                },
+                internal,
+            );
         },
         postFile<T>(pathname: string, file: FormData): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
@@ -660,7 +674,7 @@ const getSdk = (host: string, version: string): PointType => {
             address: () => api.get<string>("wallet/address"),
             ...(host === "https://confirmation-window"
                 ? {
-                      hash: () => api.get<string>("wallet/hash"),
+                      hash: () => api.get<string>("wallet/hash", {}, {}, true),
                   }
                 : {}),
             publicKey: () =>
@@ -763,12 +777,17 @@ const getSdk = (host: string, version: string): PointType => {
                           await Promise.all([
                               waitForNodeResponse(messageId),
                               (async () => {
-                                  const res = await api.post("wallet/send", {
-                                      to,
-                                      network,
-                                      value,
-                                      messageId,
-                                  });
+                                  const res = await api.post(
+                                      "wallet/send",
+                                      {
+                                          to,
+                                          network,
+                                          value,
+                                          messageId,
+                                      },
+                                      {},
+                                      true,
+                                  );
                                   if (res.status !== 200) {
                                       throw new Error("Failed to send token");
                                   }
@@ -794,6 +813,8 @@ const getSdk = (host: string, version: string): PointType => {
                                           tokenAddress,
                                           messageId,
                                       },
+                                      {},
+                                      true,
                                   );
                                   if (res.status !== 200) {
                                       throw new Error("Failed to send token");
