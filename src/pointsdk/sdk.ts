@@ -35,19 +35,26 @@ const getSdk = (host: string, version: string): PointType => {
         "wallet-token": "WALLETID-PASSCODE",
     });
 
-    const apiCall = async <T>(path: string, config?: RequestInit) => {
+    const apiCall = async <T>(
+        path: string,
+        config?: RequestInit,
+        internal?: boolean,
+    ) => {
         try {
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
-            const response = await window.top.fetch(`${host}/v1/api/${path}`, {
-                cache: "no-cache",
-                credentials: "include",
-                keepalive: true,
-                ...config,
-                headers: {
-                    "Content-Type": "application/json",
-                    ...config?.headers,
+            const response = await window.top.fetch(
+                `${host}${internal ? "/point_api/" : "/v1/api/"}${path}`,
+                {
+                    cache: "no-cache",
+                    credentials: "include",
+                    keepalive: true,
+                    ...config,
+                    headers: {
+                        "Content-Type": "application/json",
+                        ...config?.headers,
+                    },
                 },
-            });
+            );
 
             if (!response.ok) {
                 const { ok, status, statusText, headers } = response;
@@ -113,6 +120,7 @@ const getSdk = (host: string, version: string): PointType => {
             pathname: string,
             query?: URLSearchQuery,
             headers?: HeadersInit,
+            internal?: boolean,
         ): Promise<T> {
             return apiCall<T>(
                 `${pathname}${query ? "?" : ""}${new URLSearchParams(
@@ -122,18 +130,24 @@ const getSdk = (host: string, version: string): PointType => {
                     method: "GET",
                     headers,
                 },
+                internal,
             );
         },
         post<T>(
             pathname: string,
             body: any,
             headers?: HeadersInit,
+            internal?: boolean,
         ): Promise<T> {
-            return apiCall<T>(pathname, {
-                method: "POST",
-                headers,
-                body: JSON.stringify(body),
-            });
+            return apiCall<T>(
+                pathname,
+                {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify(body),
+                },
+                internal,
+            );
         },
         postFile<T>(pathname: string, file: FormData): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
@@ -410,6 +424,37 @@ const getSdk = (host: string, version: string): PointType => {
             };
         });
 
+    const waitForNodeResponse = (messageId: string) =>
+        new Promise((resolve, reject) => {
+            const id = Math.random();
+
+            const handler = (e: MessageEvent) => {
+                if (
+                    e.data.__page_req_id === id &&
+                    e.data.__direction === "to_page"
+                ) {
+                    window.removeEventListener("message", handler);
+                    if (e.data.code) {
+                        reject({
+                            code: e.data.code,
+                            message: e.data.message,
+                        });
+                    } else {
+                        resolve(e.data.result);
+                    }
+                }
+            };
+
+            window.addEventListener("message", handler);
+
+            window.postMessage({
+                messageId,
+                __message_type: "registerHandler",
+                __page_req_id: id,
+                __direction: "to_bg",
+            });
+        });
+
     return {
         version: version,
         status: {
@@ -627,7 +672,11 @@ const getSdk = (host: string, version: string): PointType => {
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
-            hash: () => api.get<string>("wallet/hash"),
+            ...(host === "https://confirmation-window"
+                ? {
+                      hash: () => api.get<string>("wallet/hash", {}, {}, true),
+                  }
+                : {}),
             publicKey: () =>
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
             balance: (network = "ynet") =>
@@ -720,6 +769,62 @@ const getSdk = (host: string, version: string): PointType => {
                     getAuthHeaders(),
                 ),
         },
+        ...(host === "https://point"
+            ? {
+                  point: {
+                      wallet_send: async ({ to, network, value }) => {
+                          const messageId = String(Math.random());
+                          await Promise.all([
+                              waitForNodeResponse(messageId),
+                              (async () => {
+                                  const res = await api.post(
+                                      "wallet/send",
+                                      {
+                                          to,
+                                          network,
+                                          value,
+                                          messageId,
+                                      },
+                                      {},
+                                      true,
+                                  );
+                                  if (res.status !== 200) {
+                                      throw new Error("Failed to send token");
+                                  }
+                              })(),
+                          ]);
+                      },
+                      wallet_send_token: async ({
+                          to,
+                          network,
+                          tokenAddress,
+                          value,
+                      }) => {
+                          const messageId = String(Math.random());
+                          await Promise.all([
+                              waitForNodeResponse(messageId),
+                              (async () => {
+                                  const res = await api.post(
+                                      "wallet/sendToken",
+                                      {
+                                          to,
+                                          network,
+                                          value,
+                                          tokenAddress,
+                                          messageId,
+                                      },
+                                      {},
+                                      true,
+                                  );
+                                  if (res.status !== 200) {
+                                      throw new Error("Failed to send token");
+                                  }
+                              })(),
+                          ]);
+                      },
+                  },
+              }
+            : {}),
     };
 };
 

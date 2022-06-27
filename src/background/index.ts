@@ -2,6 +2,7 @@ import browser from "webextension-polyfill";
 import {
     rpcListener,
     confirmationWindowListener,
+    registerHandlerListener,
 } from "pointsdk/background/messaging";
 
 browser.storage.local.get("chainIdGlobal").then((res) => {
@@ -21,6 +22,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
         return confirmationWindowListener(message);
     } else if (message.__message_type === "rpc") {
         return rpcListener(message);
+    } else if (message.__message_type === "registerHandler") {
+        return registerHandlerListener(message);
     } else {
         console.error(
             "Unexpected runtime message: ",
