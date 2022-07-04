@@ -42,6 +42,7 @@ jobs:
         with:
           cmd: build
           source: dist/prod
+          filename: "point_network-${{ steps.get_source_tag.outputs.SOURCE_TAG }}-an+fx.xpi"
 
       - name: "web-ext sign"
         id: web-ext-sign
