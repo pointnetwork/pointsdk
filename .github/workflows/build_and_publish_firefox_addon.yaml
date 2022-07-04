@@ -55,6 +55,9 @@ jobs:
           apiSecret: ${{ secrets.FIREFOX_API_SECRET }}
           timeout: 900000
 
+      - name: "echo filename"
+        run: echo ${{ steps.web-ext-sign.outputs.target }}
+
       - name: Get the Source Tag
         id: get_source_tag
         run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
