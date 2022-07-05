@@ -308,17 +308,17 @@ const getSdk = (host: string, version: string): PointType => {
 
             ws.onclose = (e) => {
                 delete socketsByHost[host];
-
-                for (const queueId in messagesBySubscriptionId) {
-                    if (!errorsBySubscriptionId[queueId]) {
-                        errorsBySubscriptionId[queueId] =
-                            new ZProxyWSConnectionClosed(e.toString());
-                    }
-                }
-
-                if (e.code === 1000) {
+                if (e.code === 1000 || e.code === 1001) {
+                    // 1000 -> CLOSE_NORMAL (normal socket shut down)
+                    // 1001 -> CLOSE_GOING_AWAY (closing browser tab, refreshing, navigating away)
                     resolve(undefined); // closed intentionally
                 } else {
+                    for (const queueId in messagesBySubscriptionId) {
+                        if (!errorsBySubscriptionId[queueId]) {
+                            errorsBySubscriptionId[queueId] =
+                                new ZProxyWSConnectionClosed(e.toString());
+                        }
+                    }
                     reject();
                 }
             };
