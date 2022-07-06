@@ -33,7 +33,7 @@ The `web-ext` command line tool can facilitate the development experience. This 
 First step is to instlal the `web-ext` utility globally like so:
 
 ```
-npm install --global web-ext
+npm install --global web-ext@6.6.0
 ```
 
 Now you can start up Firefox using a specific Profile that you have already created (e.g. `website_owner` which has the proxy already configured for pointing to the `website_owner` node instance). Make sure to specify the source directory where the extentions built `manifiest.json` file is located. You can also optionally, provide a url of a website you want to open by default (e.g. `https://store.z/`).
