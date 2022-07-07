@@ -117,6 +117,7 @@ export type PointType = {
     };
     storage: {
         postFile: <T>(request: FormData) => Promise<T>;
+        encryptAndPostFile: <T>(request: FormData, identities: string[]) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
     };
