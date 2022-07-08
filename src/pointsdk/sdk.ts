@@ -156,16 +156,26 @@ const getSdk = (host: string, version: string): PointType => {
                 // headers NOT required when passing FormData object
             });
         },
-        encryptAndPostFile<T>(pathname: string, file: FormData, identities: string[]): Promise<T> {
+        encryptAndPostFile<T>(pathname: string, file: FormData, identities: string[], metadata?: string[]): Promise<T> {
             let idsStr = '';
             for (var i = 0; i < identities.length; i++) {
                 idsStr += identities[i] + (i < identities.length -1 ? ',' : '');
             }
 
+            let metadataStr = '';
+            if(metadata){
+                for (var i = 0; i < metadata.length; i++) {
+                    metadataStr += metadata[i] + (i < metadata.length -1 ? ',' : '');
+                }
+            }
+
             return zproxyStorageCall<T>(pathname, {
                 method: "POST",
                 body: file,
-                headers: {'identities': idsStr}
+                headers: {
+                    'identities': idsStr,
+                    'metadata': metadataStr
+                }
             });
         },
     };
@@ -677,7 +687,7 @@ const getSdk = (host: string, version: string): PointType => {
         },
         storage: {
             postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
-            encryptAndPostFile: <T>(file: FormData, identities: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities),
+            encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities, metadata),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
             putString: <T>(data: StoragePutStringRequest) =>
