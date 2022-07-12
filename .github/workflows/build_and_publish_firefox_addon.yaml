@@ -70,15 +70,52 @@ jobs:
       - name: "Rename addon file"
         run: mv ${{ steps.web-ext-sign.outputs.target }} web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
 
-      - name: "Create Release"
-        uses: softprops/action-gh-release@v1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            ./src/manifest.json
-            web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
           tag_name: ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
           release_name: Release ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
-          draft: false
+          draft: true
           prerelease: true
+
+      - name: Upload xpi file
+        id: upload_xpi
+        uses: brianunlam/upload-release-asset@v1.0.5
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
+          asset_name: point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
+          asset_content_type: application/octet-stream
+
+      - name: Upload manifest
+        uses: brianunlam/upload-release-asset@v1.0.5
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/manifest.json
+          asset_name: manifest.json
+          asset_content_type: text/plain
+
+      - name: Generate md5 file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ./md5
+          contents: |
+            ${{ steps.upload_xpi.outputs.asset_name }}: ${{ steps.upload_xpi.outputs.asset_md5 }}
+          write-mode: append
+
+      - name: Upload md5 file
+        uses: brianunlam/upload-release-asset@v1.0.5
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.release_upload_url }}
+          asset_path: ./md5
+          asset_name: md5.txt
+          asset_content_type: text/plain
