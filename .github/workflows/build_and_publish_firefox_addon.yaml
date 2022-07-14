@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload xpi file
         id: upload_xpi
-        uses: brianunlam/upload-release-asset@v1.0.5
+        uses: pointnetwork/upload-release-asset@v2.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -93,7 +93,8 @@ jobs:
           asset_content_type: application/octet-stream
 
       - name: Upload manifest
-        uses: brianunlam/upload-release-asset@v1.0.5
+        id: upload_manifest
+        uses: pointnetwork/upload-release-asset@v2.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
@@ -102,20 +103,20 @@ jobs:
           asset_name: manifest.json
           asset_content_type: text/plain
 
-      - name: Generate md5 file
+      - name: Generate sha256 file
         uses: DamianReeves/write-file-action@master
         with:
-          path: ./md5
+          path: ./sha256
           contents: |
-            ${{ steps.upload_xpi.outputs.asset_name }}: ${{ steps.upload_xpi.outputs.asset_md5 }}
-          write-mode: append
+            ${{ steps.upload_xpi.outputs.asset_name }}: ${{ steps.upload_xpi.outputs.asset_hash }}
+            ${{ steps.upload_manifest.outputs.asset_name }}: ${{ steps.upload_manifest.outputs.asset_hash }}
 
-      - name: Upload md5 file
-        uses: brianunlam/upload-release-asset@v1.0.5
+      - name: Upload sha256 file
+        uses: pointnetwork/upload-release-asset@v2.0.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          upload_url: ${{ steps.create_release.outputs.release_upload_url }}
-          asset_path: ./md5
-          asset_name: md5.txt
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./sha256
+          asset_name: sha256-${{ steps.get_source_tag.outputs.SOURCE_TAG }}.txt
           asset_content_type: text/plain
