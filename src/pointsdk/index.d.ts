@@ -129,6 +129,8 @@ export type PointType = {
         send: <T>(request: WalletSendRequest) => Promise<T>;
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
+        decryptSymmetricKey: <T>(request: DecryptDataRequest) => Promise<T>;
+        decryptDataWithDecryptedKey: <T>(request: DecryptDataRequest) => Promise<T>;
     };
     identity: {
         ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
