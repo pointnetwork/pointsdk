@@ -101,6 +101,14 @@ export type ZProxyWS = WebSocket & {
     ) => Promise<() => Promise<T>>;
 };
 
+export type IdentityData = {
+    identityRegistred: boolean;
+    identity: string;
+    address: string;
+    publicKey: string;
+    network: "solana" | "ethereum" | "point";
+};
+
 export type PointType = {
     version: string;
     status: {
@@ -135,5 +143,6 @@ export type PointType = {
         publicKeyByIdentity: <T>(
             request: PublicKeyByIdentityRequest,
         ) => Promise<T>;
+        me: () => Promise<IdentityData>;
     };
 };

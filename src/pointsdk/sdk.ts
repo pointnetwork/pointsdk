@@ -20,6 +20,7 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
+    IdentityData,
 } from "./index.d";
 
 const getSdk = (host: string, version: string): PointType => {
@@ -766,6 +767,12 @@ const getSdk = (host: string, version: string): PointType => {
                 api.get<T>(
                     `identity/ownerToIdentity/${owner}`,
                     args,
+                    getAuthHeaders(),
+                ),
+            me: () =>
+                api.get<IdentityData>(
+                    "identity/isIdentityRegistered/",
+                    undefined,
                     getAuthHeaders(),
                 ),
         },
