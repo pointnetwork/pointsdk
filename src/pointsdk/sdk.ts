@@ -680,9 +680,9 @@ const getSdk = (host: string, version: string): PointType => {
                 : {}),
             publicKey: () =>
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
-            balance: (network = "ynet") =>
+            balance: (network = "default") =>
                 api.get<number>("wallet/balance", { network }),
-            send: async ({ to, network = "ynet", value }) => {
+            send: async ({ to, network = "default", value }) => {
                 if (!window.point.networks[network]) {
                     throw new Error(`Unknown network ${network}`);
                 }

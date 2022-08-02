@@ -9,7 +9,7 @@ browser.storage.local.get("chainIdGlobal").then((res) => {
     if (!res.chainIdGlobal) {
         browser.storage.local
             .set({
-                chainIdGlobal: "ynet",
+                chainIdGlobal: "default",
             })
             .catch((e) => {
                 console.error("Failed to set default chain id to storage ", e);
