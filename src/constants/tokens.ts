@@ -1,5 +1,5 @@
 const TOKENS = {
-    ynet: [],
+    default: [],
     rinkeby: [
         {
             name: "USDC",

@@ -1,5 +1,5 @@
 const NETWORKS = {
-    ynet: {
+    default: {
         name: "Ynet",
         type: "eth",
         currency: "yPoint",
