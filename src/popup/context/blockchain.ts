@@ -21,7 +21,7 @@ export const useBlockchain = () => {
                 browser.storage.local.get("chainIdGlobal"),
                 browser.tabs.query({ active: true }),
             ]);
-            setGlobalChainId(globalChainIdRes.chainIdGlobal ?? "ynet");
+            setGlobalChainId(globalChainIdRes.chainIdGlobal ?? "default");
             if (tabs[0] && tabs[0].url?.startsWith("https://")) {
                 const url = new URL(tabs[0].url);
                 setHost(url.host);
