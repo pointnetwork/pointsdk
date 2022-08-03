@@ -12,6 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import useConfirmationWindow from "./hook";
 import { useLocation } from "react-router-dom";
 import browser from "webextension-polyfill";
+import { DecodedTxInput } from "../pointsdk/index.d";
 
 const theme = createTheme({
     typography: {
@@ -32,9 +33,20 @@ const ConfirmationWindow = () => {
         () => JSON.parse(decodeURIComponent(query.get("params") as string)),
         [query],
     );
+
+    const decodedTxData = useMemo((): DecodedTxInput | null => {
+        try {
+            const str = query.get("decodedTxData");
+            return str ? (JSON.parse(str) as DecodedTxInput) : null;
+        } catch {
+            return null;
+        }
+    }, [query]);
+
     const { params, loading } = useConfirmationWindow(
         rawParams,
         query.get("network") as string,
+        decodedTxData,
     );
 
     const handleAllow: ReactEventHandler = async () => {

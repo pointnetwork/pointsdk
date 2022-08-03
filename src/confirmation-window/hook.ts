@@ -2,15 +2,42 @@ import { useCallback, useEffect, useState } from "react";
 import { formatEther } from "@ethersproject/units";
 import { BigNumber } from "@ethersproject/bignumber";
 import { generate } from "geopattern";
-import { Network } from "pointsdk/types/networks";
 import browser from "webextension-polyfill";
+import { DecodedTxInput } from "../pointsdk/index.d";
 
 const useConfirmationWindow = (
     rawParams: Record<string, string>,
     network: string,
+    decodedTxData: DecodedTxInput | null,
 ) => {
     const [params, setParams] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
+
+    const renderDecodedTxData = () => {
+        if (!decodedTxData) {
+            return "";
+        }
+
+        let html = "";
+        html += "<div style='marin-bottom: 8px;'>";
+        html += "<p style='color: #9e9e9e; margin: 8px 0;'>Contract Method: ";
+        html += `<span style='color: #7c4dff; font-weight: bold;'>${decodedTxData.name}</span>`;
+        html += "</p>";
+
+        if (decodedTxData.params && decodedTxData.params.length > 0) {
+            html += "<div>";
+            html += "<p style='color: #9e9e9e;'>Method Params:</p>";
+            html += "<ul style='margin-left: 32px;'>";
+            decodedTxData.params.forEach((p) => {
+                html += `<li style='color: #9e9e9e;'>${p.name}: ${p.value}</li>`;
+            });
+            html += "</ul>";
+            html += "</div>";
+        }
+
+        html += "</div>";
+        return html;
+    };
 
     const processParams = useCallback(async () => {
         setLoading(true);
@@ -64,6 +91,19 @@ const useConfirmationWindow = (
                         )}</span> ${networks[network]?.currency_name ?? "Eth"}`;
                         break;
                     case "data":
+                        const rawData = `<span style="color: #9e9e9e;">${
+                            typeof rawParams[key] === "string"
+                                ? rawParams[key]
+                                : JSON.stringify(rawParams[key])
+                        }</span>`;
+
+                        if (!decodedTxData) {
+                            processedParams["data"] = rawData;
+                        } else {
+                            processedParams["data"] = renderDecodedTxData();
+                            processedParams["data (raw)"] = rawData;
+                        }
+                        break;
                     default:
                         processedParams[key] = `<span style="color: #9e9e9e;">${
                             typeof rawParams[key] === "string"

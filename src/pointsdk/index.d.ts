@@ -26,6 +26,7 @@ export type ContractSendRequest = {
     method: string;
     params?: unknown[];
     value: string;
+    meta?: Record<string, string>;
 };
 
 export type WalletSendRequest = {
@@ -145,4 +146,15 @@ export type PointType = {
         ) => Promise<T>;
         me: () => Promise<IdentityData>;
     };
+};
+
+type Param = {
+    name: string;
+    value: string;
+    type: string;
+};
+
+export type DecodedTxInput = {
+    name: string;
+    params: Param[];
 };
