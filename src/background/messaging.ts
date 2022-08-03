@@ -42,6 +42,7 @@ socket.onmessage = (e) => {
                 payload.request.__hostname,
                 payload.data.network,
                 params,
+                payload.data.decodedTxData,
             );
         } else {
             responseHandlers[payload.request.__point_id](payload.data);

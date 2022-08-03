@@ -619,6 +619,7 @@ const getSdk = (host: string, version: string): PointType => {
                 });
 
                 return window.top.ethereum.request({
+                    meta: { contract },
                     method: "eth_sendTransaction",
                     params: [
                         {
