@@ -1,8 +1,8 @@
 const NETWORKS = {
     ynet: {
-        name: "Ynet",
+        name: "Xnet",
         type: "eth",
-        currency: "yPoint",
+        currency: "xPoint",
     },
     rinkeby: {
         name: "Rinkeby",
