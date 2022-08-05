@@ -4,10 +4,9 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import SendIcon from "@mui/icons-material/Send";
 import { BlockchainContext } from "pointsdk/popup/context/blockchain";
-import NETWORKS from "pointsdk/constants/networks";
 
 const Balance: FunctionComponent = () => {
-    const { balance, chainId } = useContext(BlockchainContext);
+    const { balance, chainId, networks } = useContext(BlockchainContext);
 
     return (
         <Box p={1} mb={1}>
@@ -19,7 +18,7 @@ const Balance: FunctionComponent = () => {
                     {balance}
                 </Typography>
                 <Typography>
-                    {NETWORKS[chainId]?.currency.toUpperCase()}
+                    {networks[chainId]?.currency_name.toUpperCase()}
                 </Typography>
             </Box>
             <Button size="small" variant="contained" endIcon={<SendIcon />}>
