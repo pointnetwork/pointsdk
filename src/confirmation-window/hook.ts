@@ -96,9 +96,12 @@ const useConfirmationWindow = (
 
     const drawBg = async () => {
         try {
-            const hash = await window.point.wallet.hash();
-            const pattern = generate(String(hash)).toDataUrl();
-            document.body.style.backgroundImage = pattern;
+            const {
+                data: { hash },
+            } = await window.point.wallet.hash();
+            document.body.style.backgroundImage = generate(
+                String(hash),
+            ).toDataUrl();
         } catch (e) {
             console.error(e);
         }
