@@ -1,35 +1,57 @@
 import browser from "webextension-polyfill";
 import { createContext, useEffect, useState } from "react";
 import { SelectChangeEvent } from "@mui/material/Select";
-import NETWORKS from "pointsdk/constants/networks";
+import { Network } from "pointsdk/types/networks";
 
 export const useBlockchain = () => {
     const [loading, setLoading] = useState<boolean>(false);
+    const [networks, setNetworks] = useState<Record<string, Network>>({});
+    const [defaultNetwork, setDefaultNetwork] = useState("");
     const [globalChainId, setGlobalChainId] = useState<string>("");
     const [host, setHost] = useState<string | null>(null);
     const [hostChainId, setHostChainId] = useState<string>("_unset");
     const [userData, setUserData] = useState({ address: "", identity: "" });
     const [balance, setBalance] = useState("");
 
-    const chainId = (
-        !hostChainId || hostChainId === "_unset" ? globalChainId : hostChainId
-    ) as keyof typeof NETWORKS;
+    const chainId =
+        !hostChainId || hostChainId === "_unset" ? globalChainId : hostChainId;
 
     const getCurrentChainIds = async () => {
         try {
+            const [networksRes, defaultNetworkRes] = await Promise.all([
+                browser.storage.local.get("networks"),
+                browser.storage.local.get("default_network"),
+            ]);
+            const allNetworks = JSON.parse(networksRes.networks);
+            setNetworks(allNetworks);
+            setDefaultNetwork(defaultNetworkRes.default_network);
+
             const [globalChainIdRes, tabs] = await Promise.all([
                 browser.storage.local.get("chainIdGlobal"),
                 browser.tabs.query({ active: true }),
             ]);
-            setGlobalChainId(globalChainIdRes.chainIdGlobal ?? "default");
+
+            if (
+                !globalChainIdRes.chainIdGlobal ||
+                !(globalChainIdRes.chainIdGlobal in allNetworks)
+            ) {
+                setGlobalChainId(defaultNetworkRes.default_network);
+            } else {
+                setGlobalChainId(globalChainIdRes.chainIdGlobal);
+            }
             if (tabs[0] && tabs[0].url?.startsWith("https://")) {
                 const url = new URL(tabs[0].url);
                 setHost(url.host);
                 const hostChainIdRes = await browser.storage.local.get(
                     `chainId_${url.host}`,
                 );
-                if (hostChainIdRes[`chainId_${url.host}`]) {
+                if (
+                    hostChainIdRes[`chainId_${url.host}`] &&
+                    hostChainIdRes[`chainId_${url.host}`] in allNetworks
+                ) {
                     setHostChainId(hostChainIdRes[`chainId_${url.host}`]);
+                } else {
+                    setHostChainId("_unset");
                 }
             } else {
                 setHost(null);
@@ -89,6 +111,8 @@ export const useBlockchain = () => {
     return {
         loading,
         host,
+        networks,
+        defaultNetwork,
         globalChainId,
         hostChainId,
         chainId,
