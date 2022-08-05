@@ -6,7 +6,6 @@ import React, {
     useState,
 } from "react";
 import { Box, Divider } from "@mui/material";
-import TOKENS from "pointsdk/constants/tokens";
 import { BlockchainContext } from "pointsdk/popup/context/blockchain";
 import ERC20Abi from "pointsdk/abi/ERC20.json";
 import { Contract } from "@ethersproject/contracts";
@@ -19,14 +18,14 @@ const Tokens: FunctionComponent = () => {
     const [balances, setBalances] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
-    const { globalChainId, userData } = useContext(BlockchainContext);
+    const { globalChainId, userData, networks } = useContext(BlockchainContext);
 
     const getBalances = async () => {
         setError(false);
         setLoading(true);
         try {
             const responses = await Promise.all(
-                TOKENS[globalChainId as "rinkeby"].map(async (token) => {
+                (networks[globalChainId]!.tokens ?? []).map(async (token) => {
                     const contract = new Contract(
                         token.address,
                         ERC20Abi,
@@ -47,7 +46,7 @@ const Tokens: FunctionComponent = () => {
 
     useEffect(() => {
         if (window.ethereum && globalChainId && userData.address) {
-            if (TOKENS[globalChainId]) {
+            if (networks[globalChainId]!.tokens) {
                 void getBalances();
             } else {
                 setBalances([]);
@@ -55,7 +54,7 @@ const Tokens: FunctionComponent = () => {
         }
     }, [globalChainId, userData, window.ethereum]);
 
-    const tokens = TOKENS[globalChainId as "rinkeby"] ?? [];
+    const tokens = networks[globalChainId]?.tokens ?? [];
 
     return (
         <Box>
