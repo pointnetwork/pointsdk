@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { formatEther } from "@ethersproject/units";
-import NETWORKS from "pointsdk/constants/networks";
 import { BigNumber } from "@ethersproject/bignumber";
 import { generate } from "geopattern";
+import { Network } from "pointsdk/types/networks";
+import browser from "webextension-polyfill";
 
 const useConfirmationWindow = (
     rawParams: Record<string, string>,
@@ -15,6 +16,13 @@ const useConfirmationWindow = (
         setLoading(true);
         const processedParams: Record<string, string> = {};
         let userAddress;
+        let networks;
+        try {
+            const networksRes = await browser.storage.local.get("networks");
+            networks = JSON.parse(networksRes.networks);
+        } catch (e) {
+            console.error("Failed to get networks", e);
+        }
         try {
             const { data } = await window.point.wallet.address();
             userAddress = data.address;
@@ -53,7 +61,7 @@ const useConfirmationWindow = (
                             key
                         ] = `<span style="color: #7c4dff; font-weight: bold;">${formatEther(
                             rawParams[key],
-                        )}</span> ${NETWORKS[network]?.currency ?? "Eth"}`;
+                        )}</span> ${networks[network]?.currency_name ?? "Eth"}`;
                         break;
                     case "data":
                     default:
@@ -76,7 +84,7 @@ const useConfirmationWindow = (
                     BigNumber.from(rawParams.value)
                         .add(rawParams.gasPrice)
                         .toString(),
-                )}</span> ${NETWORKS[network]?.currency ?? "Eth"}`;
+                )}</span> ${networks[network]?.currency_name ?? "Eth"}`;
             } catch (e) {
                 console.error("Failed to calculate");
             }
@@ -86,7 +94,7 @@ const useConfirmationWindow = (
         setLoading(false);
     }, [rawParams, network, setParams, setLoading]);
 
-    const drawBg = useCallback(async () => {
+    const drawBg = async () => {
         try {
             const hash = await window.point.wallet.hash();
             const pattern = generate(String(hash)).toDataUrl();
@@ -94,7 +102,7 @@ const useConfirmationWindow = (
         } catch (e) {
             console.error(e);
         }
-    }, []);
+    };
     useEffect(() => {
         void processParams();
         void drawBg();
