@@ -788,8 +788,6 @@ const getSdk = (host: string, version: string): PointType => {
             ? {
                   point: {
                       wallet_send: async ({ to, network, value }) => {
-                          const networks = window.point.networks;
-                          console.log("send", networks);
                           const messageId = String(Math.random());
                           await Promise.all([
                               waitForNodeResponse(messageId),
