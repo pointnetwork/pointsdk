@@ -33,10 +33,6 @@ const ConfirmationWindow = () => {
         () => JSON.parse(decodeURIComponent(query.get("params") as string)),
         [query],
     );
-    const { params, loading } = useConfirmationWindow(
-        rawParams,
-        query.get("network") as string,
-    );
 
     const decodedTxData = useMemo((): DecodedTxInput | null => {
         try {
