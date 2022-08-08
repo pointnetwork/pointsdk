@@ -26,6 +26,13 @@ export type ContractSendRequest = {
     method: string;
     params?: unknown[];
     value: string;
+    meta?: Record<string, string>;
+};
+
+export type WalletSendRequest = {
+    to: string;
+    network?: string;
+    value: number;
 };
 
 export type WalletSendRequest = {
@@ -101,6 +108,14 @@ export type ZProxyWS = WebSocket & {
     ) => Promise<() => Promise<T>>;
 };
 
+export type IdentityData = {
+    identityRegistred: boolean;
+    identity: string;
+    address: string;
+    publicKey: string;
+    network: "solana" | "ethereum" | "point";
+};
+
 export type PointType = {
     version: string;
     status: {
@@ -138,5 +153,17 @@ export type PointType = {
         publicKeyByIdentity: <T>(
             request: PublicKeyByIdentityRequest,
         ) => Promise<T>;
+        me: () => Promise<IdentityData>;
     };
+};
+
+type Param = {
+    name: string;
+    value: string;
+    type: string;
+};
+
+export type DecodedTxInput = {
+    name: string;
+    params: Param[];
 };

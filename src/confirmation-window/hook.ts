@@ -1,20 +1,55 @@
 import { useCallback, useEffect, useState } from "react";
 import { formatEther } from "@ethersproject/units";
-import NETWORKS from "pointsdk/constants/networks";
 import { BigNumber } from "@ethersproject/bignumber";
 import { generate } from "geopattern";
+import browser from "webextension-polyfill";
+import { DecodedTxInput } from "../pointsdk/index.d";
 
 const useConfirmationWindow = (
     rawParams: Record<string, string>,
     network: string,
+    decodedTxData: DecodedTxInput | null,
 ) => {
     const [params, setParams] = useState<Record<string, string>>({});
     const [loading, setLoading] = useState(false);
+
+    const renderDecodedTxData = () => {
+        if (!decodedTxData) {
+            return "";
+        }
+
+        let html = "";
+        html += "<div style='marin-bottom: 8px;'>";
+        html += "<p style='color: #9e9e9e; margin: 8px 0;'>Contract Method: ";
+        html += `<span style='color: #7c4dff; font-weight: bold;'>${decodedTxData.name}</span>`;
+        html += "</p>";
+
+        if (decodedTxData.params && decodedTxData.params.length > 0) {
+            html += "<div>";
+            html += "<p style='color: #9e9e9e;'>Method Params:</p>";
+            html += "<ul style='margin-left: 32px;'>";
+            decodedTxData.params.forEach((p) => {
+                html += `<li style='color: #9e9e9e;'>${p.name}: ${p.value}</li>`;
+            });
+            html += "</ul>";
+            html += "</div>";
+        }
+
+        html += "</div>";
+        return html;
+    };
 
     const processParams = useCallback(async () => {
         setLoading(true);
         const processedParams: Record<string, string> = {};
         let userAddress;
+        let networks;
+        try {
+            const networksRes = await browser.storage.local.get("networks");
+            networks = JSON.parse(networksRes.networks);
+        } catch (e) {
+            console.error("Failed to get networks", e);
+        }
         try {
             const { data } = await window.point.wallet.address();
             userAddress = data.address;
@@ -53,9 +88,22 @@ const useConfirmationWindow = (
                             key
                         ] = `<span style="color: #7c4dff; font-weight: bold;">${formatEther(
                             rawParams[key],
-                        )}</span> ${NETWORKS[network]?.currency ?? "Eth"}`;
+                        )}</span> ${networks[network]?.currency_name ?? "Eth"}`;
                         break;
                     case "data":
+                        const rawData = `<span style="color: #9e9e9e;">${
+                            typeof rawParams[key] === "string"
+                                ? rawParams[key]
+                                : JSON.stringify(rawParams[key])
+                        }</span>`;
+
+                        if (!decodedTxData) {
+                            processedParams["data"] = rawData;
+                        } else {
+                            processedParams["data"] = renderDecodedTxData();
+                            processedParams["data (raw)"] = rawData;
+                        }
+                        break;
                     default:
                         processedParams[key] = `<span style="color: #9e9e9e;">${
                             typeof rawParams[key] === "string"
@@ -76,7 +124,7 @@ const useConfirmationWindow = (
                     BigNumber.from(rawParams.value)
                         .add(rawParams.gasPrice)
                         .toString(),
-                )}</span> ${NETWORKS[network]?.currency ?? "Eth"}`;
+                )}</span> ${networks[network]?.currency_name ?? "Eth"}`;
             } catch (e) {
                 console.error("Failed to calculate");
             }
@@ -86,15 +134,18 @@ const useConfirmationWindow = (
         setLoading(false);
     }, [rawParams, network, setParams, setLoading]);
 
-    const drawBg = useCallback(async () => {
+    const drawBg = async () => {
         try {
-            const hash = await window.point.wallet.hash();
-            const pattern = generate(String(hash)).toDataUrl();
-            document.body.style.backgroundImage = pattern;
+            const {
+                data: { hash },
+            } = await window.point.wallet.hash();
+            document.body.style.backgroundImage = generate(
+                String(hash),
+            ).toDataUrl();
         } catch (e) {
             console.error(e);
         }
-    }, []);
+    };
     useEffect(() => {
         void processParams();
         void drawBg();

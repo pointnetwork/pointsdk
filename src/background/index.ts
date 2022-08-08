@@ -5,16 +5,23 @@ import {
     registerHandlerListener,
 } from "pointsdk/background/messaging";
 
-browser.storage.local.get("chainIdGlobal").then((res) => {
-    if (!res.chainIdGlobal) {
-        browser.storage.local
-            .set({
-                chainIdGlobal: "ynet",
-            })
-            .catch((e) => {
-                console.error("Failed to set default chain id to storage ", e);
-            });
+const setChainIds = async () => {
+    const networksRes = await fetch("https://point/v1/api/blockchain/networks");
+    const { networks, default_network } = await networksRes.json();
+    await browser.storage.local.set({
+        networks: JSON.stringify(networks),
+        default_network,
+    });
+    const { chainIdGlobal } = await browser.storage.local.get("chainIdGlobal");
+    if (!chainIdGlobal || !(chainIdGlobal in networks)) {
+        await browser.storage.local.set({
+            chainIdGlobal: default_network,
+        });
     }
+};
+
+setChainIds().catch((e) => {
+    console.error("Failed to fetch networks info from the node: ", e);
 });
 
 browser.runtime.onMessage.addListener(async (message, sender) => {

@@ -70,15 +70,53 @@ jobs:
       - name: "Rename addon file"
         run: mv ${{ steps.web-ext-sign.outputs.target }} web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
 
-      - name: "Create Release"
-        uses: softprops/action-gh-release@v1
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: |
-            ./src/manifest.json
-            web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
           tag_name: ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
           release_name: Release ${{ steps.get_source_tag.outputs.SOURCE_TAG }}
-          draft: false
-          prerelease: true
+          draft: true
+          prerelease: false
+
+      - name: Upload xpi file
+        id: upload_xpi
+        uses: pointnetwork/upload-release-asset@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: web-ext-artifacts/point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
+          asset_name: point_network-${{ steps.remove_v.outputs.value }}-an+fx.xpi
+          asset_content_type: application/octet-stream
+
+      - name: Upload manifest
+        id: upload_manifest
+        uses: pointnetwork/upload-release-asset@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./src/manifest.json
+          asset_name: manifest.json
+          asset_content_type: text/plain
+
+      - name: Generate sha256 file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ./sha256
+          contents: |
+            ${{ steps.upload_xpi.outputs.asset_name }}: ${{ steps.upload_xpi.outputs.asset_hash }}
+            ${{ steps.upload_manifest.outputs.asset_name }}: ${{ steps.upload_manifest.outputs.asset_hash }}
+
+      - name: Upload sha256 file
+        uses: pointnetwork/upload-release-asset@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./sha256
+          asset_name: sha256-${{ steps.get_source_tag.outputs.SOURCE_TAG }}.txt
+          asset_content_type: text/plain

@@ -7,14 +7,21 @@ export const displayConfirmationWindow = async (
     host: string,
     network: string,
     params = {},
+    decodedTxData = {},
 ) => {
+    const query = new URLSearchParams();
+    query.append("reqId", reqId);
+    query.append("pointId", pointId);
+    query.append("host", host);
+    query.append("network", network);
+    query.append("params", JSON.stringify(params));
+    query.append("decodedTxData", JSON.stringify(decodedTxData));
+
     const win = await browser.windows.create({
         type: "detached_panel",
-        url: `./confirmation-window/index.html?reqId=${reqId}&pointId=${pointId}&host=${host}&network=${network}&params=${encodeURIComponent(
-            JSON.stringify(params),
-        )}`,
         width: 400,
         height: 600,
+        url: `./confirmation-window/index.html?${query.toString()}`,
     });
     windowId = win.id!;
 };

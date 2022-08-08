@@ -12,6 +12,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 import useConfirmationWindow from "./hook";
 import { useLocation } from "react-router-dom";
 import browser from "webextension-polyfill";
+import { DecodedTxInput } from "../pointsdk/index.d";
 
 const theme = createTheme({
     typography: {
@@ -37,6 +38,21 @@ const ConfirmationWindow = () => {
         query.get("network") as string,
     );
 
+    const decodedTxData = useMemo((): DecodedTxInput | null => {
+        try {
+            const str = query.get("decodedTxData");
+            return str ? (JSON.parse(str) as DecodedTxInput) : null;
+        } catch {
+            return null;
+        }
+    }, [query]);
+
+    const { params, loading } = useConfirmationWindow(
+        rawParams,
+        query.get("network") as string,
+        decodedTxData,
+    );
+
     const handleAllow: ReactEventHandler = async () => {
         await browser.runtime.sendMessage({
             confirm: true,
@@ -54,8 +70,19 @@ const ConfirmationWindow = () => {
 
     return (
         <ThemeProvider theme={theme}>
-            <Box px="1rem" py="1.25rem" bgcolor="white">
+            <Box
+                display="flex"
+                flexDirection="column"
+                bgcolor="white"
+                height="95vh"
+                overflow="hidden"
+                m={1.5}
+                borderRadius={3}
+            >
                 <Typography
+                    px={2}
+                    pb={1}
+                    pt={2}
                     sx={{
                         overflowWrap: "break-word",
                         wordWrap: "break-word",
@@ -67,8 +94,10 @@ const ConfirmationWindow = () => {
                     is trying to send a transaction
                 </Typography>
                 <Box
+                    mx={2}
+                    flex={1}
+                    sx={{ overflowY: "scroll" }}
                     p="0.8rem"
-                    my="1rem"
                     bgcolor={blueGrey[50]}
                     borderRadius={2}
                 >
@@ -106,7 +135,13 @@ const ConfirmationWindow = () => {
                         ))
                     )}
                 </Box>
-                <Box display="flex" justifyContent="flex-end" gap={1} mb={3}>
+                <Box
+                    px={2}
+                    py={1.5}
+                    display="flex"
+                    justifyContent="flex-end"
+                    gap={1}
+                >
                     <Button variant="contained" onClick={handleAllow}>
                         Allow
                     </Button>

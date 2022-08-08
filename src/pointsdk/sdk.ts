@@ -20,6 +20,7 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
+    IdentityData,
 } from "./index.d";
 
 const getSdk = (host: string, version: string): PointType => {
@@ -640,6 +641,7 @@ const getSdk = (host: string, version: string): PointType => {
                 });
 
                 return window.top.ethereum.request({
+                    meta: { contract },
                     method: "eth_sendTransaction",
                     params: [
                         {
@@ -702,13 +704,21 @@ const getSdk = (host: string, version: string): PointType => {
                 : {}),
             publicKey: () =>
                 api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
-            balance: (network = "ynet") =>
-                api.get<number>("wallet/balance", { network }),
-            send: async ({ to, network = "ynet", value }) => {
-                if (!window.point.networks[network]) {
-                    throw new Error(`Unknown network ${network}`);
+            balance: (network) => {
+                if (!network) {
+                    throw new Error("No network specified");
                 }
-                switch (window.point.networks[network].type) {
+                return api.get<number>("wallet/balance", { network });
+            },
+            send: async ({ to, network, value }) => {
+                const { networks, default_network } = await api.get(
+                    "blockchain/networks",
+                );
+                const chain = network ?? default_network;
+                if (!networks[chain]) {
+                    throw new Error(`Unknown network ${chain}`);
+                }
+                switch (networks[chain].type) {
                     case "eth":
                         const accounts = await window.top.ethereum.request({
                             method: "eth_requestAccounts",
@@ -723,7 +733,7 @@ const getSdk = (host: string, version: string): PointType => {
                                     value,
                                 },
                             ],
-                            network,
+                            chain,
                         });
                     case "solana":
                         return window.top.solana.request({
@@ -734,11 +744,11 @@ const getSdk = (host: string, version: string): PointType => {
                                     lamports: value,
                                 },
                             ],
-                            network,
+                            chain,
                         });
                     default:
                         throw new Error(
-                            `Unexpected network type ${window.point.networks[network].type}`,
+                            `Unexpected network type ${networks[chain].type}`,
                         );
                 }
             },
@@ -807,6 +817,12 @@ const getSdk = (host: string, version: string): PointType => {
                 api.get<T>(
                     `identity/ownerToIdentity/${owner}`,
                     args,
+                    getAuthHeaders(),
+                ),
+            me: () =>
+                api.get<IdentityData>(
+                    "identity/isIdentityRegistered/",
+                    undefined,
                     getAuthHeaders(),
                 ),
         },
