@@ -3,6 +3,7 @@ import ThemeProvider from "@mui/material/styles/ThemeProvider";
 import createTheme from "@mui/material/styles/createTheme";
 import deepPurple from "@mui/material/colors/deepPurple";
 import blueGrey from "@mui/material/colors/blueGrey";
+import grey from "@mui/material/colors/grey";
 
 const theme = createTheme({
     typography: {
@@ -12,6 +13,9 @@ const theme = createTheme({
         primary: {
             main: deepPurple.A200,
             light: blueGrey[50],
+        },
+        text: {
+            secondary: grey[500],
         },
     },
 });
