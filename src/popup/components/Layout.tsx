@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import { BlockchainContext } from "../context/blockchain";
-import UIThemeProvider from "./UIThemeProvider";
+import UIThemeProvider from "pointsdk/theme/UIThemeProvider";
 import NetworkSwitcher from "./NetworkSwitcher";
 import UserData from "./UserData";
 import Links from "./Links";
