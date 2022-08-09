@@ -1,4 +1,5 @@
 import React from "react";
+import browser from "webextension-polyfill";
 
 const { version } = browser.runtime.getManifest();
 
