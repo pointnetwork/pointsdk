@@ -145,7 +145,10 @@ const getSdk = (host: string, version: string): PointType => {
                 {
                     method: "POST",
                     headers,
-                    body: JSON.stringify(body),
+                    body: JSON.stringify({
+                        ...body,
+                        _csrf: window.localStorage.getItem("csrf_token"),
+                    }),
                 },
                 internal,
             );
