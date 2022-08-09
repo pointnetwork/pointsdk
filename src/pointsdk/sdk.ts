@@ -547,6 +547,7 @@ const getSdk = (host: string, version: string): PointType => {
                         return { data: decodedRes.data[0] };
                     case "nonpayable":
                         return window.top.ethereum.request({
+                            meta: { contract },
                             method: "eth_sendTransaction",
                             params: [
                                 {
