@@ -673,6 +673,10 @@ const getSdk = (host: string, version: string): PointType => {
             postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
+            getFile: async ({ id }) => {
+                const res = await window.top.fetch(`_storage/${id}`);
+                return res.blob();
+            },
             putString: <T>(data: StoragePutStringRequest) =>
                 api.post<T>("storage/putString", data, getAuthHeaders()),
         },
