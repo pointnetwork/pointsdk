@@ -495,6 +495,15 @@ const getSdk = (host: string, version: string): PointType => {
                 method,
                 params,
             }: ContractCallRequest) => {
+                if (window.top.IS_GATEWAY) {
+                    const res = await api.post("contract/safe_call", {
+                        contract,
+                        method,
+                        params,
+                    });
+                    return res.data;
+                }
+
                 const {
                     data: { abi, address },
                 } = await api.get(
