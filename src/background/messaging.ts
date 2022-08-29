@@ -3,6 +3,7 @@ import {
     closeConfirmationWindow,
     displayConfirmationWindow,
 } from "./confirmationWindowApi";
+import { sign } from "jsonwebtoken";
 
 const socket = new WebSocket("wss://point/ws?token=POINTSDK_TOKEN");
 
@@ -125,3 +126,13 @@ export const registerHandlerListener = async (message: any) =>
     new Promise<unknown>((resolve) => {
         responseHandlers[message.messageId] = resolve;
     });
+export const setAuthTokenHandler = async (message: any) => {
+    await browser.storage.local.set({ point_token: message.token });
+    return { ok: true };
+};
+
+export const getAuthTokenHandler = async () => {
+    const { point_token } = await browser.storage.local.get("point_token");
+    const jwt = sign("point_token", point_token);
+    return { token: jwt };
+};

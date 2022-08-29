@@ -3,6 +3,8 @@ import {
     rpcListener,
     confirmationWindowListener,
     registerHandlerListener,
+    setAuthTokenHandler,
+    getAuthTokenHandler,
 } from "pointsdk/background/messaging";
 
 const setChainIds = async () => {
@@ -27,16 +29,34 @@ setChainIds().catch((e) => {
 browser.runtime.onMessage.addListener(async (message, sender) => {
     if (sender.url?.match("confirmation-window")) {
         return confirmationWindowListener(message);
-    } else if (message.__message_type === "rpc") {
-        return rpcListener(message);
-    } else if (message.__message_type === "registerHandler") {
-        return registerHandlerListener(message);
-    } else {
-        console.error(
-            "Unexpected runtime message: ",
-            message,
-            " from sender: ",
-            sender,
-        );
+    }
+    switch (message.__message_type) {
+        case "rpc":
+            return rpcListener(message);
+        case "registerHandler":
+            return registerHandlerListener(message);
+        case "setAuthToken":
+            if (!sender.url?.match(/^https:\/\/point/)) {
+                console.error(
+                    "Attempt to set auth token from unauthorized host",
+                );
+                break;
+            }
+            return setAuthTokenHandler(message);
+        case "getAuthToken":
+            if (!sender.url?.match(/^https:\/\/point/)) {
+                console.error(
+                    "Attempt to set auth token from unauthorized host",
+                );
+                break;
+            }
+            return getAuthTokenHandler();
+        default:
+            console.error(
+                "Unexpected runtime message: ",
+                message,
+                " from sender: ",
+                sender,
+            );
     }
 });
