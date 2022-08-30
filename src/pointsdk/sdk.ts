@@ -569,6 +569,7 @@ const getSdk = (host: string, version: string): PointType => {
                         return { data: decodedRes.data[0] };
                     case "nonpayable":
                         return window.top.ethereum.request({
+                            meta: { contract },
                             method: "eth_sendTransaction",
                             params: [
                                 {
@@ -695,6 +696,10 @@ const getSdk = (host: string, version: string): PointType => {
             encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities, metadata),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
+            getFile: async ({ id }) => {
+                const res = await window.top.fetch(`_storage/${id}`);
+                return res.blob();
+            },
             putString: <T>(data: StoragePutStringRequest) =>
                 api.post<T>("storage/putString", data, getAuthHeaders()),
         },

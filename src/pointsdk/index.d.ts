@@ -134,6 +134,7 @@ export type PointType = {
         postFile: <T>(request: FormData) => Promise<T>;
         encryptAndPostFile: <T>(request: FormData, identities: string[], metadata?: string[]) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
+        getFile: (config: { id: string }) => Promise<Blob>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
     };
     wallet: {
