@@ -8,7 +8,15 @@ import {
 } from "pointsdk/background/messaging";
 
 const setChainIds = async () => {
-    const networksRes = await fetch("https://point/v1/api/blockchain/networks");
+    const token = (await getAuthTokenHandler()).token;
+    const networksRes = await fetch(
+        "https://point/v1/api/blockchain/networks",
+        {
+            headers: {
+                "X-Point-Token": `Bearer ${token}`,
+            },
+        },
+    );
     const { networks, default_network } = await networksRes.json();
     await browser.storage.local.set({
         networks: JSON.stringify(networks),

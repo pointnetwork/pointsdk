@@ -133,6 +133,6 @@ export const setAuthTokenHandler = async (message: any) => {
 
 export const getAuthTokenHandler = async () => {
     const { point_token } = await browser.storage.local.get("point_token");
-    const jwt = sign("point_token", point_token);
+    const jwt = sign("point_token", point_token, { expiresIn: "10s" });
     return { token: jwt };
 };
