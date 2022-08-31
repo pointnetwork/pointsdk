@@ -18,7 +18,7 @@ window.addEventListener("message", async (e) => {
                 __direction: "to_page",
             });
         } catch (err) {
-            console.error("Error processing request: ", err, e.data);
+            console.error("Error processing request: ", err);
         }
     }
 });
