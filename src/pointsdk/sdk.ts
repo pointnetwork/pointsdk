@@ -257,7 +257,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return;
             }
 
-            const ws = new WebSocket(`${host}?token=POINTSDK_TOKEN`);
+            const ws = new WebSocket(host);
 
             ws.onopen = () =>
                 resolve(
@@ -268,6 +268,7 @@ const getSdk = (host: string, version: string): PointType => {
                             const metaData = {
                                 type: SUBSCRIPTION_REQUEST_TYPES.SUBSCRIBE,
                                 params,
+                                __point_token: await getAuthToken(),
                             };
                             const requestId =
                                 getSubscriptionRequestId(metaData);
@@ -310,11 +311,13 @@ const getSdk = (host: string, version: string): PointType => {
                                     }
                                 },
                                 {
-                                    unsubscribe() {
+                                    async unsubscribe() {
                                         return ws.send(
                                             JSON.stringify({
                                                 type: SUBSCRIPTION_REQUEST_TYPES.UNSUBSCRIBE,
                                                 params: { subscriptionId },
+                                                __point_token:
+                                                    await getAuthToken(),
                                             }),
                                         );
                                     },

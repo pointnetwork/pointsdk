@@ -5,7 +5,7 @@ import {
 } from "./confirmationWindowApi";
 import { sign } from "jsonwebtoken";
 
-const socket = new WebSocket("wss://point/ws?token=POINTSDK_TOKEN");
+const socket = new WebSocket("wss://point/ws");
 
 const responseHandlers: Record<string, (v: unknown) => void> = {};
 
@@ -89,6 +89,7 @@ export const rpcListener = async (message: any) => {
         network,
         type: "rpc",
         __point_id: messageId,
+        __point_token: (await getAuthToken()).token,
     };
     console.log("Sending msg to node: ", msg);
     socket.send(JSON.stringify(msg));
@@ -104,6 +105,7 @@ export const confirmationWindowListener = async (message: any) => {
             method: "eth_confirmTransaction",
             type: "rpc",
             __point_id: message.pointId,
+            __point_token: (await getAuthToken()).token,
             params: [
                 {
                     reqId: message.reqId,
@@ -131,8 +133,10 @@ export const setAuthTokenHandler = async (message: any) => {
     return { ok: true };
 };
 
-export const getAuthTokenHandler = async () => {
+export const getAuthToken = async () => {
     const { point_token } = await browser.storage.local.get("point_token");
-    const jwt = sign("point_token", point_token, { expiresIn: "10s" });
+    const jwt = sign({ payload: "point_token" }, point_token, {
+        expiresIn: "10s",
+    });
     return { token: jwt };
 };

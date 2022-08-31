@@ -4,11 +4,11 @@ import {
     confirmationWindowListener,
     registerHandlerListener,
     setAuthTokenHandler,
-    getAuthTokenHandler,
+    getAuthToken,
 } from "pointsdk/background/messaging";
 
 const setChainIds = async () => {
-    const token = (await getAuthTokenHandler()).token;
+    const token = (await getAuthToken()).token;
     const networksRes = await fetch(
         "https://point/v1/api/blockchain/networks",
         {
@@ -32,12 +32,12 @@ const setChainIds = async () => {
 
 setChainIds().catch((e) => {
     console.error("Failed to fetch networks info from the node: ", e);
+    setTimeout(() => {
+        void setChainIds();
+    }, 1000); // hack for the 1st launch, when the token is not set yet
 });
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
-    if (sender.url?.match("confirmation-window")) {
-        return confirmationWindowListener(message);
-    }
     switch (message.__message_type) {
         case "rpc":
             return rpcListener(message);
@@ -52,14 +52,11 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             }
             return setAuthTokenHandler(message);
         case "getAuthToken":
-            if (!sender.url?.match(/^https:\/\/point/)) {
-                console.error(
-                    "Attempt to set auth token from unauthorized host",
-                );
-                break;
-            }
-            return getAuthTokenHandler();
+            return getAuthToken();
         default:
+            if (sender.url?.match("confirmation-window")) {
+                return confirmationWindowListener(message);
+            }
             console.error(
                 "Unexpected runtime message: ",
                 message,
