@@ -1,6 +1,6 @@
 {
     "name": "pointnetwork-browser-extension",
-    "version": "0.0.19",
+    "version": "0.0.24",
     "description": "Point Browser Extension",
     "alias": {
         "pointsdk": "./src"
@@ -70,7 +70,7 @@
     },
     "scripts": {
         "start": "npm run cleanup && parcel src/manifest.json --host localhost --target dev",
-        "build": "npm run cleanup && parcel build src/manifest.json --target prod",
+        "build": "npm run cleanup && parcel build src/manifest.json --target prod --no-source-maps",
         "cleanup": "rm -rf dist .cache .parcel-cache",
         "test": "jest --config=jest.config.js",
         "lint": "eslint -c ./.eslintrc.js \"src/**/*.ts*\"",

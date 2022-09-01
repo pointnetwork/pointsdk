@@ -35,12 +35,6 @@ export type WalletSendRequest = {
     value: number;
 };
 
-export type WalletSendRequest = {
-    to: string;
-    network?: string;
-    value: number;
-};
-
 export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];
 
 export type StorageGetRequest = { id: string; encoding?: string } & Record<
