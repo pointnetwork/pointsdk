@@ -183,16 +183,23 @@ const getSdk = (host: string, version: string): PointType => {
                 // headers NOT required when passing FormData object
             });
         },
-        encryptAndPostFile<T>(pathname: string, file: FormData, identities: string[], metadata?: string[]): Promise<T> {
-            let idsStr = '';
+        encryptAndPostFile<T>(
+            pathname: string,
+            file: FormData,
+            identities: string[],
+            metadata?: string[],
+        ): Promise<T> {
+            let idsStr = "";
             for (var i = 0; i < identities.length; i++) {
-                idsStr += identities[i] + (i < identities.length -1 ? ',' : '');
+                idsStr +=
+                    identities[i] + (i < identities.length - 1 ? "," : "");
             }
 
-            let metadataStr = '';
-            if(metadata){
+            let metadataStr = "";
+            if (metadata) {
                 for (var i = 0; i < metadata.length; i++) {
-                    metadataStr += metadata[i] + (i < metadata.length -1 ? ',' : '');
+                    metadataStr +=
+                        metadata[i] + (i < metadata.length - 1 ? "," : "");
                 }
             }
 
@@ -200,9 +207,9 @@ const getSdk = (host: string, version: string): PointType => {
                 method: "POST",
                 body: file,
                 headers: {
-                    'identities': idsStr,
-                    'metadata': metadataStr
-                }
+                    identities: idsStr,
+                    metadata: metadataStr,
+                },
             });
         },
     };
@@ -714,12 +721,22 @@ const getSdk = (host: string, version: string): PointType => {
         },
         storage: {
             postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
-            encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities, metadata),
+            encryptAndPostFile: <T>(
+                file: FormData,
+                identities: string[],
+                metadata?: string[],
+            ) =>
+                api.encryptAndPostFile<T>(
+                    "_encryptedStorage/",
+                    file,
+                    identities,
+                    metadata,
+                ),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args),
             getFile: async ({ id }) => {
                 const token = await getAuthToken();
-                const res = await window.top.fetch(`_storage/${id}`, {
+                const res = await window.top.fetch(`${host}/_storage/${id}`, {
                     headers: {
                         "X-Point-Token": `Bearer ${token}`,
                     },
