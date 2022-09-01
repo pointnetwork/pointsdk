@@ -111,7 +111,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/prod/pointsdk/index.js
-          asset_name: pointsdk.js
+          asset_name: pointsdk-${{ steps.get_source_tag.outputs.SOURCE_TAG }}.js
           asset_content_type: text/javascript
 
       - name: Generate sha256 file
@@ -121,6 +121,7 @@ jobs:
           contents: |
             ${{ steps.upload_xpi.outputs.asset_name }}: ${{ steps.upload_xpi.outputs.asset_hash }}
             ${{ steps.upload_manifest.outputs.asset_name }}: ${{ steps.upload_manifest.outputs.asset_hash }}
+            ${{ steps.upload_sdk.outputs.asset_name }}: ${{ steps.upload_sdk.outputs.asset_hash }}
 
       - name: Upload sha256 file
         uses: pointnetwork/upload-release-asset@v2.0.0
