@@ -99,9 +99,20 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./src/manifest.json
+          asset_path: ./dist/prod/manifest.json
           asset_name: manifest.json
           asset_content_type: text/plain
+
+      - name: Upload compiled sdk
+        id: upload_sdk
+        uses: pointnetwork/upload-release-asset@v2.0.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/prod/pointsdk/index.js
+          asset_name: pointsdk.js
+          asset_content_type: text/javascript
 
       - name: Generate sha256 file
         uses: DamianReeves/write-file-action@master
