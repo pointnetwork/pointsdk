@@ -31,10 +31,28 @@ const getSdk = (host: string, version: string): PointType => {
     class SubscriptionRequestTimeout extends Error {}
     class SubscriptionError extends Error {}
 
-    // const getAuthHeaders = () => ({ Authorization: 'Basic ' + btoa('WALLETID-PASSCODE') });
-    const getAuthHeaders = (): HeadersInit => ({
-        "wallet-token": "WALLETID-PASSCODE",
-    });
+    const getAuthToken = async () =>
+        new Promise<string>((resolve) => {
+            const id = Math.random();
+
+            const handler = (e: MessageEvent) => {
+                if (
+                    e.data.__page_req_id === id &&
+                    e.data.__direction === "to_page"
+                ) {
+                    window.removeEventListener("message", handler);
+                    resolve(e.data.token);
+                }
+            };
+
+            window.addEventListener("message", handler);
+
+            window.postMessage({
+                __page_req_id: id,
+                __message_type: "getAuthToken",
+                __direction: "to_bg",
+            });
+        });
 
     const apiCall = async <T>(
         path: string,
@@ -42,6 +60,7 @@ const getSdk = (host: string, version: string): PointType => {
         internal?: boolean,
     ) => {
         try {
+            const token = await getAuthToken();
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
             const response = await window.top.fetch(
                 `${host}${internal ? "/point_api/" : "/v1/api/"}${path}`,
@@ -52,6 +71,7 @@ const getSdk = (host: string, version: string): PointType => {
                     ...config,
                     headers: {
                         "Content-Type": "application/json",
+                        "X-Point-Token": `Bearer ${token}`,
                         ...config?.headers,
                     },
                 },
@@ -83,13 +103,16 @@ const getSdk = (host: string, version: string): PointType => {
 
     const zproxyStorageCall = async <T>(path: string, config?: RequestInit) => {
         try {
+            const token = await getAuthToken();
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
             const response = await window.top.fetch(`${host}/${path}`, {
                 cache: "no-cache",
                 credentials: "include",
                 keepalive: true,
                 ...config,
-                //
+                headers: {
+                    "X-Point-Token": `Bearer ${token}`,
+                },
             });
 
             if (!response.ok) {
@@ -256,7 +279,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return;
             }
 
-            const ws = new WebSocket(`${host}?token=POINTSDK_TOKEN`);
+            const ws = new WebSocket(host);
 
             ws.onopen = () =>
                 resolve(
@@ -267,6 +290,7 @@ const getSdk = (host: string, version: string): PointType => {
                             const metaData = {
                                 type: SUBSCRIPTION_REQUEST_TYPES.SUBSCRIBE,
                                 params,
+                                __point_token: await getAuthToken(),
                             };
                             const requestId =
                                 getSubscriptionRequestId(metaData);
@@ -309,11 +333,13 @@ const getSdk = (host: string, version: string): PointType => {
                                     }
                                 },
                                 {
-                                    unsubscribe() {
+                                    async unsubscribe() {
                                         return ws.send(
                                             JSON.stringify({
                                                 type: SUBSCRIPTION_REQUEST_TYPES.UNSUBSCRIBE,
                                                 params: { subscriptionId },
+                                                __point_token:
+                                                    await getAuthToken(),
                                             }),
                                         );
                                     },
@@ -484,12 +510,11 @@ const getSdk = (host: string, version: string): PointType => {
     return {
         version: version,
         status: {
-            ping: () =>
-                api.get<"pong">("status/ping", undefined, getAuthHeaders()),
+            ping: () => api.get<"pong">("status/ping"),
         },
         contract: {
             load: <T>({ contract, ...args }: ContractLoadRequest) =>
-                api.get<T>(`contract/load/${contract}`, args, getAuthHeaders()),
+                api.get<T>(`contract/load/${contract}`, args),
             call: async <T>({
                 contract,
                 method,
@@ -506,11 +531,7 @@ const getSdk = (host: string, version: string): PointType => {
 
                 const {
                     data: { abi, address },
-                } = await api.get(
-                    `contract/load/${contract}`,
-                    {},
-                    getAuthHeaders(),
-                );
+                } = await api.get(`contract/load/${contract}`, {});
 
                 const jsonInterface = abi.find(
                     (entry) => entry.name === method,
@@ -538,14 +559,10 @@ const getSdk = (host: string, version: string): PointType => {
                     }
                 }
 
-                const { data } = await api.post(
-                    "contract/encodeFunctionCall",
-                    {
-                        jsonInterface,
-                        params: preparedParams,
-                    },
-                    getAuthHeaders(),
-                );
+                const { data } = await api.post("contract/encodeFunctionCall", {
+                    jsonInterface,
+                    params: preparedParams,
+                });
 
                 const accounts = await window.top.ethereum.request({
                     method: "eth_requestAccounts",
@@ -572,7 +589,6 @@ const getSdk = (host: string, version: string): PointType => {
                                 typesArray: jsonInterface.outputs,
                                 hexString: rawRes,
                             },
-                            getAuthHeaders(),
                         );
 
                         return { data: decodedRes.data[0] };
@@ -606,11 +622,7 @@ const getSdk = (host: string, version: string): PointType => {
             }: ContractSendRequest) => {
                 const {
                     data: { abi, address },
-                } = await api.get(
-                    `contract/load/${contract}`,
-                    {},
-                    getAuthHeaders(),
-                );
+                } = await api.get(`contract/load/${contract}`, {});
 
                 const accounts = await window.top.ethereum.request({
                     method: "eth_requestAccounts",
@@ -667,7 +679,7 @@ const getSdk = (host: string, version: string): PointType => {
                 });
             },
             events: <T>(args: ContractEventsRequest) =>
-                api.post<T>("contract/events", args, getAuthHeaders()),
+                api.post<T>("contract/events", args),
             async subscribe<T>({
                 contract,
                 event,
@@ -704,13 +716,18 @@ const getSdk = (host: string, version: string): PointType => {
             postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
             encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities, metadata),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
-                api.get<T>(`storage/getString/${id}`, args, getAuthHeaders()),
+                api.get<T>(`storage/getString/${id}`, args),
             getFile: async ({ id }) => {
-                const res = await window.top.fetch(`_storage/${id}`);
+                const token = await getAuthToken();
+                const res = await window.top.fetch(`_storage/${id}`, {
+                    headers: {
+                        "X-Point-Token": `Bearer ${token}`,
+                    },
+                });
                 return res.blob();
             },
             putString: <T>(data: StoragePutStringRequest) =>
-                api.post<T>("storage/putString", data, getAuthHeaders()),
+                api.post<T>("storage/putString", data),
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
@@ -719,8 +736,7 @@ const getSdk = (host: string, version: string): PointType => {
                       hash: () => api.get<string>("wallet/hash", {}, {}, true),
                   }
                 : {}),
-            publicKey: () =>
-                api.get<string>("wallet/publicKey", {}, getAuthHeaders()),
+            publicKey: () => api.get<string>("wallet/publicKey", {}),
             balance: (network) => {
                 if (!network) {
                     throw new Error("No network specified");
@@ -774,74 +790,31 @@ const getSdk = (host: string, version: string): PointType => {
                 data,
                 ...args
             }: EncryptDataRequest) =>
-                api.post<T>(
-                    "wallet/encryptData",
-                    {
-                        publicKey,
-                        data,
-                        ...args,
-                    },
-                    getAuthHeaders(),
-                ),
+                api.post<T>("wallet/encryptData", {
+                    publicKey,
+                    data,
+                    ...args,
+                }),
             decryptData: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>(
-                    "wallet/decryptData",
-                    {
-                        data,
-                        ...args,
-                    },
-                    getAuthHeaders(),
-                ),
-            decryptSymmetricKey: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>(
-                    "wallet/decryptSymmetricKey",
-                    {
-                        data,
-                        ...args,
-                    },
-                    getAuthHeaders(),
-                ),
-            decryptDataWithDecryptedKey: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>(
-                    "wallet/decryptDataWithDecryptedKey",
-                    {
-                        data,
-                        ...args,
-                    },
-                    getAuthHeaders(),
-                ),
+                api.post<T>("wallet/decryptData", {
+                    data,
+                    ...args,
+                }),
         },
         identity: {
             publicKeyByIdentity: <T>({
                 identity,
                 ...args
             }: PublicKeyByIdentityRequest) =>
-                api.get<T>(
-                    `identity/publicKeyByIdentity/${identity}`,
-                    args,
-                    getAuthHeaders(),
-                ),
+                api.get<T>(`identity/publicKeyByIdentity/${identity}`, args),
             identityToOwner: <T>({
                 identity,
                 ...args
             }: IdentityToOwnerRequest) =>
-                api.get<T>(
-                    `identity/identityToOwner/${identity}`,
-                    args,
-                    getAuthHeaders(),
-                ),
+                api.get<T>(`identity/identityToOwner/${identity}`, args),
             ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
-                api.get<T>(
-                    `identity/ownerToIdentity/${owner}`,
-                    args,
-                    getAuthHeaders(),
-                ),
-            me: () =>
-                api.get<IdentityData>(
-                    "identity/isIdentityRegistered/",
-                    undefined,
-                    getAuthHeaders(),
-                ),
+                api.get<T>(`identity/ownerToIdentity/${owner}`, args),
+            me: () => api.get<IdentityData>("identity/isIdentityRegistered/"),
         },
         ...(host === "https://point"
             ? {
@@ -896,6 +869,33 @@ const getSdk = (host: string, version: string): PointType => {
                               })(),
                           ]);
                       },
+                      set_auth_token: (token: string) =>
+                          new Promise((resolve) => {
+                              const id = Math.random();
+
+                              const handler = (e: MessageEvent) => {
+                                  if (
+                                      e.data.__page_req_id === id &&
+                                      e.data.__direction === "to_page"
+                                  ) {
+                                      window.removeEventListener(
+                                          "message",
+                                          handler,
+                                      );
+                                      resolve(e.data);
+                                  }
+                              };
+
+                              window.addEventListener("message", handler);
+
+                              window.postMessage({
+                                  token,
+                                  __page_req_id: id,
+                                  __message_type: "setAuthToken",
+                                  __direction: "to_bg",
+                              });
+                          }),
+                      get_auth_token: getAuthToken,
                   },
               }
             : {}),
