@@ -183,6 +183,28 @@ const getSdk = (host: string, version: string): PointType => {
                 // headers NOT required when passing FormData object
             });
         },
+        encryptAndPostFile<T>(pathname: string, file: FormData, identities: string[], metadata?: string[]): Promise<T> {
+            let idsStr = '';
+            for (var i = 0; i < identities.length; i++) {
+                idsStr += identities[i] + (i < identities.length -1 ? ',' : '');
+            }
+
+            let metadataStr = '';
+            if(metadata){
+                for (var i = 0; i < metadata.length; i++) {
+                    metadataStr += metadata[i] + (i < metadata.length -1 ? ',' : '');
+                }
+            }
+
+            return zproxyStorageCall<T>(pathname, {
+                method: "POST",
+                body: file,
+                headers: {
+                    'identities': idsStr,
+                    'metadata': metadataStr
+                }
+            });
+        },
     };
 
     function sleep(ms: number): Promise<undefined> {
@@ -498,6 +520,15 @@ const getSdk = (host: string, version: string): PointType => {
                 method,
                 params,
             }: ContractCallRequest) => {
+                if (window.top.IS_GATEWAY) {
+                    const res = await api.post("contract/safe_call", {
+                        contract,
+                        method,
+                        params,
+                    });
+                    return res.data;
+                }
+
                 const {
                     data: { abi, address },
                 } = await api.get(`contract/load/${contract}`, {});
@@ -683,6 +714,7 @@ const getSdk = (host: string, version: string): PointType => {
         },
         storage: {
             postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
+            encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) => api.encryptAndPostFile<T>("_encryptedStorage/", file, identities, metadata),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args),
             getFile: async ({ id }) => {

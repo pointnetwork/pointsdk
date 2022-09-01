@@ -35,6 +35,12 @@ export type WalletSendRequest = {
     value: number;
 };
 
+export type WalletSendRequest = {
+    to: string;
+    network?: string;
+    value: number;
+};
+
 export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];
 
 export type StorageGetRequest = { id: string; encoding?: string } & Record<
@@ -126,6 +132,7 @@ export type PointType = {
     };
     storage: {
         postFile: <T>(request: FormData) => Promise<T>;
+        encryptAndPostFile: <T>(request: FormData, identities: string[], metadata?: string[]) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
         getFile: (config: { id: string }) => Promise<Blob>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
@@ -138,6 +145,8 @@ export type PointType = {
         send: <T>(request: WalletSendRequest) => Promise<T>;
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
+        decryptSymmetricKey: <T>(request: DecryptDataRequest) => Promise<T>;
+        decryptDataWithDecryptedKey: <T>(request: DecryptDataRequest) => Promise<T>;
     };
     identity: {
         ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
