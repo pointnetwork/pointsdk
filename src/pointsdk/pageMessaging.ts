@@ -20,7 +20,7 @@ window.addEventListener("message", async (e) => {
         } catch (err) {
             console.error("Error processing request: ", err);
             window.postMessage({
-                code: err.code,
+                code: err.code ?? 500,
                 message: err.message,
                 __page_req_id,
                 __direction: "to_page",

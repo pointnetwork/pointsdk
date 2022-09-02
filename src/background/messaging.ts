@@ -135,6 +135,9 @@ export const setAuthTokenHandler = async (message: any) => {
 
 export const getAuthToken = async () => {
     const { point_token } = await browser.storage.local.get("point_token");
+    if (!point_token) {
+        throw new Error("Point token not set");
+    }
     const jwt = sign({ payload: "point_token" }, point_token, {
         expiresIn: "10s",
     });
