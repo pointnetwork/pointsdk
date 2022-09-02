@@ -32,7 +32,7 @@ const getSdk = (host: string, version: string): PointType => {
     class SubscriptionError extends Error {}
 
     const getAuthToken = async () =>
-        new Promise<string>((resolve) => {
+        new Promise<string>((resolve, reject) => {
             const id = Math.random();
 
             const handler = (e: MessageEvent) => {
@@ -41,7 +41,14 @@ const getSdk = (host: string, version: string): PointType => {
                     e.data.__direction === "to_page"
                 ) {
                     window.removeEventListener("message", handler);
-                    resolve(e.data.token);
+                    if (e.data.code) {
+                        reject({
+                            code: e.data.code,
+                            message: e.data.message,
+                        });
+                    } else {
+                        resolve(e.data.token);
+                    }
                 }
             };
 
@@ -887,7 +894,7 @@ const getSdk = (host: string, version: string): PointType => {
                           ]);
                       },
                       set_auth_token: (token: string) =>
-                          new Promise((resolve) => {
+                          new Promise((resolve, reject) => {
                               const id = Math.random();
 
                               const handler = (e: MessageEvent) => {
@@ -899,7 +906,14 @@ const getSdk = (host: string, version: string): PointType => {
                                           "message",
                                           handler,
                                       );
-                                      resolve(e.data);
+                                      if (e.data.code) {
+                                          reject({
+                                              code: e.data.code,
+                                              message: e.data.message,
+                                          });
+                                      } else {
+                                          resolve(e.data);
+                                      }
                                   }
                               };
 
