@@ -32,34 +32,36 @@ const getSdk = (host: string, version: string): PointType => {
     class SubscriptionError extends Error {}
 
     const getAuthToken = async () =>
-        new Promise<string>((resolve, reject) => {
-            const id = Math.random();
+        window.top.IS_GATEWAY
+            ? window.top.POINT_JWT
+            : new Promise<string>((resolve, reject) => {
+                  const id = Math.random();
 
-            const handler = (e: MessageEvent) => {
-                if (
-                    e.data.__page_req_id === id &&
-                    e.data.__direction === "to_page"
-                ) {
-                    window.removeEventListener("message", handler);
-                    if (e.data.code) {
-                        reject({
-                            code: e.data.code,
-                            message: e.data.message,
-                        });
-                    } else {
-                        resolve(e.data.token);
-                    }
-                }
-            };
+                  const handler = (e: MessageEvent) => {
+                      if (
+                          e.data.__page_req_id === id &&
+                          e.data.__direction === "to_page"
+                      ) {
+                          window.removeEventListener("message", handler);
+                          if (e.data.code) {
+                              reject({
+                                  code: e.data.code,
+                                  message: e.data.message,
+                              });
+                          } else {
+                              resolve(e.data.token);
+                          }
+                      }
+                  };
 
-            window.addEventListener("message", handler);
+                  window.addEventListener("message", handler);
 
-            window.postMessage({
-                __page_req_id: id,
-                __message_type: "getAuthToken",
-                __direction: "to_bg",
-            });
-        });
+                  window.postMessage({
+                      __page_req_id: id,
+                      __message_type: "getAuthToken",
+                      __direction: "to_bg",
+                  });
+              });
 
     const apiCall = async <T>(
         path: string,
