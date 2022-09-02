@@ -8,34 +8,38 @@ import {
 } from "pointsdk/background/messaging";
 
 const setChainIds = async () => {
-    const token = (await getAuthToken()).token;
-    const networksRes = await fetch(
-        "https://point/v1/api/blockchain/networks",
-        {
-            headers: {
-                "X-Point-Token": `Bearer ${token}`,
+    try {
+        const token = (await getAuthToken()).token;
+        const networksRes = await fetch(
+            "https://point/v1/api/blockchain/networks",
+            {
+                headers: {
+                    "X-Point-Token": `Bearer ${token}`,
+                },
             },
-        },
-    );
-    const { networks, default_network } = await networksRes.json();
-    await browser.storage.local.set({
-        networks: JSON.stringify(networks),
-        default_network,
-    });
-    const { chainIdGlobal } = await browser.storage.local.get("chainIdGlobal");
-    if (!chainIdGlobal || !(chainIdGlobal in networks)) {
+        );
+        const { networks, default_network } = await networksRes.json();
         await browser.storage.local.set({
-            chainIdGlobal: default_network,
+            networks: JSON.stringify(networks),
+            default_network,
         });
+        const { chainIdGlobal } = await browser.storage.local.get(
+            "chainIdGlobal",
+        );
+        if (!chainIdGlobal || !(chainIdGlobal in networks)) {
+            await browser.storage.local.set({
+                chainIdGlobal: default_network,
+            });
+        }
+    } catch (e) {
+        console.error("Failed to fetch networks info from the node: ", e);
+        setTimeout(() => {
+            void setChainIds();
+        }, 1000);
     }
 };
 
-setChainIds().catch((e) => {
-    console.error("Failed to fetch networks info from the node: ", e);
-    setTimeout(() => {
-        void setChainIds();
-    }, 1000); // hack for the 1st launch, when the token is not set yet
-});
+setChainIds();
 
 browser.runtime.onMessage.addListener(async (message, sender) => {
     switch (message.__message_type) {
