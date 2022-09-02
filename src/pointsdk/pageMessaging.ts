@@ -19,6 +19,12 @@ window.addEventListener("message", async (e) => {
             });
         } catch (err) {
             console.error("Error processing request: ", err);
+            window.postMessage({
+                code: err.code,
+                message: err.message,
+                __page_req_id,
+                __direction: "to_page",
+            });
         }
     }
 });
