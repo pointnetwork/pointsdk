@@ -126,7 +126,11 @@ export type PointType = {
     };
     storage: {
         postFile: <T>(request: FormData) => Promise<T>;
-        encryptAndPostFile: <T>(request: FormData, identities: string[], metadata?: string[]) => Promise<T>;
+        encryptAndPostFile: <T>(
+            request: FormData,
+            identities: string[],
+            metadata?: string[],
+        ) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
         getFile: (config: { id: string }) => Promise<Blob>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
@@ -140,7 +144,9 @@ export type PointType = {
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
         decryptSymmetricKey: <T>(request: DecryptDataRequest) => Promise<T>;
-        decryptDataWithDecryptedKey: <T>(request: DecryptDataRequest) => Promise<T>;
+        decryptDataWithDecryptedKey: <T>(
+            request: DecryptDataRequest,
+        ) => Promise<T>;
     };
     identity: {
         ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
