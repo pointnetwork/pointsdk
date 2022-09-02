@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Point Network",
   "description": "A Browser Extension for Point Network",
-  "version": "0.0.25",
+  "version": "0.0.26",
   "browser_action": {
     "default_icon": "./assets/icons/icon-16.png",
     "default_popup": "./popup/index.html"
