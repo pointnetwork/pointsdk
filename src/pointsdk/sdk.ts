@@ -121,6 +121,7 @@ const getSdk = (host: string, version: string): PointType => {
                 ...config,
                 headers: {
                     "X-Point-Token": `Bearer ${token}`,
+                    ...(config?.headers ?? {}),
                 },
             });
 
@@ -198,26 +199,12 @@ const getSdk = (host: string, version: string): PointType => {
             identities: string[],
             metadata?: string[],
         ): Promise<T> {
-            let idsStr = "";
-            for (var i = 0; i < identities.length; i++) {
-                idsStr +=
-                    identities[i] + (i < identities.length - 1 ? "," : "");
-            }
-
-            let metadataStr = "";
-            if (metadata) {
-                for (var i = 0; i < metadata.length; i++) {
-                    metadataStr +=
-                        metadata[i] + (i < metadata.length - 1 ? "," : "");
-                }
-            }
-
             return zproxyStorageCall<T>(pathname, {
                 method: "POST",
                 body: file,
                 headers: {
-                    identities: idsStr,
-                    metadata: metadataStr,
+                    identities: identities.join(","),
+                    metadata: metadata?.join(",") ?? "",
                 },
             });
         },
