@@ -133,6 +133,11 @@ export type PointType = {
         ) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
         getFile: (config: { id: string }) => Promise<Blob>;
+        getEncryptedFile: (config: {
+            id: string;
+            eSymmetricObj?: string;
+            symmetricObj?: string;
+        }) => Promise<Blob>;
         putString: <T>(request: StoragePutStringRequest) => Promise<T>;
     };
     wallet: {

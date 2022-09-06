@@ -739,6 +739,25 @@ const getSdk = (host: string, version: string): PointType => {
                 });
                 return res.blob();
             },
+            getEncryptedFile: async ({ id, eSymmetricObj, symmetricObj }) => {
+                if (!!eSymmetricObj === !!symmetricObj) {
+                    throw new Error(
+                        "Either eSymmetricObj or symmetricObj should be specified, and only one of them",
+                    );
+                }
+                const token = await getAuthToken();
+                const res = await window.top.fetch(
+                    `${host}/_encryptedStorage/${id}${
+                        eSymmetricObj ? `?eSymmetricObj=${eSymmetricObj}` : ""
+                    }${symmetricObj ? `?symmetricObj=${symmetricObj}` : ""}`,
+                    {
+                        headers: {
+                            "X-Point-Token": `Bearer ${token}`,
+                        },
+                    },
+                );
+                return res.blob();
+            },
             putString: <T>(data: StoragePutStringRequest) =>
                 api.post<T>("storage/putString", data),
         },
