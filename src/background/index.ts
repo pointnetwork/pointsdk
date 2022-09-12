@@ -24,10 +24,10 @@ const setChainIds = async () => {
         // therefore we need to clear the prevoius setting, but this is not polite
         // need to think of a better solution...
         if (oldDefaultNetwork && oldDefaultNetwork !== default_network) {
-            await browser.storage.local.remove("chainIdGlobal");
+            await browser.storage.local.remove("chainIdGlobal"); // it will be set up below
             for (const key in browser.storage.local) {
                 if (key.startsWith("chainId")) {
-                    await browser.storage.local.remove(key);
+                    await browser.storage.local.set(default_network);
                 }
             }
         }
