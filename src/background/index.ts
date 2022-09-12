@@ -25,7 +25,8 @@ const setChainIds = async () => {
         // need to think of a better solution...
         if (oldDefaultNetwork && oldDefaultNetwork !== default_network) {
             await browser.storage.local.remove("chainIdGlobal"); // it will be set up below
-            for (const key in browser.storage.local) {
+            const storage = await browser.storage.local.get(null);
+            for (const key in storage) {
                 if (key.startsWith("chainId")) {
                     await browser.storage.local.set({
                         [key]: default_network as string,
