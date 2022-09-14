@@ -832,6 +832,22 @@ const getSdk = (host: string, version: string): PointType => {
                     data,
                     ...args,
                 }),
+            decryptSymmetricKey: <T>({ data, ...args }: DecryptDataRequest) =>
+                api.post<T>(
+                    "wallet/decryptSymmetricKey",
+                    {
+                        data,
+                        ...args,
+                    },
+                ),
+            decryptDataWithDecryptedKey: <T>({ data, ...args }: DecryptDataRequest) =>
+                api.post<T>(
+                    "wallet/decryptDataWithDecryptedKey",
+                    {
+                        data,
+                        ...args,
+                    },
+                ),
         },
         identity: {
             publicKeyByIdentity: <T>({
