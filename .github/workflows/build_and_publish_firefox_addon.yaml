@@ -32,8 +32,11 @@ jobs:
       - run: npm i -g npm
       - run: npm install
 
-      - name: Build
+      - name: Build Extension
         run: npm run build
+
+      - name: Compile SDK for browser
+        run: npm run build:sdk
 
       - name: Get the Source Tag
         id: get_source_tag
@@ -110,7 +113,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/prod/pointsdk/index.js
+          asset_path: ./browser/browser.js
           asset_name: pointsdk-${{ steps.get_source_tag.outputs.SOURCE_TAG }}.js
           asset_content_type: text/javascript
 

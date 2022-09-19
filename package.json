@@ -1,6 +1,6 @@
 {
     "name": "pointnetwork-browser-extension",
-    "version": "0.0.35",
+    "version": "0.0.36",
     "description": "Point Browser Extension",
     "alias": {
         "pointsdk": "./src"
@@ -12,7 +12,14 @@
                 "inlineSources": true
             }
         },
-        "prod": {}
+        "prod": {},
+        "sdk": {
+            "sourceMap": false,
+            "distDir": "browser",
+            "context": "browser",
+            "outputFormat": "global",
+            "optimize": true
+        }
     },
     "devDependencies": {
         "@parcel/config-webextension": "^2.4.1",
@@ -75,6 +82,7 @@
     "scripts": {
         "start": "npm run cleanup && parcel src/manifest.json --host localhost --target dev",
         "build": "npm run cleanup && parcel build src/manifest.json --target prod --no-source-maps",
+        "build:sdk": "npx parcel@2.4.1 build src/pointsdk/browser.ts --target sdk",
         "cleanup": "rm -rf dist .cache .parcel-cache",
         "test": "jest --config=jest.config.js",
         "lint": "eslint -c ./.eslintrc.js \"src/**/*.ts*\"",

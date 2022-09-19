@@ -1,5 +1,6 @@
 .vscode
 /dist
+/browser
 /node_modules
 npm-debug.log
 /.parcel-cache
