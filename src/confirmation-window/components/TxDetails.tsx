@@ -78,6 +78,10 @@ const TxDetails = () => {
                             );
                         }
                         return <RawData key={idx} label={key} data={value} />;
+                    case "domain":
+                        return decodedTxData ? (
+                            <DecodedData data={decodedTxData} />
+                        ) : null;
                     default:
                         return <RawData key={idx} label={key} data={value} />;
                 }
