@@ -935,6 +935,12 @@ const getSdk = (host: string, version: string): PointType => {
                               });
                           }),
                       get_auth_token: getAuthToken,
+                      link_point_to_sol: (domain: string) => {
+                          return window.top.solana.request({
+                              method: "solana_snsWriteRequest",
+                              params: [{ domain }],
+                          });
+                      },
                   },
               }
             : {}),
