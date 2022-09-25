@@ -23,6 +23,9 @@ import {
     IdentityData,
 } from "./index.d";
 
+const GATEWAY_PLACEHOLDER_MESSAGE =
+    "You cannot make writing operations right here but you can download Point Browser and have the full web3 experience. https://pointnetwork.io/download";
+
 const getSdk = (host: string, version: string): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
@@ -617,70 +620,84 @@ const getSdk = (host: string, version: string): PointType => {
                         );
                 }
             },
-            send: async <T>({
-                contract,
-                method,
-                params,
-                value,
-            }: ContractSendRequest) => {
-                const {
-                    data: { abi, address },
-                } = await api.get(`contract/load/${contract}`, {});
+            send: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : async <T>({
+                      contract,
+                      method,
+                      params,
+                      value,
+                  }: ContractSendRequest) => {
+                      const {
+                          data: { abi, address },
+                      } = await api.get(`contract/load/${contract}`, {});
 
-                const accounts = await window.top.ethereum.request({
-                    method: "eth_requestAccounts",
-                });
+                      const accounts = await window.top.ethereum.request({
+                          method: "eth_requestAccounts",
+                      });
 
-                const jsonInterface = abi.find(
-                    (entry) => entry.name === method,
-                );
-                if (!jsonInterface) {
-                    throw new Error(
-                        `Method ${method} not found in contract ${contract}`,
-                    );
-                }
+                      const jsonInterface = abi.find(
+                          (entry) => entry.name === method,
+                      );
+                      if (!jsonInterface) {
+                          throw new Error(
+                              `Method ${method} not found in contract ${contract}`,
+                          );
+                      }
 
-                const preparedParams = params ?? [];
-                if (preparedParams.length !== jsonInterface.inputs.length) {
-                    throw new Error(
-                        `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
-                    );
-                }
+                      const preparedParams = params ?? [];
+                      if (
+                          preparedParams.length !== jsonInterface.inputs.length
+                      ) {
+                          throw new Error(
+                              `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
+                          );
+                      }
 
-                for (let i = 0; i < preparedParams.length; i++) {
-                    if (
-                        jsonInterface.inputs[i].internalType === "bytes32" &&
-                        typeof preparedParams[i] === "string" &&
-                        !preparedParams[i].startsWith("0x")
-                    ) {
-                        preparedParams[i] = `0x${preparedParams[i]}`;
-                    }
-                }
+                      for (let i = 0; i < preparedParams.length; i++) {
+                          if (
+                              jsonInterface.inputs[i].internalType ===
+                                  "bytes32" &&
+                              typeof preparedParams[i] === "string" &&
+                              !preparedParams[i].startsWith("0x")
+                          ) {
+                              preparedParams[i] = `0x${preparedParams[i]}`;
+                          }
+                      }
 
-                if (["view", "pure"].includes(jsonInterface.stateMutability)) {
-                    throw new Error(
-                        `Method ${method} is a view one, use call instead of send`,
-                    );
-                }
+                      if (
+                          ["view", "pure"].includes(
+                              jsonInterface.stateMutability,
+                          )
+                      ) {
+                          throw new Error(
+                              `Method ${method} is a view one, use call instead of send`,
+                          );
+                      }
 
-                const { data } = await api.post("contract/encodeFunctionCall", {
-                    jsonInterface,
-                    params: params ?? [],
-                });
+                      const { data } = await api.post(
+                          "contract/encodeFunctionCall",
+                          {
+                              jsonInterface,
+                              params: params ?? [],
+                          },
+                      );
 
-                return window.top.ethereum.request({
-                    meta: { contract },
-                    method: "eth_sendTransaction",
-                    params: [
-                        {
-                            from: accounts[0],
-                            to: address,
-                            data,
-                            value,
-                        },
-                    ],
-                });
-            },
+                      return window.top.ethereum.request({
+                          meta: { contract },
+                          method: "eth_sendTransaction",
+                          params: [
+                              {
+                                  from: accounts[0],
+                                  to: address,
+                                  data,
+                                  value,
+                              },
+                          ],
+                      });
+                  },
             events: <T>(args: ContractEventsRequest) =>
                 api.post<T>("contract/events", args),
             async subscribe<T>({
@@ -716,18 +733,26 @@ const getSdk = (host: string, version: string): PointType => {
             },
         },
         storage: {
-            postFile: <T>(file: FormData) => api.postFile<T>("_storage/", file),
+            postFile: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>(file: FormData) => api.postFile<T>("_storage/", file),
             encryptAndPostFile: <T>(
                 file: FormData,
                 identities: string[],
                 metadata?: string[],
             ) =>
-                api.encryptAndPostFile<T>(
-                    "_encryptedStorage/",
-                    file,
-                    identities,
-                    metadata,
-                ),
+                window.top.IS_GATEWAY
+                    ? async () => {
+                          alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                      }
+                    : api.encryptAndPostFile<T>(
+                          "_encryptedStorage/",
+                          file,
+                          identities,
+                          metadata,
+                      ),
             getString: <T>({ id, ...args }: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args),
             getFile: async ({ id }) => {
@@ -758,12 +783,16 @@ const getSdk = (host: string, version: string): PointType => {
                 );
                 return res.blob();
             },
-            putString: <T>(data: StoragePutStringRequest) =>
-                api.post<T>("storage/putString", data),
+            putString: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>(data: StoragePutStringRequest) =>
+                      api.post<T>("storage/putString", data),
         },
         wallet: {
             address: () => api.get<string>("wallet/address"),
-            ...(host === "https://confirmation-window"
+            ...(host === "https://confirmation-window" && !window.top.IS_GATEWAY
                 ? {
                       hash: () => api.get<string>("wallet/hash", {}, {}, true),
                   }
@@ -775,79 +804,90 @@ const getSdk = (host: string, version: string): PointType => {
                 }
                 return api.get<number>("wallet/balance", { network });
             },
-            send: async ({ to, network, value }) => {
-                const { networks, default_network } = await api.get(
-                    "blockchain/networks",
-                );
-                const chain = network ?? default_network;
-                if (!networks[chain]) {
-                    throw new Error(`Unknown network ${chain}`);
-                }
-                switch (networks[chain].type) {
-                    case "eth":
-                        const accounts = await window.top.ethereum.request({
-                            method: "eth_requestAccounts",
-                        });
+            send: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : async ({ to, network, value }) => {
+                      const { networks, default_network } = await api.get(
+                          "blockchain/networks",
+                      );
+                      const chain = network ?? default_network;
+                      if (!networks[chain]) {
+                          throw new Error(`Unknown network ${chain}`);
+                      }
+                      switch (networks[chain].type) {
+                          case "eth":
+                              const accounts =
+                                  await window.top.ethereum.request({
+                                      method: "eth_requestAccounts",
+                                  });
 
-                        return window.top.ethereum.request({
-                            method: "eth_sendTransaction",
-                            params: [
-                                {
-                                    from: accounts[0],
-                                    to,
-                                    value,
-                                },
-                            ],
-                            chain,
-                        });
-                    case "solana":
-                        return window.top.solana.request({
-                            method: "solana_sendTransaction",
-                            params: [
-                                {
-                                    to,
-                                    lamports: value,
-                                },
-                            ],
-                            chain,
-                        });
-                    default:
-                        throw new Error(
-                            `Unexpected network type ${networks[chain].type}`,
-                        );
-                }
-            },
-            encryptData: <T>({
-                publicKey,
-                data,
-                ...args
-            }: EncryptDataRequest) =>
-                api.post<T>("wallet/encryptData", {
-                    publicKey,
-                    data,
-                    ...args,
-                }),
-            decryptData: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>("wallet/decryptData", {
-                    data,
-                    ...args,
-                }),
-            decryptSymmetricKey: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>(
-                    "wallet/decryptSymmetricKey",
-                    {
-                        data,
-                        ...args,
-                    },
-                ),
-            decryptDataWithDecryptedKey: <T>({ data, ...args }: DecryptDataRequest) =>
-                api.post<T>(
-                    "wallet/decryptDataWithDecryptedKey",
-                    {
-                        data,
-                        ...args,
-                    },
-                ),
+                              return window.top.ethereum.request({
+                                  method: "eth_sendTransaction",
+                                  params: [
+                                      {
+                                          from: accounts[0],
+                                          to,
+                                          value,
+                                      },
+                                  ],
+                                  chain,
+                              });
+                          case "solana":
+                              return window.top.solana.request({
+                                  method: "solana_sendTransaction",
+                                  params: [
+                                      {
+                                          to,
+                                          lamports: value,
+                                      },
+                                  ],
+                                  chain,
+                              });
+                          default:
+                              throw new Error(
+                                  `Unexpected network type ${networks[chain].type}`,
+                              );
+                      }
+                  },
+            encryptData: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>({ publicKey, data, ...args }: EncryptDataRequest) =>
+                      api.post<T>("wallet/encryptData", {
+                          publicKey,
+                          data,
+                          ...args,
+                      }),
+            decryptData: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>({ data, ...args }: DecryptDataRequest) =>
+                      api.post<T>("wallet/decryptData", {
+                          data,
+                          ...args,
+                      }),
+            decryptSymmetricKey: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>({ data, ...args }: DecryptDataRequest) =>
+                      api.post<T>("wallet/decryptSymmetricKey", {
+                          data,
+                          ...args,
+                      }),
+            decryptDataWithDecryptedKey: window.top.IS_GATEWAY
+                ? async () => {
+                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
+                  }
+                : <T>({ data, ...args }: DecryptDataRequest) =>
+                      api.post<T>("wallet/decryptDataWithDecryptedKey", {
+                          data,
+                          ...args,
+                      }),
         },
         identity: {
             publicKeyByIdentity: <T>({
@@ -864,7 +904,7 @@ const getSdk = (host: string, version: string): PointType => {
                 api.get<T>(`identity/ownerToIdentity/${owner}`, args),
             me: () => api.get<IdentityData>("identity/isIdentityRegistered/"),
         },
-        ...(host === "https://point"
+        ...(host === "https://point" && !window.top.IS_GATEWAY
             ? {
                   point: {
                       wallet_send: async ({ to, network, value }) => {
