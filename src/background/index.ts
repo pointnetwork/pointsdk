@@ -18,7 +18,9 @@ const setChainIds = async () => {
                 },
             },
         );
-        const oldDefaultNetwork = await browser.storage.local.get("default_network");
+        const oldDefaultNetwork = await browser.storage.local.get(
+            "default_network",
+        );
         const { networks, default_network } = await networksRes.json();
         // TODO: if the default network changed we need to update it everywhere
         // therefore we need to clear the prevoius setting, but this is not polite

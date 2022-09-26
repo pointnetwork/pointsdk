@@ -23,16 +23,22 @@ import {
     IdentityData,
 } from "./index.d";
 
-const GATEWAY_PLACEHOLDER_MESSAGE =
-    "You cannot make writing operations right here but you can download Point Browser and have the full web3 experience. https://pointnetwork.io/download";
-
-const getSdk = (host: string, version: string): PointType => {
+const getSdk = (host: string, version: string, swal: any): PointType => {
     class PointSDKRequestError extends Error {}
     class MessageQueueOverflow extends Error {}
     class ZProxyWSConnectionError extends Error {}
     class ZProxyWSConnectionClosed extends Error {}
     class SubscriptionRequestTimeout extends Error {}
     class SubscriptionError extends Error {}
+
+    const gatewayAlert = async () => {
+        swal.fire({
+            title: "Demo mode",
+            html: `You cannot make writing operations right here but you can download Point Browser and have the full web3 experience. 
+<a href="https://pointnetwork.io/download" target="_blank" rel="noopener noreferrer">https://pointnetwork.io/download</a>`,
+            icon: "info",
+        });
+    };
 
     const getAuthToken = async () =>
         window.top.IS_GATEWAY
@@ -621,9 +627,7 @@ const getSdk = (host: string, version: string): PointType => {
                 }
             },
             send: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : async <T>({
                       contract,
                       method,
@@ -734,9 +738,7 @@ const getSdk = (host: string, version: string): PointType => {
         },
         storage: {
             postFile: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>(file: FormData) => api.postFile<T>("_storage/", file),
             encryptAndPostFile: <T>(
                 file: FormData,
@@ -744,9 +746,7 @@ const getSdk = (host: string, version: string): PointType => {
                 metadata?: string[],
             ) =>
                 window.top.IS_GATEWAY
-                    ? async () => {
-                          alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                      }
+                    ? gatewayAlert
                     : api.encryptAndPostFile<T>(
                           "_encryptedStorage/",
                           file,
@@ -784,9 +784,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return res.blob();
             },
             putString: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>(data: StoragePutStringRequest) =>
                       api.post<T>("storage/putString", data),
         },
@@ -805,9 +803,7 @@ const getSdk = (host: string, version: string): PointType => {
                 return api.get<number>("wallet/balance", { network });
             },
             send: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : async ({ to, network, value }) => {
                       const { networks, default_network } = await api.get(
                           "blockchain/networks",
@@ -852,9 +848,7 @@ const getSdk = (host: string, version: string): PointType => {
                       }
                   },
             encryptData: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>({ publicKey, data, ...args }: EncryptDataRequest) =>
                       api.post<T>("wallet/encryptData", {
                           publicKey,
@@ -862,27 +856,21 @@ const getSdk = (host: string, version: string): PointType => {
                           ...args,
                       }),
             decryptData: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>({ data, ...args }: DecryptDataRequest) =>
                       api.post<T>("wallet/decryptData", {
                           data,
                           ...args,
                       }),
             decryptSymmetricKey: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>({ data, ...args }: DecryptDataRequest) =>
                       api.post<T>("wallet/decryptSymmetricKey", {
                           data,
                           ...args,
                       }),
             decryptDataWithDecryptedKey: window.top.IS_GATEWAY
-                ? async () => {
-                      alert(GATEWAY_PLACEHOLDER_MESSAGE);
-                  }
+                ? gatewayAlert
                 : <T>({ data, ...args }: DecryptDataRequest) =>
                       api.post<T>("wallet/decryptDataWithDecryptedKey", {
                           data,
