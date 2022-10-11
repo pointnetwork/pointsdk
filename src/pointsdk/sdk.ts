@@ -38,6 +38,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
 <a href="https://pointnetwork.io/download" target="_blank" rel="noopener noreferrer">https://pointnetwork.io/download</a>`,
             icon: "info",
         });
+        throw new Error("Point demo does not support this operation");
     };
 
     const getAuthToken = async () =>
