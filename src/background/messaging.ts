@@ -128,7 +128,23 @@ export const registerHandlerListener = async (message: any) =>
     new Promise<unknown>((resolve) => {
         responseHandlers[message.messageId] = resolve;
     });
+
 export const setAuthTokenHandler = async (message: any) => {
+    const oldToken = await browser.storage.local.get("point_token");
+    if (oldToken) {
+        // Checking if new token is correct, if we are replacing the token,
+        // otherwise just inject it
+        const res = await fetch("https://point/v1/api/blockchain/networks", {
+            headers: {
+                "X-Point-Token": `Bearer ${message.token}`,
+            },
+        });
+        if (res.status !== 200) {
+            // Not throwing error here, otherwise explorer will not redirect
+            // Just ignoring the token instead
+            return { ok: true };
+        }
+    }
     await browser.storage.local.set({ point_token: message.token });
     return { ok: true };
 };
