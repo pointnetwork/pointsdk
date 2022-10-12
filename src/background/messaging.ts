@@ -134,9 +134,12 @@ export const setAuthTokenHandler = async (message: any) => {
     if (oldToken) {
         // Checking if new token is correct, if we are replacing the token,
         // otherwise just inject it
+        const jwt = sign({ payload: "point_token" }, message.token, {
+            expiresIn: "10s",
+        });
         const res = await fetch("https://point/v1/api/blockchain/networks", {
             headers: {
-                "X-Point-Token": `Bearer ${message.token}`,
+                "X-Point-Token": `Bearer ${jwt}`,
             },
         });
         if (res.status !== 200) {
