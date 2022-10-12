@@ -172,4 +172,8 @@ type Param = {
 export type DecodedTxInput = {
     name: string;
     params: Param[];
+    gas: {
+        value: string;
+        currency: string;
+    };
 };
