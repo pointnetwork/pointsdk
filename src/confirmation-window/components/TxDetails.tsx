@@ -7,6 +7,7 @@ import Address from "./Address";
 import Price from "./Price";
 import RawData from "./RawData";
 import DecodedData from "./DecodedData";
+import GasEstimate from "./GasEstimate";
 
 const TxDetails = () => {
     const { search } = useLocation();
@@ -50,6 +51,9 @@ const TxDetails = () => {
 
     return (
         <>
+            {decodedTxData?.gas?.value && decodedTxData?.gas?.currency ? (
+                <GasEstimate gas={decodedTxData.gas} />
+            ) : null}
             {Object.entries(rawParams).map(([key, value], idx) => {
                 switch (key) {
                     case "from":
