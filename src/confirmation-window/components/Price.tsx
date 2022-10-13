@@ -1,37 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { formatEther } from "@ethersproject/units";
-import browser from "webextension-polyfill";
+import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import useTheme from "@mui/material/styles/useTheme";
 import CircularProgress from "@mui/material/CircularProgress";
 import Label from "./Label";
+import useCurrency from "../../utils/use-currency";
+import useTokens from "../../utils/use-tokens";
+import { formatAmount } from "../../utils/format";
 
 type Props = {
     label: string;
     value: string;
     network: string;
+    to: string;
 };
 
-const Price = ({ label, value, network }: Props) => {
+const Price = ({ label, value, network, to }: Props) => {
     const theme = useTheme();
-    const [currency, setCurrency] = useState("");
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
-            try {
-                const networksRes = await browser.storage.local.get("networks");
-                const networks = JSON.parse(networksRes.networks);
-                setCurrency(networks[network]?.currency_name ?? "ETH");
-            } catch (e) {
-                console.error("Failed to get networks", e);
-            }
-            setLoading(false);
-        }
-        void fetchData();
-    }, []);
+    const { currency, loading } = useCurrency(network);
+    const { tokens } = useTokens(network);
+    const formattedAmount = formatAmount(value, currency, tokens, to);
 
     return (
         <Box mb={2}>
@@ -40,7 +28,7 @@ const Price = ({ label, value, network }: Props) => {
                 <CircularProgress size={16} />
             ) : (
                 <Typography fontWeight={600} color={theme.palette.primary.main}>
-                    {formatEther(value)}&nbsp;{currency}
+                    {formattedAmount}
                 </Typography>
             )}
         </Box>

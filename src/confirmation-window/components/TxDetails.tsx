@@ -1,7 +1,5 @@
-import React, { useMemo, useEffect, Fragment } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useEffect, Fragment } from "react";
 import { generate } from "geopattern";
-import { BigNumber } from "@ethersproject/bignumber";
 import { DecodedTxInput } from "../../pointsdk/index.d";
 import Address from "./Address";
 import Price from "./Price";
@@ -9,30 +7,13 @@ import RawData from "./RawData";
 import DecodedData from "./DecodedData";
 import GasEstimate from "./GasEstimate";
 
-const TxDetails = () => {
-    const { search } = useLocation();
-    const query = useMemo(() => new URLSearchParams(search), [search]);
+type Props = {
+    rawParams: Record<string, string>;
+    decodedTxData: DecodedTxInput | null;
+    network: string;
+};
 
-    const rawParams = useMemo((): Record<string, string> => {
-        try {
-            const str = query.get("params");
-            return str ? (JSON.parse(str) as Record<string, string>) : {};
-        } catch {
-            return {};
-        }
-    }, [query]);
-
-    const decodedTxData = useMemo((): DecodedTxInput | null => {
-        try {
-            const str = query.get("decodedTxData");
-            return str ? (JSON.parse(str) as DecodedTxInput) : null;
-        } catch {
-            return null;
-        }
-    }, [query]);
-
-    const network = useMemo(() => query.get("network") || "", [query]);
-
+const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
     useEffect(() => {
         async function drawBg() {
             try {
@@ -70,6 +51,7 @@ const TxDetails = () => {
                                 label={key}
                                 value={value}
                                 network={network}
+                                to={rawParams?.to || ""}
                             />
                         );
                     case "data":
@@ -90,17 +72,6 @@ const TxDetails = () => {
                         return <RawData key={idx} label={key} data={value} />;
                 }
             })}
-
-            {/* TODO: shouldn't gasPrice be multiplied by the gas limit? */}
-            {rawParams.value && rawParams.gasPrice ? (
-                <Price
-                    label="Total Price Estimate"
-                    network={network}
-                    value={BigNumber.from(rawParams.value)
-                        .add(rawParams.gasPrice)
-                        .toString()}
-                />
-            ) : null}
         </>
     );
 };
