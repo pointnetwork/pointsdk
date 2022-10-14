@@ -6,6 +6,7 @@ import { DecodedTxInput } from "../../pointsdk/index.d";
 import useCurrency from "../../utils/use-currency";
 import useTokens from "../../utils/use-tokens";
 import { formatAmount } from "../../utils/format";
+import GasEstimateTokenTransfer from "./GasEstimateTokenTransfer";
 
 type Props = {
     network: string;
@@ -68,6 +69,13 @@ const Explainer = ({ network, rawParams, data, fallback }: Props) => {
                     ? " which is estimated below."
                     : "."}
             </Typography>
+
+            {rawParams?.value ? (
+                <GasEstimateTokenTransfer
+                    network={network}
+                    toAddress={rawParams?.to || ""}
+                />
+            ) : null}
         </Box>
     );
 };

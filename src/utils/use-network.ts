@@ -7,11 +7,10 @@ type EmptyObj = Record<string, never>;
 
 export default function useNetwork(networkName: string) {
     const [network, setNetwork] = useState<Network | null>(null);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         async function fetchData() {
-            setLoading(true);
             try {
                 const networksRes = (await browser.storage.local.get(
                     "networks",

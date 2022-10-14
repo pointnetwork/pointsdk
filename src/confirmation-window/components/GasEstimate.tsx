@@ -11,10 +11,9 @@ type Props = Pick<DecodedTxInput, "gas">;
 const GasEstimate = ({ gas }: Props) => {
     const theme = useTheme();
 
-    const parsedAmount =
-        gas.currency.toUpperCase() === "POINT"
-            ? formatEther(gas.value)
-            : gas.value;
+    const parsedAmount = gas.currency.toUpperCase().includes("SOL")
+        ? gas.value
+        : formatEther(gas.value);
 
     return (
         <Box mb={2}>
