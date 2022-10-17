@@ -163,10 +163,20 @@ export type PointType = {
     };
 };
 
-type Param = {
+export enum ParamMetaType {
+    STORAGE_ID = "storage_id",
+    ZERO_CONTENT = "zero_content",
+    TX_HASH = "tx_hash",
+    NOT_FOUND = "not_found",
+}
+
+export type Param = {
     name: string;
     value: string;
     type: string;
+    meta?: {
+        type: ParamMetaType;
+    };
 };
 
 export type DecodedTxInput = {
