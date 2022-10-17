@@ -5,12 +5,33 @@ import Typography from "@mui/material/Typography";
 import useTheme from "@mui/material/styles/useTheme";
 import { useLocation } from "react-router-dom";
 import browser from "webextension-polyfill";
+import Explainer from "./components/Explainer";
 import TxDetails from "./components/TxDetails";
+import { DecodedTxInput } from "../pointsdk/index.d";
 
 const ConfirmationWindow = () => {
     const theme = useTheme();
     const { search } = useLocation();
     const query = useMemo(() => new URLSearchParams(search), [search]);
+    const network = useMemo(() => query.get("network") || "", [query]);
+
+    const rawParams = useMemo((): Record<string, string> => {
+        try {
+            const str = query.get("params");
+            return str ? (JSON.parse(str) as Record<string, string>) : {};
+        } catch {
+            return {};
+        }
+    }, [query]);
+
+    const decodedTxData = useMemo((): DecodedTxInput | null => {
+        try {
+            const str = query.get("decodedTxData");
+            return str ? (JSON.parse(str) as DecodedTxInput) : null;
+        } catch {
+            return null;
+        }
+    }, [query]);
 
     const handleAllow: ReactEventHandler = async () => {
         await browser.runtime.sendMessage({
@@ -49,7 +70,12 @@ const ConfirmationWindow = () => {
                 <Typography variant="h5" fontWeight="bold">
                     {query.get("host")?.replace(/^https?:\/\//, "")}
                 </Typography>
-                is trying to send a transaction
+                <Explainer
+                    network={network}
+                    rawParams={rawParams}
+                    data={decodedTxData}
+                    fallback="is trying to send a transaction"
+                />
             </Typography>
             <Box
                 mx={2}
@@ -59,7 +85,11 @@ const ConfirmationWindow = () => {
                 bgcolor={theme.palette.primary.light}
                 borderRadius={2}
             >
-                <TxDetails />
+                <TxDetails
+                    network={network}
+                    rawParams={rawParams}
+                    decodedTxData={decodedTxData}
+                />
             </Box>
             <Box
                 px={2}

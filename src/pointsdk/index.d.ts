@@ -177,3 +177,16 @@ export type DecodedTxInput = {
         currency: string;
     };
 };
+
+export type Token = {
+    name: string;
+    address: string;
+};
+
+export type Network = {
+    type: string;
+    name: string;
+    currency_name: string;
+    currency_code: string;
+    tokens?: Token[];
+};
