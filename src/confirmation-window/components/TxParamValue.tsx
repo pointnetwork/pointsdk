@@ -38,9 +38,10 @@ const TxParamValue = ({ param }: Props) => {
                         <li key={identity}>
                             <Typography
                                 fontSize="inherit"
-                                color={theme.palette.primary.main}
+                                fontWeight="normal"
+                                color={theme.palette.text.primary}
                             >
-                                @{identity}
+                                {identity}
                             </Typography>
                         </li>
                     ))}

@@ -39,6 +39,7 @@ const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
                 switch (key) {
                     case "from":
                     case "to":
+                    case "beneficiary":
                         return (
                             <Address key={idx} label={key} address={value} />
                         );
@@ -55,7 +56,10 @@ const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
                             />
                         );
                     case "data":
-                        if (decodedTxData) {
+                        if (
+                            decodedTxData &&
+                            JSON.stringify(decodedTxData) !== "{}"
+                        ) {
                             return (
                                 <Fragment key={idx}>
                                     <DecodedData data={decodedTxData} />
@@ -65,7 +69,8 @@ const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
                         }
                         return <RawData key={idx} label={key} data={value} />;
                     case "domain":
-                        return decodedTxData ? (
+                        return decodedTxData &&
+                            JSON.stringify(decodedTxData) !== "{}" ? (
                             <DecodedData data={decodedTxData} />
                         ) : null;
                     default:
