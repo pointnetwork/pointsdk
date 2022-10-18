@@ -1,9 +1,13 @@
 import React from "react";
+import Typography from "@mui/material/Typography";
+import useTheme from "@mui/material/styles/useTheme";
 import { Param, ParamMetaType } from "../../pointsdk/index.d";
 
 type Props = { param: Param };
 
 const TxParamValue = ({ param }: Props) => {
+    const theme = useTheme();
+
     switch (param.meta?.type) {
         case ParamMetaType.ZERO_CONTENT:
             return <span>no content</span>;
@@ -26,6 +30,21 @@ const TxParamValue = ({ param }: Props) => {
                 <span>
                     {param.value} <em>(not found in storage nor blockchain)</em>
                 </span>
+            );
+        case ParamMetaType.IDENTITIES:
+            return (
+                <ul style={{ marginLeft: 24 }}>
+                    {(param.meta.identities || []).map((identity) => (
+                        <li key={identity}>
+                            <Typography
+                                fontSize="inherit"
+                                color={theme.palette.primary.main}
+                            >
+                                @{identity}
+                            </Typography>
+                        </li>
+                    ))}
+                </ul>
             );
         default:
             return <span>{param.value}</span>;
