@@ -3,6 +3,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import useTheme from "@mui/material/styles/useTheme";
 import Label from "./Label";
+import TxParamValue from "./TxParamValue";
 import { DecodedTxInput } from "../../pointsdk/index.d";
 
 type Props = {
@@ -52,7 +53,7 @@ const DecodedData = ({ data }: Props) => {
                                         wordWrap: "break-word",
                                     }}
                                 >
-                                    {p.name}: {p.value}
+                                    {p.name}: <TxParamValue param={p} />
                                 </Typography>
                             </li>
                         ))}
