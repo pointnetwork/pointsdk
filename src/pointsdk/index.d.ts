@@ -168,6 +168,7 @@ export enum ParamMetaType {
     ZERO_CONTENT = "zero_content",
     TX_HASH = "tx_hash",
     NOT_FOUND = "not_found",
+    IDENTITIES = "identities",
 }
 
 export type Param = {
@@ -176,6 +177,7 @@ export type Param = {
     type: string;
     meta?: {
         type: ParamMetaType;
+        identities?: string[];
     };
 };
 
