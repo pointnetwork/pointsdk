@@ -1,17 +1,17 @@
-import React from "react";
-import { formatEther } from "@ethersproject/units";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
-import { DecodedTxInput } from "../../pointsdk/index.d";
-import Label from "./Label";
+import React from 'react';
+import {formatEther} from '@ethersproject/units';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import useTheme from '@mui/material/styles/useTheme';
+import {DecodedTxInput} from '../../pointsdk/index.d';
+import Label from './Label';
 
-type Props = Pick<DecodedTxInput, "gas">;
+type Props = Pick<DecodedTxInput, 'gas'>;
 
-const GasEstimate = ({ gas }: Props) => {
+const GasEstimate = ({gas}: Props) => {
     const theme = useTheme();
 
-    const parsedAmount = gas.currency.toUpperCase().includes("SOL")
+    const parsedAmount = gas.currency.toUpperCase().includes('SOL')
         ? gas.value
         : formatEther(gas.value);
 

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from 'webextension-polyfill';
 
 let windowId: number | null = null;
 export const displayConfirmationWindow = async (
@@ -7,21 +7,21 @@ export const displayConfirmationWindow = async (
     host: string,
     network: string,
     params = {},
-    decodedTxData = {},
+    decodedTxData = {}
 ) => {
     const query = new URLSearchParams();
-    query.append("reqId", reqId);
-    query.append("pointId", pointId);
-    query.append("host", host);
-    query.append("network", network);
-    query.append("params", JSON.stringify(params));
-    query.append("decodedTxData", JSON.stringify(decodedTxData));
+    query.append('reqId', reqId);
+    query.append('pointId', pointId);
+    query.append('host', host);
+    query.append('network', network);
+    query.append('params', JSON.stringify(params));
+    query.append('decodedTxData', JSON.stringify(decodedTxData));
 
     const win = await browser.windows.create({
-        type: "detached_panel",
+        type: 'detached_panel',
         width: 400,
         height: 600,
-        url: `./confirmation-window/index.html?${query.toString()}`,
+        url: `./confirmation-window/index.html?${query.toString()}`
     });
     windowId = win.id!;
 };

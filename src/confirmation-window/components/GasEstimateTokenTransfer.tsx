@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import useCurrency from "../../utils/use-currency";
-import useTokens from "../../utils/use-tokens";
-import { getTokenTransferGasEstimate } from "../../utils/gas";
-import GasEstimate from "./GasEstimate";
+import React, {useState, useEffect} from 'react';
+import useCurrency from '../../utils/use-currency';
+import useTokens from '../../utils/use-tokens';
+import {getTokenTransferGasEstimate} from '../../utils/gas';
+import GasEstimate from './GasEstimate';
 
 type Props = {
     network: string;
     toAddress: string;
 };
 
-const GasEstimateTokenTransfer = ({ network, toAddress }: Props) => {
-    const { currency, loading: loadingCurrency } = useCurrency(network);
-    const { tokens, loading: loadingTokens } = useTokens(network);
-    const [gas, setGas] = useState("");
+const GasEstimateTokenTransfer = ({network, toAddress}: Props) => {
+    const {currency, loading: loadingCurrency} = useCurrency(network);
+    const {tokens, loading: loadingTokens} = useTokens(network);
+    const [gas, setGas] = useState('');
 
     useEffect(() => {
         async function getGas() {
@@ -25,7 +25,7 @@ const GasEstimateTokenTransfer = ({ network, toAddress }: Props) => {
         }
     }, [tokens, toAddress, loadingTokens, loadingCurrency]);
 
-    return gas ? <GasEstimate gas={{ value: gas, currency }} /> : null;
+    return gas ? <GasEstimate gas={{value: gas, currency}} /> : null;
 };
 
 export default GasEstimateTokenTransfer;

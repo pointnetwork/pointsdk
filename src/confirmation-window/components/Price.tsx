@@ -1,12 +1,12 @@
-import React from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
-import CircularProgress from "@mui/material/CircularProgress";
-import Label from "./Label";
-import useCurrency from "../../utils/use-currency";
-import useTokens from "../../utils/use-tokens";
-import { formatAmount } from "../../utils/format";
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import useTheme from '@mui/material/styles/useTheme';
+import CircularProgress from '@mui/material/CircularProgress';
+import Label from './Label';
+import useCurrency from '../../utils/use-currency';
+import useTokens from '../../utils/use-tokens';
+import {formatAmount} from '../../utils/format';
 
 type Props = {
     label: string;
@@ -15,10 +15,10 @@ type Props = {
     to: string;
 };
 
-const Price = ({ label, value, network, to }: Props) => {
+const Price = ({label, value, network, to}: Props) => {
     const theme = useTheme();
-    const { currency, loading } = useCurrency(network);
-    const { tokens } = useTokens(network);
+    const {currency, loading} = useCurrency(network);
+    const {tokens} = useTokens(network);
     const formattedAmount = formatAmount(value, currency, tokens, to);
 
     return (

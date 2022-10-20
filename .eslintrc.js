@@ -52,7 +52,10 @@ module.exports = {
         'no-with': 2,
         'valid-typeof': 2,
         'no-unused-vars': 'off',
-        '@typescript-eslint/no-unused-vars': ['error', {argsIgnorePattern: '^_'}],
+        '@typescript-eslint/no-unused-vars': [
+            'error',
+            {argsIgnorePattern: '^_', varsIgnorePattern: '^_'}
+        ],
         'no-continue': 1,
         'no-unreachable': 'error',
         'no-unused-expressions': 'error',
@@ -100,8 +103,14 @@ module.exports = {
             }
         ],
         'space-in-parens': ['error', 'never'],
+        'no-case-declarations': 'warn',
         eqeqeq: ['error', 'always', {null: 'ignore'}],
         'prefer-const': ['error', {destructuring: 'all', ignoreReadBeforeAssign: false}],
-        'no-multiple-empty-lines': ['warn', {max: 1, maxEOF: 0}]
+        'no-multiple-empty-lines': ['warn', {max: 1, maxEOF: 0}],
+        '@typescript-eslint/no-unsafe-call': 'warn', // TODO: fix and delete rule
+        '@typescript-eslint/no-unsafe-assignment': 'warn', // TODO: fix and delete rule
+        '@typescript-eslint/no-unsafe-member-access': 'warn', // TODO: fix and delete rule
+        '@typescript-eslint/restrict-template-expressions': 'warn', // TODO: fix and delete rule
+        '@typescript-eslint/no-unsafe-return': 'warn' // TODO: fix and delete rule
     }
 };

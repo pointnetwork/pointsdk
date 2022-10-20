@@ -1,4 +1,4 @@
-import { Types, ActionMap } from "./shared";
+import {Types, ActionMap} from './shared';
 
 export type WalletType = {
     address: string;
@@ -14,5 +14,4 @@ export type WalletPayload = {
     };
 };
 
-export type WalletActions =
-    ActionMap<WalletPayload>[keyof ActionMap<WalletPayload>];
+export type WalletActions = ActionMap<WalletPayload>[keyof ActionMap<WalletPayload>];
