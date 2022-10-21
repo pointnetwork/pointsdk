@@ -1,11 +1,11 @@
-import React from "react";
-import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
-import { Param, ParamMetaType } from "../../pointsdk/index.d";
+import React from 'react';
+import Typography from '@mui/material/Typography';
+import useTheme from '@mui/material/styles/useTheme';
+import {Param, ParamMetaType} from '../../pointsdk/index.d';
 
-type Props = { param: Param };
+type Props = {param: Param};
 
-const TxParamValue = ({ param }: Props) => {
+const TxParamValue = ({param}: Props) => {
     const theme = useTheme();
 
     switch (param.meta?.type) {
@@ -13,18 +13,12 @@ const TxParamValue = ({ param }: Props) => {
             return <span>no content</span>;
         case ParamMetaType.STORAGE_ID:
             return (
-                <a
-                    href={`https://point/_storage/${param.value}`}
-                    target="_blank"
-                    rel="noreferrer"
-                >
+                <a href={`https://point/_storage/${param.value}`} target="_blank" rel="noreferrer">
                     content in storage &rarr; {param.value}
                 </a>
             );
         case ParamMetaType.TX_HASH:
-            return (
-                <span>Blockchain Transaction Hash &rarr; {param.value}</span>
-            );
+            return <span>Blockchain Transaction Hash &rarr; {param.value}</span>;
         case ParamMetaType.NOT_FOUND:
             return (
                 <span>
@@ -33,8 +27,8 @@ const TxParamValue = ({ param }: Props) => {
             );
         case ParamMetaType.IDENTITIES:
             return (
-                <ul style={{ marginLeft: 24 }}>
-                    {(param.meta.identities || []).map((identity) => (
+                <ul style={{marginLeft: 24}}>
+                    {(param.meta.identities || []).map(identity => (
                         <li key={identity}>
                             <Typography
                                 fontSize="inherit"

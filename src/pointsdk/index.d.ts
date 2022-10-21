@@ -18,7 +18,7 @@ export type ContractEventsRequest = {
     host: string;
     contractName: string;
     event: string;
-    filter?: Object;
+    filter?: Record<string, unknown>;
 };
 
 export type ContractSendRequest = {
@@ -37,29 +37,17 @@ export type WalletSendRequest = {
 
 export type URLSearchQuery = ConstructorParameters<typeof URLSearchParams>[0];
 
-export type StorageGetRequest = { id: string; encoding?: string } & Record<
-    string,
-    string
->;
+export type StorageGetRequest = {id: string; encoding?: string} & Record<string, string>;
 
-export type OwnerToIdentityRequest = { owner: string } & Record<string, string>;
+export type OwnerToIdentityRequest = {owner: string} & Record<string, string>;
 
-export type IdentityToOwnerRequest = { identity: string } & Record<
-    string,
-    string
->;
+export type IdentityToOwnerRequest = {identity: string} & Record<string, string>;
 
-export type EncryptDataRequest = { publicKey: string; data: string } & Record<
-    string,
-    string
->;
+export type EncryptDataRequest = {publicKey: string; data: string} & Record<string, string>;
 
-export type DecryptDataRequest = { data: string } & Record<string, string>;
+export type DecryptDataRequest = {data: string} & Record<string, string>;
 
-export type PublicKeyByIdentityRequest = { identity: string } & Record<
-    string,
-    string
->;
+export type PublicKeyByIdentityRequest = {identity: string} & Record<string, string>;
 
 export type StoragePutStringRequest = {
     id: string;
@@ -73,7 +61,7 @@ export type SubscriptionParams = {
     event: string;
 } & SubscriptionOptions;
 
-export type SubscriptionRequest = { type: string; params: SubscriptionParams };
+export type SubscriptionRequest = {type: string; params: SubscriptionParams};
 
 export type SubscriptionEventMetaData = {
     type: string;
@@ -81,25 +69,23 @@ export type SubscriptionEventMetaData = {
     subscriptionId: string | null;
 };
 
-export type SubscriptionEvent<T> = SubscriptionEventMetaData & { data: T };
+export type SubscriptionEvent<T> = SubscriptionEventMetaData & {data: T};
 
 export type MessageQueueConfig = {
     type: string;
     params?: SubscriptionParams | Record<string, unknown>;
 };
 
-export type SubscriptionMessages = { [subscriptionId: string]: any[] };
+export type SubscriptionMessages = {[subscriptionId: string]: any[]};
 
-export type SubscriptionErrors = { [subscriptionId: string]: Error | null };
+export type SubscriptionErrors = {[subscriptionId: string]: Error | null};
 
 export type ZProxyWSOptions = {
     messageQueueSizeLimit?: number;
 };
 
 export type ZProxyWS = WebSocket & {
-    subscribeToContractEvent: <T>(
-        cfg: SubscriptionParams,
-    ) => Promise<() => Promise<T>>;
+    subscribeToContractEvent: <T>(cfg: SubscriptionParams) => Promise<() => Promise<T>>;
 };
 
 export type IdentityData = {
@@ -107,32 +93,30 @@ export type IdentityData = {
     identity: string;
     address: string;
     publicKey: string;
-    network: "solana" | "ethereum" | "point";
+    network: 'solana' | 'ethereum' | 'point';
 };
 
 export type PointType = {
     version: string;
     status: {
-        ping: () => Promise<"pong">;
+        ping: () => Promise<'pong'>;
     };
     contract: {
         load: <T>(request: ContractLoadRequest) => Promise<T>;
         call: <T>(request: ContractCallRequest) => Promise<T>;
         send: <T>(request: ContractSendRequest) => Promise<T>;
         events: <T>(request: ContractEventsRequest) => Promise<T>;
-        subscribe: <T>(
-            request: SubscriptionParams,
-        ) => Promise<() => Promise<T>>;
+        subscribe: <T>(request: SubscriptionParams) => Promise<() => Promise<T>>;
     };
     storage: {
         postFile: <T>(request: FormData) => Promise<T>;
         encryptAndPostFile: <T>(
             request: FormData,
             identities: string[],
-            metadata?: string[],
+            metadata?: string[]
         ) => Promise<T>;
         getString: <T>(request: StorageGetRequest) => Promise<T>;
-        getFile: (config: { id: string }) => Promise<Blob>;
+        getFile: (config: {id: string}) => Promise<Blob>;
         getEncryptedFile: (config: {
             id: string;
             eSymmetricObj?: string;
@@ -149,26 +133,22 @@ export type PointType = {
         encryptData: <T>(request: EncryptDataRequest) => Promise<T>;
         decryptData: <T>(request: DecryptDataRequest) => Promise<T>;
         decryptSymmetricKey: <T>(request: DecryptDataRequest) => Promise<T>;
-        decryptDataWithDecryptedKey: <T>(
-            request: DecryptDataRequest,
-        ) => Promise<T>;
+        decryptDataWithDecryptedKey: <T>(request: DecryptDataRequest) => Promise<T>;
     };
     identity: {
         ownerToIdentity: <T>(request: OwnerToIdentityRequest) => Promise<T>;
         identityToOwner: <T>(request: IdentityToOwnerRequest) => Promise<T>;
-        publicKeyByIdentity: <T>(
-            request: PublicKeyByIdentityRequest,
-        ) => Promise<T>;
+        publicKeyByIdentity: <T>(request: PublicKeyByIdentityRequest) => Promise<T>;
         me: () => Promise<IdentityData>;
     };
 };
 
 export enum ParamMetaType {
-    STORAGE_ID = "storage_id",
-    ZERO_CONTENT = "zero_content",
-    TX_HASH = "tx_hash",
-    NOT_FOUND = "not_found",
-    IDENTITIES = "identities",
+    STORAGE_ID = 'storage_id',
+    ZERO_CONTENT = 'zero_content',
+    TX_HASH = 'tx_hash',
+    NOT_FOUND = 'not_found',
+    IDENTITIES = 'identities'
 }
 
 export type Param = {

@@ -1,11 +1,11 @@
-import React, { useEffect, Fragment } from "react";
-import { generate } from "geopattern";
-import { DecodedTxInput } from "../../pointsdk/index.d";
-import Address from "./Address";
-import Price from "./Price";
-import RawData from "./RawData";
-import DecodedData from "./DecodedData";
-import GasEstimate from "./GasEstimate";
+import React, {useEffect, Fragment} from 'react';
+import {generate} from 'geopattern';
+import {DecodedTxInput} from '../../pointsdk/index.d';
+import Address from './Address';
+import Price from './Price';
+import RawData from './RawData';
+import DecodedData from './DecodedData';
+import GasEstimate from './GasEstimate';
 
 type Props = {
     rawParams: Record<string, string>;
@@ -13,16 +13,12 @@ type Props = {
     network: string;
 };
 
-const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
+const TxDetails = ({rawParams, decodedTxData, network}: Props) => {
     useEffect(() => {
         async function drawBg() {
             try {
-                const {
-                    data: { hash },
-                } = await window.point.wallet.hash();
-                document.body.style.backgroundImage = generate(
-                    String(hash),
-                ).toDataUrl();
+                const {data} = (await window.point.wallet.hash()) as {data: {hash: unknown}};
+                document.body.style.backgroundImage = generate(String(data.hash)).toDataUrl();
             } catch (e) {
                 console.error(e);
             }
@@ -37,29 +33,24 @@ const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
             ) : null}
             {Object.entries(rawParams).map(([key, value], idx) => {
                 switch (key) {
-                    case "from":
-                    case "to":
-                    case "beneficiary":
-                        return (
-                            <Address key={idx} label={key} address={value} />
-                        );
-                    case "value":
-                    case "gas":
-                    case "gasPrice":
+                    case 'from':
+                    case 'to':
+                    case 'beneficiary':
+                        return <Address key={idx} label={key} address={value} />;
+                    case 'value':
+                    case 'gas':
+                    case 'gasPrice':
                         return (
                             <Price
                                 key={idx}
                                 label={key}
                                 value={value}
                                 network={network}
-                                to={rawParams?.to || ""}
+                                to={rawParams?.to || ''}
                             />
                         );
-                    case "data":
-                        if (
-                            decodedTxData &&
-                            JSON.stringify(decodedTxData) !== "{}"
-                        ) {
+                    case 'data':
+                        if (decodedTxData && JSON.stringify(decodedTxData) !== '{}') {
                             return (
                                 <Fragment key={idx}>
                                     <DecodedData data={decodedTxData} />
@@ -68,9 +59,8 @@ const TxDetails = ({ rawParams, decodedTxData, network }: Props) => {
                             );
                         }
                         return <RawData key={idx} label={key} data={value} />;
-                    case "domain":
-                        return decodedTxData &&
-                            JSON.stringify(decodedTxData) !== "{}" ? (
+                    case 'domain':
+                        return decodedTxData && JSON.stringify(decodedTxData) !== '{}' ? (
                             <DecodedData data={decodedTxData} />
                         ) : null;
                     default:

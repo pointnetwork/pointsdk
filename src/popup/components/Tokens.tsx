@@ -1,40 +1,34 @@
-import React, {
-    Fragment,
-    FunctionComponent,
-    useContext,
-    useEffect,
-    useState,
-} from "react";
-import { Box, Divider } from "@mui/material";
-import { BlockchainContext } from "pointsdk/popup/context/blockchain";
-import ERC20Abi from "pointsdk/abi/ERC20.json";
-import { Contract } from "@ethersproject/contracts";
-import { Web3Provider } from "@ethersproject/providers";
-import { formatUnits } from "@ethersproject/units";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
+import React, {Fragment, FunctionComponent, useContext, useEffect, useState} from 'react';
+import {Box, Divider} from '@mui/material';
+import {BlockchainContext} from 'pointsdk/popup/context/blockchain';
+import ERC20Abi from 'pointsdk/abi/ERC20.json';
+import {Contract} from '@ethersproject/contracts';
+import {Web3Provider} from '@ethersproject/providers';
+import {formatUnits} from '@ethersproject/units';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Tokens: FunctionComponent = () => {
     const [balances, setBalances] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
-    const { globalChainId, userData, networks } = useContext(BlockchainContext);
+    const {globalChainId, userData, networks} = useContext(BlockchainContext);
 
     const getBalances = async () => {
         setError(false);
         setLoading(true);
         try {
             const responses = await Promise.all(
-                (networks[globalChainId]!.tokens ?? []).map(async (token) => {
+                (networks[globalChainId]!.tokens ?? []).map(async token => {
                     const contract = new Contract(
                         token.address,
                         ERC20Abi,
-                        new Web3Provider(window.ethereum, "any"),
+                        new Web3Provider(window.ethereum, 'any')
                     );
                     const decimals = await contract.decimals();
                     const balance = await contract.balanceOf(userData.address);
                     return formatUnits(balance.toString(), decimals);
-                }),
+                })
             );
             setBalances(responses);
         } catch (e) {
@@ -66,7 +60,7 @@ const Tokens: FunctionComponent = () => {
                     display="flex"
                     alignItems="center"
                     justifyContent="center"
-                    sx={{ margin: "20px 0" }}
+                    sx={{margin: '20px 0'}}
                 >
                     <CircularProgress size={24} />
                 </Box>
@@ -80,17 +74,11 @@ const Tokens: FunctionComponent = () => {
                     {tokens.map((token, index) => (
                         <Fragment key={index}>
                             {index === 0 && <Divider />}
-                            <Box
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="space-between"
-                            >
+                            <Box display="flex" alignItems="center" justifyContent="space-between">
                                 <Typography variant="h6" ml={1}>
                                     {token.name}
                                 </Typography>
-                                <Typography mr={1}>
-                                    {balances[index]}
-                                </Typography>
+                                <Typography mr={1}>{balances[index]}</Typography>
                             </Box>
                             <Divider />
                         </Fragment>
