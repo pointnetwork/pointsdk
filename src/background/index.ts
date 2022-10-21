@@ -6,6 +6,8 @@ import {
     setAuthTokenHandler,
     getAuthToken
 } from 'pointsdk/background/messaging';
+import subscriptionsController from '../event-subscription/controller';
+import {SUBSCRIPTION_MESSAGE_TYPE} from '../event-subscription/types';
 
 const setChainIds = async () => {
     try {
@@ -58,6 +60,8 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             return setAuthTokenHandler(message);
         case 'getAuthToken':
             return getAuthToken();
+        case SUBSCRIPTION_MESSAGE_TYPE:
+            return subscriptionsController.handleMessage(message);
         default:
             if (sender.url?.match('confirmation-window')) {
                 return confirmationWindowListener(message);
@@ -65,3 +69,5 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
             console.error('Unexpected runtime message: ', message, ' from sender: ', sender);
     }
 });
+
+subscriptionsController.init();

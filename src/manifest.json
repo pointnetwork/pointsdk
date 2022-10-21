@@ -22,6 +22,7 @@
   "permissions": [
     "<all_urls>",
     "tabs",
+    "history",
     "activeTab",
     "storage",
     "webRequest"
@@ -51,6 +52,8 @@
     "popup/index.tsx",
     "confirmation-window/index.html",
     "confirmation-window/index.tsx",
+    "event-subscription/ui/index.html",
+    "event-subscription/ui/index.tsx",
     "pointsdk/pageMessaging.ts"
   ]
 }
