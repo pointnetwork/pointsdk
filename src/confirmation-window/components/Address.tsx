@@ -8,9 +8,10 @@ import Label from './Label';
 type Props = {
     label: string;
     address: string;
+    highlight: boolean;
 };
 
-const Address = ({label, address}: Props) => {
+const Address = ({label, address, highlight}: Props) => {
     const [userAddress, setUserAddress] = useState('');
     const [identity, setIdentity] = useState('');
     const [loading, setLoading] = useState(false);
@@ -57,11 +58,9 @@ const Address = ({label, address}: Props) => {
                                 overflowWrap: 'break-word',
                                 wordWrap: 'break-word'
                             }}
-                            fontWeight={isUserAddress ? 600 : 'normal'}
+                            fontWeight={highlight ? 600 : 'normal'}
                             color={
-                                isUserAddress
-                                    ? theme.palette.primary.main
-                                    : theme.palette.text.primary
+                                highlight ? theme.palette.primary.main : theme.palette.text.primary
                             }
                         >
                             {identity}&nbsp;{isUserAddress ? '(You)' : ''}
@@ -69,8 +68,10 @@ const Address = ({label, address}: Props) => {
                     ) : null}
 
                     <Typography
-                        color={theme.palette.text.secondary}
+                        color={highlight ? theme.palette.primary.main : theme.palette.text.primary}
+                        fontWeight={highlight ? 600 : 'normal'}
                         variant="body2"
+                        fontFamily="monospace"
                         sx={{
                             overflowWrap: 'break-word',
                             wordWrap: 'break-word'

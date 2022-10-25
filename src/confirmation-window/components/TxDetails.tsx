@@ -6,6 +6,7 @@ import Price from './Price';
 import RawData from './RawData';
 import DecodedData from './DecodedData';
 import GasEstimate from './GasEstimate';
+import GasEstimateTokenTransfer from './GasEstimateTokenTransfer';
 
 type Props = {
     rawParams: Record<string, string>;
@@ -31,12 +32,22 @@ const TxDetails = ({rawParams, decodedTxData, network}: Props) => {
             {decodedTxData?.gas?.value && decodedTxData?.gas?.currency ? (
                 <GasEstimate gas={decodedTxData.gas} />
             ) : null}
+            {rawParams?.value ? (
+                <GasEstimateTokenTransfer network={network} toAddress={rawParams?.to || ''} />
+            ) : null}
             {Object.entries(rawParams).map(([key, value], idx) => {
                 switch (key) {
                     case 'from':
                     case 'to':
                     case 'beneficiary':
-                        return <Address key={idx} label={key} address={value} />;
+                        return (
+                            <Address
+                                key={idx}
+                                label={key}
+                                address={value}
+                                highlight={['to', 'beneficiary'].includes(key)}
+                            />
+                        );
                     case 'value':
                     case 'gas':
                     case 'gasPrice':

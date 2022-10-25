@@ -18,7 +18,7 @@ const GasEstimate = ({gas}: Props) => {
     return (
         <Box mb={2}>
             <Label>Gas (estimate)</Label>
-            <Typography fontWeight={600} color={theme.palette.primary.main}>
+            <Typography variant="body2" color={theme.palette.text.primary}>
                 {parsedAmount}&nbsp;{gas.currency.toUpperCase()}
             </Typography>
         </Box>

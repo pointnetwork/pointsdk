@@ -18,7 +18,7 @@ const DecodedData = ({data}: Props) => {
             <Label>Data</Label>
 
             <Box sx={{display: 'flex', flexDirection: 'row'}}>
-                <Typography variant="body2" color={theme.palette.text.secondary}>
+                <Typography variant="body2" color={theme.palette.text.primary}>
                     Contract Method:
                 </Typography>
                 <Typography
@@ -33,7 +33,7 @@ const DecodedData = ({data}: Props) => {
 
             {data.params && data.params.length > 0 ? (
                 <>
-                    <Typography variant="body2" color={theme.palette.text.secondary}>
+                    <Typography variant="body2" color={theme.palette.text.primary}>
                         Method Params:
                     </Typography>
                     <ul style={{marginLeft: 32}}>
@@ -41,7 +41,7 @@ const DecodedData = ({data}: Props) => {
                             <li key={p.name}>
                                 <Typography
                                     variant="body2"
-                                    color={theme.palette.text.secondary}
+                                    color={theme.palette.text.primary}
                                     sx={{
                                         overflowWrap: 'break-word',
                                         wordWrap: 'break-word'
