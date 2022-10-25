@@ -25,13 +25,28 @@ const TxParamValue = ({param}: Props) => {
             return (
                 <ul style={{marginLeft: 24}}>
                     {(param.meta.identities || []).map(identity => (
-                        <li key={identity}>
+                        <li key={identity.address}>
+                            {identity.handle ? (
+                                <Typography
+                                    fontSize="inherit"
+                                    fontWeight={600}
+                                    color={theme.palette.text.primary}
+                                >
+                                    {identity.handle}
+                                </Typography>
+                            ) : null}
+
                             <Typography
                                 fontSize="inherit"
                                 fontWeight="normal"
-                                color={theme.palette.text.primary}
+                                fontFamily="monospace"
+                                color={
+                                    identity.handle
+                                        ? theme.palette.text.secondary
+                                        : theme.palette.text.primary
+                                }
                             >
-                                {identity}
+                                {identity.address}
                             </Typography>
                         </li>
                     ))}
