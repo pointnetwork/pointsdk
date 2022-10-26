@@ -37,7 +37,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
     const gatewayAlert = async () => {
         swal.fire({
             title: 'Demo mode',
-            html: `You cannot make writing operations right here but you can download Point Browser and have the full web3 experience. 
+            html: `You cannot make writing operations right here but you can download Point Browser and have the full web3 experience.
 <a href="https://pointnetwork.io/download" target="_blank" rel="noopener noreferrer">https://pointnetwork.io/download</a>`,
             icon: 'info'
         });

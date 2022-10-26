@@ -3,6 +3,7 @@ import getEthProvider from 'pointsdk/pointsdk/ethProvider';
 import getSolanaProvider from 'pointsdk/pointsdk/solanaProvider';
 import NETWORKS from 'pointsdk/constants/networks';
 import swal from 'sweetalert2';
+import getKeplrProvider from './keplrProvider';
 
 // eslint-disable-next-line prettier/prettier
 window.point = getSdk(window.location.origin, String(process.env.PACKAGE_VERSION), swal);
@@ -10,3 +11,4 @@ window.point = getSdk(window.location.origin, String(process.env.PACKAGE_VERSION
 window.point.networks = NETWORKS;
 window.ethereum = getEthProvider();
 window.solana = getSolanaProvider();
+window.keplr = getKeplrProvider();
