@@ -70,4 +70,5 @@ browser.runtime.onMessage.addListener(async (message, sender) => {
     }
 });
 
-subscriptionsController.init();
+// Uncomment the next line to enable the event-subscription feature.
+// subscriptionsController.init();
