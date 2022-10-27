@@ -20,22 +20,33 @@ const TxParamValue = ({param}: Props) => {
         case ParamMetaType.TX_HASH:
             return <span>Blockchain Transaction Hash &rarr; {param.value}</span>;
         case ParamMetaType.NOT_FOUND:
-            return (
-                <span>
-                    {param.value} <em>(not found in storage nor blockchain)</em>
-                </span>
-            );
+            return <span>{param.value} (?)</span>;
         case ParamMetaType.IDENTITIES:
             return (
                 <ul style={{marginLeft: 24}}>
                     {(param.meta.identities || []).map(identity => (
-                        <li key={identity}>
+                        <li key={identity.address}>
+                            {identity.handle ? (
+                                <Typography
+                                    fontSize="inherit"
+                                    fontWeight={600}
+                                    color={theme.palette.text.primary}
+                                >
+                                    {identity.handle}
+                                </Typography>
+                            ) : null}
+
                             <Typography
                                 fontSize="inherit"
                                 fontWeight="normal"
-                                color={theme.palette.text.primary}
+                                fontFamily="monospace"
+                                color={
+                                    identity.handle
+                                        ? theme.palette.text.secondary
+                                        : theme.palette.text.primary
+                                }
                             >
-                                {identity}
+                                {identity.address}
                             </Typography>
                         </li>
                     ))}

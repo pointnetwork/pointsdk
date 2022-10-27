@@ -19,7 +19,7 @@ export const displayConfirmationWindow = async (
 
     const win = await browser.windows.create({
         type: 'detached_panel',
-        width: 400,
+        width: 512,
         height: 600,
         url: `./confirmation-window/index.html?${query.toString()}`
     });

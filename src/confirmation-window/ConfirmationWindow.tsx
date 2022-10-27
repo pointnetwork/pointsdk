@@ -5,7 +5,6 @@ import Typography from '@mui/material/Typography';
 import useTheme from '@mui/material/styles/useTheme';
 import {useLocation} from 'react-router-dom';
 import browser from 'webextension-polyfill';
-import Explainer from './components/Explainer';
 import TxDetails from './components/TxDetails';
 import {DecodedTxInput} from '../pointsdk/index.d';
 
@@ -70,12 +69,9 @@ const ConfirmationWindow = () => {
                 <Typography variant="h5" fontWeight="bold">
                     {query.get('host')?.replace(/^https?:\/\//, '')}
                 </Typography>
-                <Explainer
-                    network={network}
-                    rawParams={rawParams}
-                    data={decodedTxData}
-                    fallback="is trying to send a transaction"
-                />
+                <Typography my={1}>
+                    is trying to send a transaction to the blockchain on your behalf.
+                </Typography>
             </Typography>
             <Box
                 mx={2}

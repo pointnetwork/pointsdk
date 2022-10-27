@@ -151,13 +151,18 @@ export enum ParamMetaType {
     IDENTITIES = 'identities'
 }
 
+type IdentityMeta = {
+    handle: string;
+    address: string;
+};
+
 export type Param = {
     name: string;
     value: string;
     type: string;
     meta?: {
         type: ParamMetaType;
-        identities?: string[];
+        identities?: IdentityMeta[];
     };
 };
 
