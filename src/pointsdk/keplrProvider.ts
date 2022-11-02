@@ -138,6 +138,8 @@ export default function getKeplrProvider() {
             });
         }
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (window as any).getOfflineSigner = keplrInstance.getOfflineSigner.bind(keplrInstance);
     return keplrInstance;
 }
 /* TODO
