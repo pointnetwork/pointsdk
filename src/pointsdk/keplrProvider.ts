@@ -1,5 +1,35 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import {AccountData, AminoSignResponse, BroadcastMode} from '@cosmjs/launchpad';
+import {Coin} from '@cosmjs/amino';
+
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+export interface AminoMsg {
+    readonly type: string;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    readonly value: any;
+}
+
+export interface StdFee {
+    readonly amount: readonly Coin[];
+    readonly gas: string;
+    /** The granter address that is used for paying with feegrants */
+    readonly granter?: string;
+    /** The fee payer address. The payer must have signed the transaction. */
+    readonly payer?: string;
+}
+export interface StdSignDoc {
+    readonly chain_id: string;
+    readonly account_number: string;
+    readonly sequence: string;
+    readonly fee: StdFee;
+    readonly msgs: readonly AminoMsg[];
+    readonly memo: string;
+}
+
+export interface KeplrKey {
+    bech32Address: string;
+    pubKey: Uint8Array;
+}
 
 export default function getKeplrProvider() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -29,11 +59,11 @@ export default function getKeplrProvider() {
                 __direction: 'to_bg'
             });
         });
-    return {
+    const keplrInstance = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         enable: async function (chainIds: string | string[]) {
             return handleRequest({
-                method: `keplr_enable as string}`,
+                method: `keplr_enable`,
                 params: [chainIds]
             });
         },
@@ -42,13 +72,76 @@ export default function getKeplrProvider() {
                 method: 'keplr_getKey',
                 params: [chainId]
             });
+        },
+        getOfflineSigner: async function (chainId: string) {
+            const offlineSignerResponse = await handleRequest({
+                method: 'keplr_getOfflineSigner',
+                params: [chainId]
+            });
+            if (!(offlineSignerResponse as any).keplr) {
+                throw 'Keplr instance was not created in backend';
+            }
+            return {
+                getAccounts: async (): Promise<AccountData[]> => {
+                    const key = (await keplrInstance.getKey(chainId)) as KeplrKey;
+                    return [
+                        {
+                            address: key.bech32Address,
+                            // Currently, only secp256k1 is supported.
+                            algo: 'secp256k1',
+                            pubkey: key.pubKey
+                        }
+                    ];
+                },
+
+                signAmino: async (
+                    signerAddress: string,
+                    signDoc: StdSignDoc
+                ): Promise<AminoSignResponse> => {
+                    if (chainId !== signDoc.chain_id) {
+                        throw new Error('Unmatched chain id with the offline signer');
+                    }
+                    const key = (await keplrInstance.getKey(signDoc.chain_id)) as KeplrKey;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if (key.bech32Address !== signerAddress) {
+                        throw new Error('Unknown signer address');
+                    }
+                    return (await keplrInstance.signAmino(
+                        chainId,
+                        signerAddress,
+                        signDoc
+                    )) as AminoSignResponse;
+                },
+
+                // Fallback function for the legacy cosmjs implementation before the staragte.
+                sign: async (
+                    signerAddress: string,
+                    signDoc: StdSignDoc
+                ): Promise<AminoSignResponse> =>
+                    (await keplrInstance.signAmino(
+                        chainId,
+                        signerAddress,
+                        signDoc
+                    )) as AminoSignResponse
+            };
+        },
+        signAmino: async function (chainId: string, signerAddress: string, signDoc: StdSignDoc) {
+            return handleRequest({
+                method: 'keplr_signAmino',
+                params: [chainId, signerAddress, signDoc]
+            });
+        },
+        sendTx: async function (chainId: string, tx: Uint8Array, mode: BroadcastMode) {
+            return handleRequest({
+                method: 'keplr_sendTx',
+                params: [chainId, tx, mode]
+            });
         }
     };
+    return keplrInstance;
 }
 /* TODO
-      signAmino(chainId: string, signer: string, signDoc: StdSignDoc): Promise<AminoSignResponse>
       signDirect(chainId:string, signer:string, signDoc: {
-      sendTx(chainId: string, tx: Uint8Array, mode: BroadcastMode): Promise<Uint8Array>;
       sendBack(result)
       signArbitrary(chainId: string, signer: string, data: string | Uint8Array): Promise<StdSignature>;
       verifyArbitrary(chainId: string, signer: string, data: string | Uint8Array, signature: StdSignature): Promise<boolean>;
