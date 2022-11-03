@@ -73,15 +73,7 @@ export default function getKeplrProvider() {
                 params: [chainId]
             });
         },
-        getOfflineSigner: async function (chainId: string) {
-            const offlineSignerResponse = (await handleRequest({
-                method: 'keplr_getOfflineSigner',
-                params: [chainId]
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            })) as {keplr: any};
-            if (!offlineSignerResponse.keplr) {
-                throw 'Keplr instance was not created in backend';
-            }
+        getOfflineSigner: function (chainId: string) {
             return {
                 getAccounts: async (): Promise<AccountData[]> => {
                     const key = (await keplrInstance.getKey(chainId)) as KeplrKey;
