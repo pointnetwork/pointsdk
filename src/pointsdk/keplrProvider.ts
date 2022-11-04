@@ -31,6 +31,60 @@ export interface KeplrKey {
     pubKey: Uint8Array;
 }
 
+interface PubKey {
+    readonly type: string;
+    readonly value: string;
+}
+
+export interface SignDoc {
+    /**
+     * body_bytes is protobuf serialization of a TxBody that matches the
+     * representation in TxRaw.
+     */
+    bodyBytes: Uint8Array;
+    /**
+     * auth_info_bytes is a protobuf serialization of an AuthInfo that matches the
+     * representation in TxRaw.
+     */
+    authInfoBytes: Uint8Array;
+    /**
+     * chain_id is the unique identifier of the chain this transaction targets.
+     * It prevents signed transactions from being used on another chain by an
+     * attacker
+     */
+    chainId: string;
+    /** account_number is the account number of the account in state */
+    accountNumber: unknown; // should be `Long` from the `long` package instead of `unknown`.
+}
+
+interface DirectSignDoc {
+    bodyBytes?: Uint8Array | null;
+    authInfoBytes?: Uint8Array | null;
+    chainId?: string | null;
+    // Instead of `unknown`, should be `Long` from the `long` package.
+    accountNumber?: unknown | null;
+}
+
+interface KeplrSignOptions {
+    readonly preferNoSetFee?: boolean;
+    readonly preferNoSetMemo?: boolean;
+    readonly disableBalanceCheck?: boolean;
+}
+
+interface StdSignature {
+    readonly pub_key: PubKey;
+    readonly signature: string;
+}
+
+interface DirectSignResponse {
+    /**
+     * The sign doc that was signed.
+     * This may be different from the input signDoc when the signer modifies it as part of the signing process.
+     */
+    readonly signed: SignDoc;
+    readonly signature: StdSignature;
+}
+
 export default function getKeplrProvider() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleRequest = (request: Record<string, any>) =>
@@ -106,6 +160,19 @@ export default function getKeplrProvider() {
                     )) as AminoSignResponse;
                 },
 
+                signDirect: async (
+                    chainId: string,
+                    signer: string,
+                    signDoc: DirectSignDoc,
+                    signOptions: KeplrSignOptions
+                ): Promise<DirectSignResponse> =>
+                    (await keplrInstance.signDirect(
+                        chainId,
+                        signer,
+                        signDoc,
+                        signOptions
+                    )) as DirectSignResponse,
+
                 // Fallback function for the legacy cosmjs implementation before the staragte.
                 sign: async (
                     signerAddress: string,
@@ -124,6 +191,17 @@ export default function getKeplrProvider() {
                 params: [chainId, signerAddress, signDoc]
             });
         },
+        signDirect: async function (
+            chainId: string,
+            signer: string,
+            signDoc: DirectSignDoc,
+            signOptions: KeplrSignOptions
+        ) {
+            return handleRequest({
+                method: 'keplr_signDirect',
+                params: [chainId, signer, signDoc, signOptions]
+            });
+        },
         sendTx: async function (chainId: string, tx: Uint8Array, mode: BroadcastMode) {
             return handleRequest({
                 method: 'keplr_sendTx',
@@ -136,7 +214,6 @@ export default function getKeplrProvider() {
     return keplrInstance;
 }
 /* TODO
-      signDirect(chainId:string, signer:string, signDoc: {
       sendBack(result)
       signArbitrary(chainId: string, signer: string, data: string | Uint8Array): Promise<StdSignature>;
       verifyArbitrary(chainId: string, signer: string, data: string | Uint8Array, signature: StdSignature): Promise<boolean>;
