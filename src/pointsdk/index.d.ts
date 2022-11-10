@@ -41,6 +41,8 @@ export type StorageGetRequest = {id: string; encoding?: string} & Record<string,
 
 export type OwnerToIdentityRequest = {owner: string} & Record<string, string>;
 
+export type IKVListRequest = {identity: string} & Record<string, string>;
+
 export type IdentityToOwnerRequest = {identity: string} & Record<string, string>;
 
 export type EncryptDataRequest = {publicKey: string; data: string} & Record<string, string>;
@@ -96,6 +98,8 @@ export type IdentityData = {
     network: 'solana' | 'ethereum' | 'point';
 };
 
+export type IKVListData = Record<string, unknown>[];
+
 export type PointType = {
     version: string;
     status: {
@@ -140,6 +144,7 @@ export type PointType = {
         identityToOwner: <T>(request: IdentityToOwnerRequest) => Promise<T>;
         publicKeyByIdentity: <T>(request: PublicKeyByIdentityRequest) => Promise<T>;
         me: () => Promise<IdentityData>;
+        ikvList: <IKVListData>(request: IKVListRequest) => Promise<IKVListData>;
     };
 };
 

@@ -22,7 +22,9 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-    IdentityData
+    IdentityData,
+    IKVListData,
+    IKVListRequest
 } from './index.d';
 
 const getSdk = (host: string, version: string, swal: any): PointType => {
@@ -779,7 +781,9 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                 api.get<T>(`identity/identityToOwner/${identity}`, args),
             ownerToIdentity: <T>({owner, ...args}: OwnerToIdentityRequest) =>
                 api.get<T>(`identity/ownerToIdentity/${owner}`, args),
-            me: () => api.get<IdentityData>('identity/isIdentityRegistered/')
+            me: () => api.get<IdentityData>('identity/isIdentityRegistered/'),
+            ikvList: <IKVListData>({identity}: IKVListRequest) =>
+                api.get<IKVListData>(`identity/ikvList/${identity}`)
         },
         ...(host === 'https://point' && !window.top.IS_GATEWAY
             ? {
