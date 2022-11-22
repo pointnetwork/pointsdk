@@ -22,7 +22,8 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-    IdentityData
+    IdentityData,
+    PointNotification
 } from './index.d';
 
 const getSdk = (host: string, version: string, swal: any): PointType => {
@@ -780,6 +781,10 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             ownerToIdentity: <T>({owner, ...args}: OwnerToIdentityRequest) =>
                 api.get<T>(`identity/ownerToIdentity/${owner}`, args),
             me: () => api.get<IdentityData>('identity/isIdentityRegistered/')
+        },
+        notifications: {
+            unread: () => api.get<PointNotification[]>('notifications/unread'),
+            markRead: (id: number) => api.get(`notifications/read/${id}`)
         },
         ...(host === 'https://point' && !window.top.IS_GATEWAY
             ? {

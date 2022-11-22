@@ -187,3 +187,16 @@ export type Network = {
     currency_code: string;
     tokens?: Token[];
 };
+
+export type PointNotification = {
+    id: number;
+    block_number: string;
+    timestamp: number;
+    identity: string;
+    address: string;
+    contract: string;
+    event: string;
+    arguments: Record<string, unknown>;
+    viewed: boolean;
+    log: Record<string, unknown>;
+};

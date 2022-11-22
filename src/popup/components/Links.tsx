@@ -1,11 +1,15 @@
 import React, {FunctionComponent} from 'react';
+import {useNavigate} from 'react-router-dom';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import HomeIcon from '@mui/icons-material/Home';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import browser from 'webextension-polyfill';
 
 const Links: FunctionComponent = () => {
+    const navigate = useNavigate();
+
     const go = async (url: string) => {
         // Open new tab with the desired URL.
         await browser.tabs.create({url});
@@ -19,7 +23,7 @@ const Links: FunctionComponent = () => {
             <Typography variant="caption" sx={{opacity: 0.7}}>
                 Quick Links
             </Typography>
-            <Box display="flex" alignItems="baseline" my={1}>
+            <Box display="flex" justifyContent="space-between" my={1}>
                 <Box
                     display="flex"
                     alignItems="center"
@@ -41,6 +45,17 @@ const Links: FunctionComponent = () => {
                     <AccountBalanceWalletIcon fontSize="small" />
                     <Typography variant="body2" ml="2px">
                         My Wallet
+                    </Typography>
+                </Box>
+                <Box
+                    display="flex"
+                    alignItems="center"
+                    sx={{cursor: 'pointer'}}
+                    onClick={() => navigate('/notifications')}
+                >
+                    <NotificationsIcon fontSize="small" />
+                    <Typography variant="body2" ml="2px">
+                        Notifications
                     </Typography>
                 </Box>
             </Box>
