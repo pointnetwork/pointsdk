@@ -200,3 +200,9 @@ export type PointNotification = {
     viewed: boolean;
     log: Record<string, unknown>;
 };
+
+export type BlockRange = {
+    from: number;
+    to: number;
+    latest?: number;
+};

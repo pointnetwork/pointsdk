@@ -7,7 +7,7 @@ import React, {
     useCallback,
     ReactNode
 } from 'react';
-import {PointNotification} from 'pointsdk/pointsdk/index.d';
+import {PointNotification, BlockRange} from 'pointsdk/pointsdk/index.d';
 
 type NotificationsCtxType = {
     notifications: PointNotification[];
@@ -32,13 +32,35 @@ export const NotificationsProvider = ({children}: {children: ReactNode}) => {
     const [notifications, setNotifications] = useState<PointNotification[]>([]);
 
     useEffect(() => {
+        async function fetchPastEvents(opts: Partial<BlockRange> = {}) {
+            console.log('Request to fetch past events', opts);
+            try {
+                const {data} = (await window.point.notifications.scan(opts)) as {
+                    data: {from: number; to: number; latest: number; logs: PointNotification[]};
+                };
+                console.log({from: data.from, to: data.to, latest: data.latest});
+                if (data.logs && data.logs.length > 0) {
+                    setNotifications(prev => [...prev, ...data.logs]);
+                }
+                if (data.latest > data.to) {
+                    await fetchPastEvents({from: data.to + 1, latest: data.latest});
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+        // TODO: remove the hardcoded `latest` value to scan up to the actual latest block.
+        void fetchPastEvents({latest: 4_053_000});
+    }, []);
+
+    useEffect(() => {
         async function fetchUnread() {
             setLoading(true);
             try {
                 const {data} = (await window.point.notifications.unread()) as {
                     data: PointNotification[];
                 };
-                setNotifications(data);
+                setNotifications(prev => [...prev, ...data]);
             } catch (err) {
                 console.error(err);
                 setError('Unable to fetch notifications.');
