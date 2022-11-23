@@ -16,7 +16,7 @@ const Notifications: FunctionComponent = () => {
                 <BackArrow to="/" />
                 <Typography ml="4px" mt="-3px" variant="h6">
                     Notifications{' '}
-                    {notifications.length > 0 ? <sup>({notifications.length})</sup> : ''}
+                    {notifications.length > 0 ? <span>({notifications.length})</span> : ''}
                 </Typography>
             </Box>
 
