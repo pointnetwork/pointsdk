@@ -5,10 +5,13 @@ import Box from '@mui/material/Box';
 import HomeIcon from '@mui/icons-material/Home';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import Badge from '@mui/material/Badge';
 import browser from 'webextension-polyfill';
+import {useNotifications} from '../context/notifications';
 
 const Links: FunctionComponent = () => {
     const navigate = useNavigate();
+    const {notifications} = useNotifications();
 
     const go = async (url: string) => {
         // Open new tab with the desired URL.
@@ -53,7 +56,14 @@ const Links: FunctionComponent = () => {
                     sx={{cursor: 'pointer'}}
                     onClick={() => navigate('/notifications')}
                 >
-                    <NotificationsIcon fontSize="small" />
+                    <Badge
+                        color="primary"
+                        badgeContent={notifications.length}
+                        max={99}
+                        anchorOrigin={{vertical: 'top', horizontal: 'left'}}
+                    >
+                        <NotificationsIcon fontSize="small" />
+                    </Badge>
                     <Typography variant="body2" ml="2px">
                         Notifications
                     </Typography>
