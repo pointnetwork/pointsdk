@@ -24,7 +24,8 @@
     "tabs",
     "activeTab",
     "storage",
-    "webRequest"
+    "webRequest",
+    "notifications"
   ],
   "content_scripts": [
     {

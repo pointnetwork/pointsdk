@@ -7,6 +7,7 @@ import React, {
     useCallback,
     ReactNode
 } from 'react';
+import browser from 'webextension-polyfill';
 import {PointNotification, BlockRange} from 'pointsdk/pointsdk/index.d';
 
 type NotificationsCtxType = {
@@ -30,6 +31,7 @@ export const NotificationsProvider = ({children}: {children: ReactNode}) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [notifications, setNotifications] = useState<PointNotification[]>([]);
+    const [finishFetching, setFinishFetching] = useState(false);
 
     useEffect(() => {
         async function fetchPastEvents(opts: Partial<BlockRange> = {}) {
@@ -38,12 +40,13 @@ export const NotificationsProvider = ({children}: {children: ReactNode}) => {
                 const {data} = (await window.point.notifications.scan(opts)) as {
                     data: {from: number; to: number; latest: number; logs: PointNotification[]};
                 };
-                console.log({from: data.from, to: data.to, latest: data.latest});
                 if (data.logs && data.logs.length > 0) {
                     setNotifications(prev => [...prev, ...data.logs]);
                 }
                 if (data.latest > data.to) {
                     await fetchPastEvents({from: data.to + 1, latest: data.latest});
+                } else {
+                    setFinishFetching(true);
                 }
             } catch (err) {
                 console.error(err);
@@ -70,6 +73,18 @@ export const NotificationsProvider = ({children}: {children: ReactNode}) => {
         }
         void fetchUnread();
     }, []);
+
+    useEffect(() => {
+        const count = notifications.length;
+        if (finishFetching && count > 0) {
+            void browser.notifications.create({
+                type: 'basic',
+                iconUrl: '../../assets/icons/icon-48.png',
+                title: 'Point Notifications',
+                message: `You have ${count} new notification${count > 1 ? 's' : ''}.`
+            });
+        }
+    }, [notifications, finishFetching]);
 
     const markRead = useCallback(async (id: number) => {
         try {
