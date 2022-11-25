@@ -22,7 +22,9 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-    IdentityData
+    IdentityData,
+    PointNotification,
+    BlockRange
 } from './index.d';
 
 const getSdk = (host: string, version: string, swal: any): PointType => {
@@ -780,6 +782,20 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             ownerToIdentity: <T>({owner, ...args}: OwnerToIdentityRequest) =>
                 api.get<T>(`identity/ownerToIdentity/${owner}`, args),
             me: () => api.get<IdentityData>('identity/isIdentityRegistered/')
+        },
+        notifications: {
+            unread: () => api.get<PointNotification[]>('notifications/unread'),
+            scan: ({from, to, latest}: Partial<BlockRange>) => {
+                const endpoint = 'notifications/scan';
+                const query = new URLSearchParams();
+                if (from) query.append('from', String(from));
+                if (to) query.append('to', String(to));
+                if (latest) query.append('latest', String(latest));
+                const queryStr = query.toString();
+                const url = queryStr ? `${endpoint}?${queryStr}` : endpoint;
+                return api.get<PointNotification[]>(url);
+            },
+            markRead: (id: number) => api.get(`notifications/read/${id}`)
         },
         ...(host === 'https://point' && !window.top.IS_GATEWAY
             ? {
