@@ -54,6 +54,60 @@ export type StoragePutStringRequest = {
     encoding?: string;
 } & Record<string, string>;
 
+export type StoragePubsubPublishRequest = {
+    topic: string;
+    data: string;
+};
+
+export type StoragePubsubPublishForIdentityRequest = {
+    identity: string;
+    data: any;
+    options: Record<string, any>;
+};
+
+export type HostStorageSetRequest = {
+    path: Array<string|number>;
+    value: any;
+}
+
+export type HostStorageGetRequest = {
+    path: Array<string|number>;
+}
+
+export type HostStorageLenRequest = {
+    path: Array<string|number>;
+}
+
+export type HostStorageDirRequest = {
+    path: Array<string|number>;
+}
+
+export type HostStorageAppendRequest = {
+    path: Array<string|number>;
+    value: any;
+}
+
+export type HostStorageUnsetRequest = {
+    path: Array<string|number>;
+}
+
+export type HostStorageRemoveAtRequest = {
+    path: Array<string|number>;
+    index: number;
+}
+
+export type HostStorageReplaceAtRequest = {
+    path: Array<string|number>;
+    index: number;
+    value: any;
+}
+
+export type HostStorageInsertAtRequest = {
+    path: Array<string|number>;
+    index: number;
+    value: any;
+}
+
 export type SubscriptionOptions = Record<string, unknown>;
 
 export type SubscriptionParams = {

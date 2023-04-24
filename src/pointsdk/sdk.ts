@@ -8,6 +8,8 @@ import {
     ZProxyWSOptions,
     StorageGetRequest,
     StoragePutStringRequest,
+    StoragePubsubPublishRequest,
+    StoragePubsubPublishForIdentityRequest,
     OwnerToIdentityRequest,
     PublicKeyByIdentityRequest,
     IdentityToOwnerRequest,
@@ -22,7 +24,16 @@ import {
     SubscriptionMessages,
     SubscriptionEvent,
     SubscriptionParams,
-    IdentityData
+    IdentityData,
+    HostStorageRemoveAtRequest,
+    HostStorageReplaceAtRequest,
+    HostStorageSetRequest,
+    HostStorageGetRequest,
+    HostStorageLenRequest,
+    HostStorageDirRequest,
+    HostStorageAppendRequest,
+    HostStorageUnsetRequest,
+    HostStorageInsertAtRequest,
 } from './index.d';
 
 const getSdk = (host: string, version: string, swal: any): PointType => {
@@ -94,15 +105,16 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             );
 
             if (!response.ok) {
-                const {ok, status, statusText, headers} = response;
-                console.error('SDK call failed:', {
-                    // @ts-ignore
-                    ok,
-                    status,
-                    statusText,
-                    headers: Object.fromEntries([...headers.entries()])
-                });
-                throw new PointSDKRequestError('Point SDK request failed');
+                // const {ok, status, statusText, headers} = response;
+                const responseBody = await response.text();
+                // console.error('SDK call failed:', {
+                //     // @ts-ignore
+                //     ok,
+                //     status,
+                //     statusText,
+                //     headers: Object.fromEntries([...headers.entries()])
+                // });
+                throw new PointSDKRequestError('Point SDK request failed: ' + responseBody);
             }
 
             try {
@@ -112,7 +124,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                 throw e;
             }
         } catch (e) {
-            console.error('Point API call failed:', e);
+            // console.error('Point API call failed:', e);
             throw e;
         }
     };
@@ -689,7 +701,69 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             },
             putString: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>(data: StoragePutStringRequest) => api.post<T>('storage/putString', data)
+                : <T>(data: StoragePutStringRequest) => api.post<T>('storage/putString', data),
+            pubsubPublish:
+                <T>(data: StoragePubsubPublishRequest) =>
+                api.post<T>('storage/pubsub/publish/' + data.topic, data.data),
+            pubsubPublishForIdentity:
+                <T>(req: StoragePubsubPublishForIdentityRequest) =>
+                api.post<T>('storage/pubsub/publishForIdentity', {data: JSON.stringify(req.data), identity: req.identity, options: JSON.stringify(req.options||'')})
+        },
+        hostStorage: {
+            set:
+                <T>(data: HostStorageSetRequest) =>
+                api.post<T>(
+                    'storage/host/set',
+                  {data: JSON.stringify(data)}
+                ),
+            get:
+                <T>(data: HostStorageGetRequest) =>
+                api.get<T>(
+                    'storage/host/get',
+                  {data: JSON.stringify(data)}
+                ),
+            len:
+                <T>(data: HostStorageLenRequest) =>
+                api.get<T>(
+                    'storage/host/len',
+                  {data: JSON.stringify(data)}
+                ),
+            dir:
+                <T>(data: HostStorageDirRequest) =>
+                api.get<T>(
+                    'storage/host/dir',
+                  {data: JSON.stringify(data)}
+                ),
+            append:
+                <T>(data: HostStorageAppendRequest) =>
+                api.post<T>(
+                    'storage/host/append',
+                  {data: JSON.stringify(data)}
+                ),
+            unset:
+                <T>(data: HostStorageUnsetRequest) =>
+                api.post<T>(
+                    'storage/host/unset',
+                  {data: JSON.stringify(data)}
+                ),
+            removeAt:
+                <T>(data: HostStorageRemoveAtRequest) =>
+                api.post<T>(
+                    'storage/host/removeAt',
+                  {data: JSON.stringify(data)}
+                ),
+            replaceAt:
+                <T>(data: HostStorageReplaceAtRequest) =>
+                api.post<T>(
+                    'storage/host/replaceAt',
+                  {data: JSON.stringify(data)}
+                ),
+            insertAt:
+                <T>(data: HostStorageInsertAtRequest) =>
+                api.post<T>(
+                    'storage/host/insertAt',
+                  {data: JSON.stringify(data)}
+                ),
         },
         wallet: {
             address: () => api.get<string>('wallet/address'),
