@@ -1,3 +1,5 @@
+/* eslint-disable indent */
+/* eslint-disable object-curly-newline */
 import {
     ZProxyWS,
     PointType,
@@ -6,6 +8,8 @@ import {
     ZProxyWSOptions,
     StorageGetRequest,
     StoragePutStringRequest,
+    StoragePubsubPublishRequest,
+    StoragePubsubPublishForIdentityRequest,
     OwnerToIdentityRequest,
     PublicKeyByIdentityRequest,
     IdentityToOwnerRequest,
@@ -21,7 +25,16 @@ import {
     SubscriptionEvent,
     SubscriptionParams,
     IdentityData,
-} from "./index.d";
+    HostStorageRemoveAtRequest,
+    HostStorageReplaceAtRequest,
+    HostStorageSetRequest,
+    HostStorageGetRequest,
+    HostStorageLenRequest,
+    HostStorageDirRequest,
+    HostStorageAppendRequest,
+    HostStorageUnsetRequest,
+    HostStorageInsertAtRequest,
+} from './index.d';
 
 const getSdk = (host: string, version: string, swal: any): PointType => {
     class PointSDKRequestError extends Error {}
@@ -31,16 +44,18 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
     class SubscriptionRequestTimeout extends Error {}
     class SubscriptionError extends Error {}
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     const gatewayAlert = async () => {
         swal.fire({
-            title: "Demo mode",
+            title: 'Demo mode',
             html: `You cannot make writing operations right here but you can download Point Browser and have the full web3 experience. 
 <a href="https://pointnetwork.io/download" target="_blank" rel="noopener noreferrer">https://pointnetwork.io/download</a>`,
-            icon: "info",
+            icon: 'info'
         });
-        throw new Error("Point demo does not support this operation");
+        throw new Error('Point demo does not support this operation');
     };
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     const getAuthToken = async () =>
         window.top.IS_GATEWAY
             ? window.top.POINT_JWT
@@ -48,15 +63,12 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                   const id = Math.random();
 
                   const handler = (e: MessageEvent) => {
-                      if (
-                          e.data.__page_req_id === id &&
-                          e.data.__direction === "to_page"
-                      ) {
-                          window.removeEventListener("message", handler);
+                      if (e.data.__page_req_id === id && e.data.__direction === 'to_page') {
+                          window.removeEventListener('message', handler);
                           if (e.data.code) {
                               reject({
                                   code: e.data.code,
-                                  message: e.data.message,
+                                  message: e.data.message
                               });
                           } else {
                               resolve(e.data.token);
@@ -64,58 +76,55 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                       }
                   };
 
-                  window.addEventListener("message", handler);
+                  window.addEventListener('message', handler);
 
                   window.postMessage({
                       __page_req_id: id,
-                      __message_type: "getAuthToken",
-                      __direction: "to_bg",
+                      __message_type: 'getAuthToken',
+                      __direction: 'to_bg'
                   });
               });
 
-    const apiCall = async <T>(
-        path: string,
-        config?: RequestInit,
-        internal?: boolean,
-    ) => {
+    const apiCall = async <T>(path: string, config?: RequestInit, internal?: boolean) => {
         try {
             const token = await getAuthToken();
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
             const response = await window.top.fetch(
-                `${host}${internal ? "/point_api/" : "/v1/api/"}${path}`,
+                `${host}${internal ? '/point_api/' : '/v1/api/'}${path}`,
                 {
-                    cache: "no-cache",
-                    credentials: "include",
+                    cache: 'no-cache',
+                    credentials: 'include',
                     keepalive: true,
                     ...config,
                     headers: {
-                        "Content-Type": "application/json",
-                        "X-Point-Token": `Bearer ${token}`,
-                        ...config?.headers,
-                    },
-                },
+                        'Content-Type': 'application/json',
+                        'X-Point-Token': `Bearer ${token}`,
+                        ...config?.headers
+                    }
+                }
             );
 
             if (!response.ok) {
-                const { ok, status, statusText, headers } = response;
-                console.error("SDK call failed:", {
-                    // @ts-ignore
-                    ok,
-                    status,
-                    statusText,
-                    headers: Object.fromEntries([...headers.entries()]),
-                });
-                throw new PointSDKRequestError("Point SDK request failed");
+                // const {ok, status, statusText, headers} = response;
+                const responseBody = await response.text();
+                // console.error('SDK call failed:', {
+                //     // @ts-ignore
+                //     ok,
+                //     status,
+                //     statusText,
+                //     headers: Object.fromEntries([...headers.entries()])
+                // });
+                throw new PointSDKRequestError('Point SDK request failed: ' + responseBody);
             }
 
             try {
                 return (await response.json()) as T;
             } catch (e) {
-                console.error("Point API response parsing error:", e);
+                console.error('Point API response parsing error:', e);
                 throw e;
             }
         } catch (e) {
-            console.error("Point API call failed:", e);
+            // console.error('Point API call failed:', e);
             throw e;
         }
     };
@@ -125,36 +134,36 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             const token = await getAuthToken();
             // @ts-ignore, https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts#xhr_and_fetch
             const response = await window.top.fetch(`${host}/${path}`, {
-                cache: "no-cache",
-                credentials: "include",
+                cache: 'no-cache',
+                credentials: 'include',
                 keepalive: true,
                 ...config,
                 headers: {
-                    "X-Point-Token": `Bearer ${token}`,
-                    ...(config?.headers ?? {}),
-                },
+                    'X-Point-Token': `Bearer ${token}`,
+                    ...(config?.headers ?? {})
+                }
             });
 
             if (!response.ok) {
-                const { ok, status, statusText, headers } = response;
-                console.error("SDK ZProxy call failed:", {
+                const {ok, status, statusText, headers} = response;
+                console.error('SDK ZProxy call failed:', {
                     // @ts-ignore
                     ok,
                     status,
                     statusText,
-                    headers: Object.fromEntries([...headers.entries()]),
+                    headers: Object.fromEntries([...headers.entries()])
                 });
-                throw new PointSDKRequestError("Point SDK request failed");
+                throw new PointSDKRequestError('Point SDK request failed');
             }
 
             try {
                 return (await response.json()) as T;
             } catch (e) {
-                console.error("Point API response parsing error:", e);
+                console.error('Point API response parsing error:', e);
                 throw e;
             }
         } catch (e) {
-            console.error("Point API call failed:", e);
+            console.error('Point API call failed:', e);
             throw e;
         }
     };
@@ -164,42 +173,40 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             pathname: string,
             query?: URLSearchQuery,
             headers?: HeadersInit,
-            internal?: boolean,
+            internal?: boolean
         ): Promise<T> {
             return apiCall<T>(
-                `${pathname}${query ? "?" : ""}${new URLSearchParams(
-                    query,
-                ).toString()}`,
+                `${pathname}${query ? '?' : ''}${new URLSearchParams(query).toString()}`,
                 {
-                    method: "GET",
-                    headers,
+                    method: 'GET',
+                    headers
                 },
-                internal,
+                internal
             );
         },
         post<T>(
             pathname: string,
             body: any,
             headers?: HeadersInit,
-            internal?: boolean,
+            internal?: boolean
         ): Promise<T> {
             return apiCall<T>(
                 pathname,
                 {
-                    method: "POST",
+                    method: 'POST',
                     headers,
                     body: JSON.stringify({
                         ...body,
-                        _csrf: window.localStorage.getItem("csrf_token"),
-                    }),
+                        _csrf: window.localStorage.getItem('csrf_token')
+                    })
                 },
-                internal,
+                internal
             );
         },
         postFile<T>(pathname: string, file: FormData): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
-                method: "POST",
-                body: file,
+                method: 'POST',
+                body: file
                 // headers NOT required when passing FormData object
             });
         },
@@ -207,21 +214,21 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             pathname: string,
             file: FormData,
             identities: string[],
-            metadata?: string[],
+            metadata?: string[]
         ): Promise<T> {
             return zproxyStorageCall<T>(pathname, {
-                method: "POST",
+                method: 'POST',
                 body: file,
                 headers: {
-                    identities: identities.join(","),
-                    metadata: metadata?.join(",") ?? "",
-                },
+                    identities: identities.join(','),
+                    metadata: metadata?.join(',') ?? ''
+                }
             });
-        },
+        }
     };
 
     function sleep(ms: number): Promise<undefined> {
-        return new Promise((resolve) => setTimeout(resolve, ms));
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     function Promised<T>(): PromisedValue<T> {
@@ -235,22 +242,17 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             }),
             {
                 resolve,
-                reject,
-            },
+                reject
+            }
         );
     }
 
     function SubscriptionTimeout(ms: number): Promise<undefined> {
         return new Promise((_, reject) =>
             setTimeout(
-                () =>
-                    reject(
-                        new SubscriptionRequestTimeout(
-                            "Subscription confirmation timeout",
-                        ),
-                    ),
-                ms,
-            ),
+                () => reject(new SubscriptionRequestTimeout('Subscription confirmation timeout')),
+                ms
+            )
         );
     }
 
@@ -259,32 +261,28 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
     const errorsBySubscriptionId: SubscriptionErrors = {};
 
     const SUBSCRIPTION_EVENT_TYPES = {
-        CONFIRMATION: "subscription_confirmation",
-        CANCELLATION: "subscription_cancellation",
-        EVENT: "subscription_event",
-        ERROR: "subscription_error",
+        CONFIRMATION: 'subscription_confirmation',
+        CANCELLATION: 'subscription_cancellation',
+        EVENT: 'subscription_event',
+        ERROR: 'subscription_error'
     };
 
     const SUBSCRIPTION_REQUEST_TYPES = {
-        SUBSCRIBE: "subscribeContractEvent",
-        UNSUBSCRIBE: "removeSubscriptionById",
+        SUBSCRIBE: 'subscribeContractEvent',
+        UNSUBSCRIBE: 'removeSubscriptionById'
     };
 
-    const getSubscriptionRequestId = ({
-        type,
-        params: { contract, event } = {},
-    }: MessageQueueConfig) => `${type}_${contract}_${event}`;
+    const getSubscriptionRequestId = ({type, params: {contract, event} = {}}: MessageQueueConfig) =>
+        `${type}_${contract}_${event}`;
 
     const getMessageQueue = <T>(subscriptionId: string): T[] =>
-        messagesBySubscriptionId[subscriptionId] ||
-        (messagesBySubscriptionId[subscriptionId] = []);
+        messagesBySubscriptionId[subscriptionId] || (messagesBySubscriptionId[subscriptionId] = []);
 
-    const subscriptionIdsByRequestId: Record<string, PromisedValue<string>> =
-        {};
+    const subscriptionIdsByRequestId: Record<string, PromisedValue<string>> = {};
 
     const wsConnect = (
         host: string,
-        { messageQueueSizeLimit = 1000 } = {} as ZProxyWSOptions,
+        {messageQueueSizeLimit = 1000} = {} as ZProxyWSOptions
     ): Promise<ZProxyWS | undefined> =>
         new Promise((resolve, reject) => {
             if (socketsByHost[host] !== undefined) {
@@ -298,24 +296,22 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                 resolve(
                     Object.assign((socketsByHost[host] = ws), {
                         async subscribeToContractEvent<T>(
-                            params: SubscriptionParams,
+                            params: SubscriptionParams
                         ): Promise<() => Promise<T>> {
                             const metaData = {
                                 type: SUBSCRIPTION_REQUEST_TYPES.SUBSCRIBE,
                                 params,
-                                __point_token: await getAuthToken(),
+                                __point_token: await getAuthToken()
                             };
-                            const requestId =
-                                getSubscriptionRequestId(metaData);
+                            const requestId = getSubscriptionRequestId(metaData);
 
-                            subscriptionIdsByRequestId[requestId] =
-                                Promised<string>();
+                            subscriptionIdsByRequestId[requestId] = Promised<string>();
 
-                            await ws.send(JSON.stringify(metaData));
+                            ws.send(JSON.stringify(metaData));
 
                             const subscriptionId = (await Promise.race([
                                 subscriptionIdsByRequestId[requestId],
-                                SubscriptionTimeout(10000),
+                                SubscriptionTimeout(10000)
                             ])) as string;
 
                             const queue = getMessageQueue<T>(subscriptionId);
@@ -325,9 +321,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                     while (true) {
                                         try {
                                             const queueError =
-                                                errorsBySubscriptionId[
-                                                    subscriptionId
-                                                ];
+                                                errorsBySubscriptionId[subscriptionId];
                                             if (queueError) {
                                                 throw queueError;
                                             }
@@ -337,10 +331,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                                 await sleep(100);
                                             }
                                         } catch (e) {
-                                            console.error(
-                                                "subscribed message error:",
-                                                e,
-                                            );
+                                            console.error('subscribed message error:', e);
                                             throw e;
                                         }
                                     }
@@ -350,28 +341,26 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                         return ws.send(
                                             JSON.stringify({
                                                 type: SUBSCRIPTION_REQUEST_TYPES.UNSUBSCRIBE,
-                                                params: { subscriptionId },
-                                                __point_token:
-                                                    await getAuthToken(),
-                                            }),
+                                                params: {subscriptionId},
+                                                __point_token: await getAuthToken()
+                                            })
                                         );
-                                    },
-                                },
+                                    }
+                                }
                             );
-                        },
-                    }) as ZProxyWS,
+                        }
+                    }) as ZProxyWS
                 );
 
-            ws.onerror = (e) => {
+            ws.onerror = e => {
                 for (const queueId in messagesBySubscriptionId) {
                     if (!errorsBySubscriptionId[queueId]) {
-                        errorsBySubscriptionId[queueId] =
-                            new ZProxyWSConnectionError(e.toString());
+                        errorsBySubscriptionId[queueId] = new ZProxyWSConnectionError(e.toString());
                     }
                 }
             };
 
-            ws.onclose = (e) => {
+            ws.onclose = e => {
                 delete socketsByHost[host];
                 if (e.code === 1000 || e.code === 1001) {
                     // 1000 -> CLOSE_NORMAL (normal socket shut down)
@@ -380,38 +369,34 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                 } else {
                     for (const queueId in messagesBySubscriptionId) {
                         if (!errorsBySubscriptionId[queueId]) {
-                            errorsBySubscriptionId[queueId] =
-                                new ZProxyWSConnectionClosed(e.toString());
+                            errorsBySubscriptionId[queueId] = new ZProxyWSConnectionClosed(
+                                e.toString()
+                            );
                         }
                     }
                     reject();
                 }
             };
 
-            ws.onmessage = (e) => {
+            ws.onmessage = e => {
                 try {
-                    const {
-                        type,
-                        request,
-                        subscriptionId,
-                        data,
-                    }: SubscriptionEvent<unknown> = JSON.parse(e.data);
+                    const {type, request, subscriptionId, data}: SubscriptionEvent<unknown> =
+                        JSON.parse(e.data);
 
                     switch (type) {
                         case SUBSCRIPTION_EVENT_TYPES.CONFIRMATION: {
                             const requestId = getSubscriptionRequestId(request);
-                            const { resolve, reject } =
-                                subscriptionIdsByRequestId[requestId] || {};
+                            const {resolve, reject} = subscriptionIdsByRequestId[requestId] || {};
 
-                            if (typeof subscriptionId !== "string") {
-                                if (typeof reject === "function") {
+                            if (typeof subscriptionId !== 'string') {
+                                if (typeof reject === 'function') {
                                     reject(
                                         new SubscriptionError(
-                                            `Invalid subscription id "${subscriptionId}" for request id: "${requestId}"`,
-                                        ),
+                                            `Invalid subscription id "${subscriptionId}" for request id: "${requestId}"`
+                                        )
                                     );
                                 }
-                            } else if (typeof resolve === "function") {
+                            } else if (typeof resolve === 'function') {
                                 resolve(subscriptionId);
                             }
                             break;
@@ -423,7 +408,7 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                     type,
                                     request,
                                     subscriptionId,
-                                    data,
+                                    data
                                 });
 
                                 delete messagesBySubscriptionId[subscriptionId];
@@ -439,52 +424,47 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                 if (queue.length > messageQueueSizeLimit) {
                                     errorsBySubscriptionId[subscriptionId] =
                                         new MessageQueueOverflow(
-                                            "ZProxy WS message queue overflow",
+                                            'ZProxy WS message queue overflow'
                                         );
                                 } else {
                                     queue.push(data);
                                 }
                             } else {
-                                console.error(
-                                    "Unable to identify subscription channel",
-                                    {
-                                        subscriptionId,
-                                        request,
-                                        data,
-                                    },
-                                );
+                                console.error('Unable to identify subscription channel', {
+                                    subscriptionId,
+                                    request,
+                                    data
+                                });
                             }
                             break;
                         }
 
                         case SUBSCRIPTION_EVENT_TYPES.ERROR: {
                             if (subscriptionId) {
-                                errorsBySubscriptionId[subscriptionId] =
-                                    new SubscriptionError(JSON.stringify(data));
-                            } else {
-                                console.error(
-                                    "Unable to identify subscription channel",
-                                    {
-                                        subscriptionId,
-                                        request,
-                                        data,
-                                    },
+                                errorsBySubscriptionId[subscriptionId] = new SubscriptionError(
+                                    JSON.stringify(data)
                                 );
+                            } else {
+                                console.error('Unable to identify subscription channel', {
+                                    subscriptionId,
+                                    request,
+                                    data
+                                });
                             }
                             break;
                         }
 
                         default: {
-                            console.error("Unsupported event type:", {
+                            console.error('Unsupported event type:', {
                                 type,
                                 request,
                                 subscriptionId,
-                                data,
+                                data
                             });
                         }
                     }
                 } catch (e) {
-                    console.error("Web Socket onmessage error:", e);
+                    console.error('Web Socket onmessage error:', e);
                 }
             };
         });
@@ -494,15 +474,12 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
             const id = Math.random();
 
             const handler = (e: MessageEvent) => {
-                if (
-                    e.data.__page_req_id === id &&
-                    e.data.__direction === "to_page"
-                ) {
-                    window.removeEventListener("message", handler);
+                if (e.data.__page_req_id === id && e.data.__direction === 'to_page') {
+                    window.removeEventListener('message', handler);
                     if (e.data.code) {
                         reject({
                             code: e.data.code,
-                            message: e.data.message,
+                            message: e.data.message
                         });
                     } else {
                         resolve(e.data.result);
@@ -510,440 +487,420 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                 }
             };
 
-            window.addEventListener("message", handler);
+            window.addEventListener('message', handler);
 
             window.postMessage({
                 messageId,
-                __message_type: "registerHandler",
+                __message_type: 'registerHandler',
                 __page_req_id: id,
-                __direction: "to_bg",
+                __direction: 'to_bg'
             });
         });
 
     return {
         version: version,
-        status: {
-            ping: () => api.get<"pong">("status/ping"),
-        },
+        status: {ping: () => api.get<'pong'>('status/ping')},
         contract: {
-            load: <T>({ contract, ...args }: ContractLoadRequest) =>
+            load: <T>({contract, ...args}: ContractLoadRequest) =>
                 api.get<T>(`contract/load/${contract}`, args),
-            call: async <T>({
-                contract,
-                method,
-                params,
-            }: ContractCallRequest) => {
+            call: async ({contract, method, params}: ContractCallRequest) => {
                 if (window.top.IS_GATEWAY) {
-                    const res = await api.post("contract/safe_call", {
+                    const res = await api.post('contract/safe_call', {
                         contract,
                         method,
-                        params,
+                        params
                     });
                     return res.data;
                 }
 
                 const {
-                    data: { abi, address },
+                    data: {abi, address}
                 } = await api.get(`contract/load/${contract}`, {});
 
-                const jsonInterface = abi.find(
-                    (entry) => entry.name === method,
-                );
+                const jsonInterface = abi.find(entry => entry.name === method);
                 if (!jsonInterface) {
-                    throw new Error(
-                        `Method ${method} not found in contract ${contract}`,
-                    );
+                    throw new Error(`Method ${method} not found in contract ${contract}`);
                 }
 
                 const preparedParams = params ?? [];
                 if (preparedParams.length !== jsonInterface.inputs.length) {
                     throw new Error(
-                        `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
+                        `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`
                     );
                 }
 
                 for (let i = 0; i < preparedParams.length; i++) {
                     if (
-                        jsonInterface.inputs[i].internalType === "bytes32" &&
-                        typeof preparedParams[i] === "string" &&
-                        !preparedParams[i].startsWith("0x")
+                        jsonInterface.inputs[i].internalType === 'bytes32' &&
+                        typeof preparedParams[i] === 'string' &&
+                        !preparedParams[i].startsWith('0x')
                     ) {
                         preparedParams[i] = `0x${preparedParams[i]}`;
                     }
                 }
 
-                const { data } = await api.post("contract/encodeFunctionCall", {
+                const {data} = await api.post('contract/encodeFunctionCall', {
                     jsonInterface,
-                    params: preparedParams,
+                    params: preparedParams
                 });
 
-                const accounts = await window.top.ethereum.request({
-                    method: "eth_requestAccounts",
-                });
+                const accounts = await window.top.ethereum.request({method: 'eth_requestAccounts'});
 
                 switch (jsonInterface.stateMutability) {
-                    case "view":
-                    case "pure":
+                    case 'view':
+                    case 'pure':
                         const rawRes = await window.top.ethereum.request({
-                            method: "eth_call",
+                            method: 'eth_call',
                             params: [
                                 {
                                     from: accounts[0],
                                     to: address,
-                                    data,
+                                    data
                                 },
-                                "latest",
-                            ],
+                                'latest'
+                            ]
                         });
 
-                        const decodedRes = await api.post(
-                            "contract/decodeParameters",
-                            {
-                                typesArray: jsonInterface.outputs,
-                                hexString: rawRes,
-                            },
-                        );
+                        const decodedRes = await api.post('contract/decodeParameters', {
+                            typesArray: jsonInterface.outputs,
+                            hexString: rawRes
+                        });
 
-                        return { data: decodedRes.data[0] };
-                    case "nonpayable":
+                        return {data: decodedRes.data[0]};
+                    case 'nonpayable':
                         return window.top.ethereum.request({
-                            meta: { contract },
-                            method: "eth_sendTransaction",
+                            meta: {contract},
+                            method: 'eth_sendTransaction',
                             params: [
                                 {
                                     from: accounts[0],
                                     to: address,
-                                    data,
-                                },
-                            ],
+                                    data
+                                }
+                            ]
                         });
-                    case "payable":
-                        throw new Error(
-                            "Do not use call for payable functions, use send instead",
-                        );
+                    case 'payable':
+                        throw new Error('Do not use call for payable functions, use send instead');
                     default:
                         throw new Error(
-                            `Unexpected function state mutability ${jsonInterface.stateMutability}`,
+                            `Unexpected function state mutability ${jsonInterface.stateMutability}`
                         );
                 }
             },
             send: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : async <T>({
-                      contract,
-                      method,
-                      params,
-                      value,
-                  }: ContractSendRequest) => {
+                : async ({contract, method, params, value}: ContractSendRequest) => {
                       const {
-                          data: { abi, address },
+                          data: {abi, address}
                       } = await api.get(`contract/load/${contract}`, {});
 
-                      const accounts = await window.top.ethereum.request({
-                          method: "eth_requestAccounts",
-                      });
+                      const req = {method: 'eth_requestAccounts'};
+                      const accounts = await window.top.ethereum.request(req);
 
-                      const jsonInterface = abi.find(
-                          (entry) => entry.name === method,
-                      );
+                      const jsonInterface = abi.find(entry => entry.name === method);
                       if (!jsonInterface) {
-                          throw new Error(
-                              `Method ${method} not found in contract ${contract}`,
-                          );
+                          throw new Error(`Method ${method} not found in contract ${contract}`);
                       }
 
                       const preparedParams = params ?? [];
-                      if (
-                          preparedParams.length !== jsonInterface.inputs.length
-                      ) {
+                      if (preparedParams.length !== jsonInterface.inputs.length) {
                           throw new Error(
-                              `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`,
+                              `Invalid number of params, expected ${jsonInterface.inputs.length}, got ${preparedParams.length}`
                           );
                       }
 
                       for (let i = 0; i < preparedParams.length; i++) {
                           if (
-                              jsonInterface.inputs[i].internalType ===
-                                  "bytes32" &&
-                              typeof preparedParams[i] === "string" &&
-                              !preparedParams[i].startsWith("0x")
+                              jsonInterface.inputs[i].internalType === 'bytes32' &&
+                              typeof preparedParams[i] === 'string' &&
+                              !preparedParams[i].startsWith('0x')
                           ) {
                               preparedParams[i] = `0x${preparedParams[i]}`;
                           }
                       }
 
-                      if (
-                          ["view", "pure"].includes(
-                              jsonInterface.stateMutability,
-                          )
-                      ) {
+                      if (['view', 'pure'].includes(jsonInterface.stateMutability)) {
                           throw new Error(
-                              `Method ${method} is a view one, use call instead of send`,
+                              `Method ${method} is a view one, use call instead of send`
                           );
                       }
 
-                      const { data } = await api.post(
-                          "contract/encodeFunctionCall",
-                          {
-                              jsonInterface,
-                              params: params ?? [],
-                          },
-                      );
+                      const {data} = await api.post('contract/encodeFunctionCall', {
+                          jsonInterface,
+                          params: params ?? []
+                      });
 
                       return window.top.ethereum.request({
-                          meta: { contract },
-                          method: "eth_sendTransaction",
+                          meta: {contract},
+                          method: 'eth_sendTransaction',
                           params: [
                               {
                                   from: accounts[0],
                                   to: address,
                                   data,
-                                  value,
-                              },
-                          ],
+                                  value
+                              }
+                          ]
                       });
                   },
-            events: <T>(args: ContractEventsRequest) =>
-                api.post<T>("contract/events", args),
-            async subscribe<T>({
-                contract,
-                event,
-                ...options
-            }: SubscriptionParams) {
-                if (typeof contract !== "string") {
-                    throw new PointSDKRequestError(
-                        `Invalid contract ${contract}`,
-                    );
+            events: <T>(args: ContractEventsRequest) => api.post<T>('contract/events', args),
+            async subscribe<T>({contract, event, ...options}: SubscriptionParams) {
+                if (typeof contract !== 'string') {
+                    throw new PointSDKRequestError(`Invalid contract ${contract}`);
                 }
-                if (typeof event !== "string") {
+                if (typeof event !== 'string') {
                     throw new PointSDKRequestError(`Invalid event ${event}`);
                 }
 
                 const url = new URL(host);
-                url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
-                url.pathname += url.pathname.endsWith("/") ? "ws" : "/ws";
+                url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
+                url.pathname += url.pathname.endsWith('/') ? 'ws' : '/ws';
                 const socket = await wsConnect(url.toString());
 
                 if (!socket) {
-                    throw new PointSDKRequestError(
-                        "Failed to establish web socket connection",
-                    );
+                    throw new PointSDKRequestError('Failed to establish web socket connection');
                 }
 
                 return socket.subscribeToContractEvent<T>({
                     contract,
                     event,
-                    ...options,
+                    ...options
                 });
-            },
+            }
         },
         storage: {
             postFile: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>(file: FormData) => api.postFile<T>("_storage/", file),
-            encryptAndPostFile: <T>(
-                file: FormData,
-                identities: string[],
-                metadata?: string[],
-            ) =>
+                : <T>(file: FormData) => api.postFile<T>('_storage/', file),
+            encryptAndPostFile: <T>(file: FormData, identities: string[], metadata?: string[]) =>
                 window.top.IS_GATEWAY
                     ? gatewayAlert
-                    : api.encryptAndPostFile<T>(
-                          "_encryptedStorage/",
-                          file,
-                          identities,
-                          metadata,
-                      ),
-            getString: <T>({ id, ...args }: StorageGetRequest) =>
+                    : api.encryptAndPostFile<T>('_encryptedStorage/', file, identities, metadata),
+            getString: <T>({id, ...args}: StorageGetRequest) =>
                 api.get<T>(`storage/getString/${id}`, args),
-            getFile: async ({ id }) => {
+            getFile: async ({id}) => {
                 const token = await getAuthToken();
-                const res = await window.top.fetch(`${host}/_storage/${id}`, {
-                    headers: {
-                        "X-Point-Token": `Bearer ${token}`,
-                    },
-                });
+                const opts = {headers: {'X-Point-Token': `Bearer ${token}`}};
+                const res = await window.top.fetch(`${host}/_storage/${id}`, opts);
                 return res.blob();
             },
-            getEncryptedFile: async ({ id, eSymmetricObj, symmetricObj }) => {
+            getEncryptedFile: async ({id, eSymmetricObj, symmetricObj}) => {
                 if (!!eSymmetricObj === !!symmetricObj) {
                     throw new Error(
-                        "Either eSymmetricObj or symmetricObj should be specified, and only one of them",
+                        'Either eSymmetricObj or symmetricObj should be specified, and only one of them'
                     );
                 }
                 const token = await getAuthToken();
                 const res = await window.top.fetch(
                     `${host}/_encryptedStorage/${id}${
-                        eSymmetricObj ? `?eSymmetricObj=${eSymmetricObj}` : ""
-                    }${symmetricObj ? `?symmetricObj=${symmetricObj}` : ""}`,
-                    {
-                        headers: {
-                            "X-Point-Token": `Bearer ${token}`,
-                        },
-                    },
+                        eSymmetricObj ? `?eSymmetricObj=${eSymmetricObj}` : ''
+                    }${symmetricObj ? `?symmetricObj=${symmetricObj}` : ''}`,
+                    {headers: {'X-Point-Token': `Bearer ${token}`}}
                 );
                 return res.blob();
             },
             putString: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>(data: StoragePutStringRequest) =>
-                      api.post<T>("storage/putString", data),
+                : <T>(data: StoragePutStringRequest) => api.post<T>('storage/putString', data),
+            pubsubPublish:
+                <T>(data: StoragePubsubPublishRequest) =>
+                api.post<T>('storage/pubsub/publish/' + data.topic, data.data),
+            pubsubPublishForIdentity:
+                <T>(req: StoragePubsubPublishForIdentityRequest) =>
+                api.post<T>('storage/pubsub/publishForIdentity', {data: JSON.stringify(req.data), identity: req.identity, options: JSON.stringify(req.options||'')})
+        },
+        hostStorage: {
+            set:
+                <T>(data: HostStorageSetRequest) =>
+                api.post<T>(
+                    'storage/host/set',
+                  {data: JSON.stringify(data)}
+                ),
+            get:
+                <T>(data: HostStorageGetRequest) =>
+                api.get<T>(
+                    'storage/host/get',
+                  {data: JSON.stringify(data)}
+                ),
+            len:
+                <T>(data: HostStorageLenRequest) =>
+                api.get<T>(
+                    'storage/host/len',
+                  {data: JSON.stringify(data)}
+                ),
+            dir:
+                <T>(data: HostStorageDirRequest) =>
+                api.get<T>(
+                    'storage/host/dir',
+                  {data: JSON.stringify(data)}
+                ),
+            append:
+                <T>(data: HostStorageAppendRequest) =>
+                api.post<T>(
+                    'storage/host/append',
+                  {data: JSON.stringify(data)}
+                ),
+            unset:
+                <T>(data: HostStorageUnsetRequest) =>
+                api.post<T>(
+                    'storage/host/unset',
+                  {data: JSON.stringify(data)}
+                ),
+            removeAt:
+                <T>(data: HostStorageRemoveAtRequest) =>
+                api.post<T>(
+                    'storage/host/removeAt',
+                  {data: JSON.stringify(data)}
+                ),
+            replaceAt:
+                <T>(data: HostStorageReplaceAtRequest) =>
+                api.post<T>(
+                    'storage/host/replaceAt',
+                  {data: JSON.stringify(data)}
+                ),
+            insertAt:
+                <T>(data: HostStorageInsertAtRequest) =>
+                api.post<T>(
+                    'storage/host/insertAt',
+                  {data: JSON.stringify(data)}
+                ),
         },
         wallet: {
-            address: () => api.get<string>("wallet/address"),
-            ...(host === "https://confirmation-window" && !window.top.IS_GATEWAY
-                ? {
-                      hash: () => api.get<string>("wallet/hash", {}, {}, true),
-                  }
+            address: () => api.get<string>('wallet/address'),
+            ...(host === 'https://confirmation-window' && !window.top.IS_GATEWAY
+                ? {hash: () => api.get<string>('wallet/hash', {}, {}, true)}
                 : {}),
-            publicKey: () => api.get<string>("wallet/publicKey", {}),
-            balance: (network) => {
+            publicKey: () => api.get<string>('wallet/publicKey', {}),
+            balance: network => {
                 if (!network) {
-                    throw new Error("No network specified");
+                    throw new Error('No network specified');
                 }
-                return api.get<number>("wallet/balance", { network });
+                return api.get<number>('wallet/balance', {network});
             },
             send: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : async ({ to, network, value }) => {
-                      const { networks, default_network } = await api.get(
-                          "blockchain/networks",
-                      );
+                : async ({to, network, value}) => {
+                      const {networks, default_network} = await api.get('blockchain/networks');
                       const chain = network ?? default_network;
                       if (!networks[chain]) {
                           throw new Error(`Unknown network ${chain}`);
                       }
                       switch (networks[chain].type) {
-                          case "eth":
-                              const accounts =
-                                  await window.top.ethereum.request({
-                                      method: "eth_requestAccounts",
-                                  });
+                          case 'eth':
+                              const req = {method: 'eth_requestAccounts'};
+                              const accounts = await window.top.ethereum.request(req);
 
                               return window.top.ethereum.request({
-                                  method: "eth_sendTransaction",
+                                  method: 'eth_sendTransaction',
                                   params: [
                                       {
                                           from: accounts[0],
                                           to,
-                                          value,
-                                      },
+                                          value
+                                      }
                                   ],
-                                  chain,
+                                  chain
                               });
-                          case "solana":
+                          case 'solana':
                               return window.top.solana.request({
-                                  method: "solana_sendTransaction",
+                                  method: 'solana_sendTransaction',
                                   params: [
                                       {
                                           to,
-                                          lamports: value,
-                                      },
+                                          lamports: value
+                                      }
                                   ],
-                                  chain,
+                                  chain
                               });
                           default:
-                              throw new Error(
-                                  `Unexpected network type ${networks[chain].type}`,
-                              );
+                              throw new Error(`Unexpected network type ${networks[chain].type}`);
                       }
                   },
             encryptData: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>({ publicKey, data, ...args }: EncryptDataRequest) =>
-                      api.post<T>("wallet/encryptData", {
+                : <T>({publicKey, data, ...args}: EncryptDataRequest) =>
+                      api.post<T>('wallet/encryptData', {
                           publicKey,
                           data,
-                          ...args,
+                          ...args
                       }),
             decryptData: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>({ data, ...args }: DecryptDataRequest) =>
-                      api.post<T>("wallet/decryptData", {
+                : <T>({data, ...args}: DecryptDataRequest) =>
+                      api.post<T>('wallet/decryptData', {
                           data,
-                          ...args,
+                          ...args
                       }),
             decryptSymmetricKey: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>({ data, ...args }: DecryptDataRequest) =>
-                      api.post<T>("wallet/decryptSymmetricKey", {
+                : <T>({data, ...args}: DecryptDataRequest) =>
+                      api.post<T>('wallet/decryptSymmetricKey', {
                           data,
-                          ...args,
+                          ...args
                       }),
             decryptDataWithDecryptedKey: window.top.IS_GATEWAY
                 ? gatewayAlert
-                : <T>({ data, ...args }: DecryptDataRequest) =>
-                      api.post<T>("wallet/decryptDataWithDecryptedKey", {
+                : <T>({data, ...args}: DecryptDataRequest) =>
+                      api.post<T>('wallet/decryptDataWithDecryptedKey', {
                           data,
-                          ...args,
-                      }),
+                          ...args
+                      })
         },
         identity: {
-            publicKeyByIdentity: <T>({
-                identity,
-                ...args
-            }: PublicKeyByIdentityRequest) =>
+            publicKeyByIdentity: <T>({identity, ...args}: PublicKeyByIdentityRequest) =>
                 api.get<T>(`identity/publicKeyByIdentity/${identity}`, args),
-            identityToOwner: <T>({
-                identity,
-                ...args
-            }: IdentityToOwnerRequest) =>
+            identityToOwner: <T>({identity, ...args}: IdentityToOwnerRequest) =>
                 api.get<T>(`identity/identityToOwner/${identity}`, args),
-            ownerToIdentity: <T>({ owner, ...args }: OwnerToIdentityRequest) =>
+            ownerToIdentity: <T>({owner, ...args}: OwnerToIdentityRequest) =>
                 api.get<T>(`identity/ownerToIdentity/${owner}`, args),
-            me: () => api.get<IdentityData>("identity/isIdentityRegistered/"),
+            me: () => api.get<IdentityData>('identity/isIdentityRegistered/')
         },
-        ...(host === "https://point" && !window.top.IS_GATEWAY
+        ...(host === 'https://point' && !window.top.IS_GATEWAY
             ? {
                   point: {
-                      wallet_send: async ({ to, network, value }) => {
+                      wallet_send: async ({to, network, value}) => {
                           const messageId = String(Math.random());
                           await Promise.all([
                               waitForNodeResponse(messageId),
                               (async () => {
                                   const res = await api.post(
-                                      "wallet/send",
+                                      'wallet/send',
                                       {
                                           to,
                                           network,
                                           value,
-                                          messageId,
+                                          messageId
                                       },
                                       {},
-                                      true,
+                                      true
                                   );
                                   if (res.status !== 200) {
-                                      throw new Error("Failed to send token");
+                                      throw new Error('Failed to send token');
                                   }
-                              })(),
+                              })()
                           ]);
                       },
-                      wallet_send_token: async ({
-                          to,
-                          network,
-                          tokenAddress,
-                          value,
-                      }) => {
+                      wallet_send_token: async ({to, network, tokenAddress, value}) => {
                           const messageId = String(Math.random());
                           await Promise.all([
                               waitForNodeResponse(messageId),
                               (async () => {
                                   const res = await api.post(
-                                      "wallet/sendToken",
+                                      'wallet/sendToken',
                                       {
                                           to,
                                           network,
                                           value,
                                           tokenAddress,
-                                          messageId,
+                                          messageId
                                       },
                                       {},
-                                      true,
+                                      true
                                   );
                                   if (res.status !== 200) {
-                                      throw new Error("Failed to send token");
+                                      throw new Error('Failed to send token');
                                   }
-                              })(),
+                              })()
                           ]);
                       },
                       set_auth_token: (token: string) =>
@@ -953,16 +910,13 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                               const handler = (e: MessageEvent) => {
                                   if (
                                       e.data.__page_req_id === id &&
-                                      e.data.__direction === "to_page"
+                                      e.data.__direction === 'to_page'
                                   ) {
-                                      window.removeEventListener(
-                                          "message",
-                                          handler,
-                                      );
+                                      window.removeEventListener('message', handler);
                                       if (e.data.code) {
                                           reject({
                                               code: e.data.code,
-                                              message: e.data.message,
+                                              message: e.data.message
                                           });
                                       } else {
                                           resolve(e.data);
@@ -970,25 +924,24 @@ const getSdk = (host: string, version: string, swal: any): PointType => {
                                   }
                               };
 
-                              window.addEventListener("message", handler);
+                              window.addEventListener('message', handler);
 
                               window.postMessage({
                                   token,
                                   __page_req_id: id,
-                                  __message_type: "setAuthToken",
-                                  __direction: "to_bg",
+                                  __message_type: 'setAuthToken',
+                                  __direction: 'to_bg'
                               });
                           }),
                       get_auth_token: getAuthToken,
-                      link_point_to_sol: (domain: string) => {
-                          return window.top.solana.request({
-                              method: "solana_snsWriteRequest",
-                              params: [{ domain }],
-                          });
-                      },
-                  },
+                      link_point_to_sol: (domain: string) =>
+                          window.top.solana.request({
+                              method: 'solana_snsWriteRequest',
+                              params: [{domain}]
+                          })
+                  }
               }
-            : {}),
+            : {})
     };
 };
 

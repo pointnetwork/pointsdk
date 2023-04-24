@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import useTheme from "@mui/material/styles/useTheme";
-import Label from "./Label";
+import React, {useState, useEffect} from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import useTheme from '@mui/material/styles/useTheme';
+import Label from './Label';
 
 type Props = {
     label: string;
     address: string;
+    highlight: boolean;
 };
 
-const Address = ({ label, address }: Props) => {
-    const [userAddress, setUserAddress] = useState("");
-    const [identity, setIdentity] = useState("");
+const Address = ({label, address, highlight}: Props) => {
+    const [userAddress, setUserAddress] = useState('');
+    const [identity, setIdentity] = useState('');
     const [loading, setLoading] = useState(false);
     const theme = useTheme();
 
@@ -21,24 +22,19 @@ const Address = ({ label, address }: Props) => {
             setLoading(true);
 
             try {
-                const { data } = await window.point.wallet.address();
+                const {data} = await window.point.wallet.address();
                 setUserAddress(data.address);
             } catch (e) {
-                console.error("Failed to fetch user address", e);
+                console.error('Failed to fetch user address', e);
             }
 
             try {
-                const { data } = await window.point.identity.ownerToIdentity({
-                    owner: address,
-                });
+                const {data} = await window.point.identity.ownerToIdentity({owner: address});
                 if (data && data.identity) {
                     setIdentity(data.identity);
                 }
             } catch (e) {
-                console.error(
-                    `Failed to get identity for address ${address}`,
-                    e,
-                );
+                console.error(`Failed to get identity for address ${address}`, e);
             }
 
             setLoading(false);
@@ -59,26 +55,26 @@ const Address = ({ label, address }: Props) => {
                         <Typography
                             variant="body2"
                             sx={{
-                                overflowWrap: "break-word",
-                                wordWrap: "break-word",
+                                overflowWrap: 'break-word',
+                                wordWrap: 'break-word'
                             }}
-                            fontWeight={isUserAddress ? 600 : "normal"}
+                            fontWeight={highlight ? 600 : 'normal'}
                             color={
-                                isUserAddress
-                                    ? theme.palette.primary.main
-                                    : theme.palette.text.primary
+                                highlight ? theme.palette.primary.main : theme.palette.text.primary
                             }
                         >
-                            {identity}&nbsp;{isUserAddress ? "(You)" : ""}
+                            {identity}&nbsp;{isUserAddress ? '(You)' : ''}
                         </Typography>
                     ) : null}
 
                     <Typography
-                        color={theme.palette.text.secondary}
+                        color={highlight ? theme.palette.primary.main : theme.palette.text.primary}
+                        fontWeight={highlight ? 600 : 'normal'}
                         variant="body2"
+                        fontFamily="monospace"
                         sx={{
-                            overflowWrap: "break-word",
-                            wordWrap: "break-word",
+                            overflowWrap: 'break-word',
+                            wordWrap: 'break-word'
                         }}
                     >
                         {address}

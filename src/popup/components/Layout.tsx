@@ -1,25 +1,25 @@
-import React, { Fragment, FunctionComponent, useContext } from "react";
-import Box from "@mui/material/Box";
-import PointLogo from "pointsdk/assets/icons/point.png";
-import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import Divider from "@mui/material/Divider";
-import { BlockchainContext } from "../context/blockchain";
-import UIThemeProvider from "pointsdk/theme/UIThemeProvider";
-import NetworkSwitcher from "./NetworkSwitcher";
-import UserData from "./UserData";
-import Links from "./Links";
-import Balance from "./Balance";
-import Version from "./Version";
-import Tokens from "pointsdk/popup/components/Tokens";
+import React, {Fragment, FunctionComponent, useContext} from 'react';
+import Box from '@mui/material/Box';
+import PointLogo from 'pointsdk/assets/icons/point.png';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import {BlockchainContext} from '../context/blockchain';
+import UIThemeProvider from 'pointsdk/theme/UIThemeProvider';
+import NetworkSwitcher from './NetworkSwitcher';
+import UserData from './UserData';
+import Links from './Links';
+import Balance from './Balance';
+import Version from './Version';
+import Tokens from 'pointsdk/popup/components/Tokens';
 
 const Layout: FunctionComponent = () => {
-    const { loading } = useContext(BlockchainContext);
+    const {loading} = useContext(BlockchainContext);
 
     return (
         <UIThemeProvider>
-            <Box sx={{ minWidth: 370 }}>
-                {" "}
+            <Box sx={{minWidth: 370}}>
+                {' '}
                 <Box
                     display="flex"
                     alignItems="center"
@@ -33,13 +33,7 @@ const Layout: FunctionComponent = () => {
                     </Typography>
                 </Box>
                 {loading ? (
-                    <Box
-                        display="flex"
-                        px={12}
-                        py={20}
-                        alignItems="center"
-                        justifyContent="center"
-                    >
+                    <Box display="flex" px={12} py={20} alignItems="center" justifyContent="center">
                         <CircularProgress size={24} />
                         <Typography ml={1}>Loading...</Typography>
                     </Box>

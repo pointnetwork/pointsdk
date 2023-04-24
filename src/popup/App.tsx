@@ -1,6 +1,6 @@
-import React, { FunctionComponent } from "react";
-import { BlockchainContext, useBlockchain } from "./context/blockchain";
-import Layout from "./components/Layout";
+import React, {FunctionComponent} from 'react';
+import {BlockchainContext, useBlockchain} from './context/blockchain';
+import Layout from './components/Layout';
 
 const App: FunctionComponent = () => {
     const blockchainContext = useBlockchain();
