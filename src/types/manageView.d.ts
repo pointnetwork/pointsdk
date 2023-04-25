@@ -1,8 +1,7 @@
-import { Types, ActionMap } from "./shared";
+import {Types, ActionMap} from './shared';
 
 export type ManageViewPayload = {
     [Types.update]: string;
 };
 
-export type ManageViewActions =
-    ActionMap<ManageViewPayload>[keyof ActionMap<ManageViewPayload>];
+export type ManageViewActions = ActionMap<ManageViewPayload>[keyof ActionMap<ManageViewPayload>];

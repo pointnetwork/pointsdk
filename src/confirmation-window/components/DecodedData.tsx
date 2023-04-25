@@ -1,26 +1,24 @@
-import React from "react";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import useTheme from "@mui/material/styles/useTheme";
-import Label from "./Label";
-import { DecodedTxInput } from "../../pointsdk/index.d";
+import React from 'react';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import useTheme from '@mui/material/styles/useTheme';
+import Label from './Label';
+import TxParamValue from './TxParamValue';
+import {DecodedTxInput} from '../../pointsdk/index.d';
 
 type Props = {
     data: DecodedTxInput;
 };
 
-const DecodedData = ({ data }: Props) => {
+const DecodedData = ({data}: Props) => {
     const theme = useTheme();
 
     return (
         <Box mb={2}>
             <Label>Data</Label>
 
-            <Box sx={{ display: "flex", flexDirection: "row" }}>
-                <Typography
-                    variant="body2"
-                    color={theme.palette.text.secondary}
-                >
+            <Box sx={{display: 'flex', flexDirection: 'row'}}>
+                <Typography variant="body2" color={theme.palette.text.primary}>
                     Contract Method:
                 </Typography>
                 <Typography
@@ -35,24 +33,21 @@ const DecodedData = ({ data }: Props) => {
 
             {data.params && data.params.length > 0 ? (
                 <>
-                    <Typography
-                        variant="body2"
-                        color={theme.palette.text.secondary}
-                    >
+                    <Typography variant="body2" color={theme.palette.text.primary}>
                         Method Params:
                     </Typography>
-                    <ul style={{ marginLeft: 32 }}>
-                        {data.params.map((p) => (
+                    <ul style={{marginLeft: 32}}>
+                        {data.params.map(p => (
                             <li key={p.name}>
                                 <Typography
                                     variant="body2"
-                                    color={theme.palette.text.secondary}
+                                    color={theme.palette.text.primary}
                                     sx={{
-                                        overflowWrap: "break-word",
-                                        wordWrap: "break-word",
+                                        overflowWrap: 'break-word',
+                                        wordWrap: 'break-word'
                                     }}
                                 >
-                                    {p.name}: {p.value}
+                                    {p.name}: <TxParamValue param={p} />
                                 </Typography>
                             </li>
                         ))}

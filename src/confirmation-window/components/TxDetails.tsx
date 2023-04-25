@@ -1,46 +1,25 @@
-import React, { useMemo, useEffect, Fragment } from "react";
-import { useLocation } from "react-router-dom";
-import { generate } from "geopattern";
-import { BigNumber } from "@ethersproject/bignumber";
-import { DecodedTxInput } from "../../pointsdk/index.d";
-import Address from "./Address";
-import Price from "./Price";
-import RawData from "./RawData";
-import DecodedData from "./DecodedData";
+import React, {useEffect, Fragment} from 'react';
+import {generate} from 'geopattern';
+import {DecodedTxInput} from '../../pointsdk/index.d';
+import Address from './Address';
+import Price from './Price';
+import RawData from './RawData';
+import DecodedData from './DecodedData';
+import GasEstimate from './GasEstimate';
+import GasEstimateTokenTransfer from './GasEstimateTokenTransfer';
 
-const TxDetails = () => {
-    const { search } = useLocation();
-    const query = useMemo(() => new URLSearchParams(search), [search]);
+type Props = {
+    rawParams: Record<string, string>;
+    decodedTxData: DecodedTxInput | null;
+    network: string;
+};
 
-    const rawParams = useMemo((): Record<string, string> => {
-        try {
-            const str = query.get("params");
-            return str ? (JSON.parse(str) as Record<string, string>) : {};
-        } catch {
-            return {};
-        }
-    }, [query]);
-
-    const decodedTxData = useMemo((): DecodedTxInput | null => {
-        try {
-            const str = query.get("decodedTxData");
-            return str ? (JSON.parse(str) as DecodedTxInput) : null;
-        } catch {
-            return null;
-        }
-    }, [query]);
-
-    const network = useMemo(() => query.get("network") || "", [query]);
-
+const TxDetails = ({rawParams, decodedTxData, network}: Props) => {
     useEffect(() => {
         async function drawBg() {
             try {
-                const {
-                    data: { hash },
-                } = await window.point.wallet.hash();
-                document.body.style.backgroundImage = generate(
-                    String(hash),
-                ).toDataUrl();
+                const {data} = (await window.point.wallet.hash()) as {data: {hash: unknown}};
+                document.body.style.backgroundImage = generate(String(data.hash)).toDataUrl();
             } catch (e) {
                 console.error(e);
             }
@@ -50,26 +29,39 @@ const TxDetails = () => {
 
     return (
         <>
+            {decodedTxData?.gas?.value && decodedTxData?.gas?.currency ? (
+                <GasEstimate gas={decodedTxData.gas} />
+            ) : null}
+            {rawParams?.value ? (
+                <GasEstimateTokenTransfer network={network} toAddress={rawParams?.to || ''} />
+            ) : null}
             {Object.entries(rawParams).map(([key, value], idx) => {
                 switch (key) {
-                    case "from":
-                    case "to":
+                    case 'from':
+                    case 'to':
+                    case 'beneficiary':
                         return (
-                            <Address key={idx} label={key} address={value} />
+                            <Address
+                                key={idx}
+                                label={key}
+                                address={value}
+                                highlight={['to', 'beneficiary'].includes(key)}
+                            />
                         );
-                    case "value":
-                    case "gas":
-                    case "gasPrice":
+                    case 'value':
+                    case 'gas':
+                    case 'gasPrice':
                         return (
                             <Price
                                 key={idx}
                                 label={key}
                                 value={value}
                                 network={network}
+                                to={rawParams?.to || ''}
                             />
                         );
-                    case "data":
-                        if (decodedTxData) {
+                    case 'data':
+                        if (decodedTxData && JSON.stringify(decodedTxData) !== '{}') {
                             return (
                                 <Fragment key={idx}>
                                     <DecodedData data={decodedTxData} />
@@ -78,25 +70,14 @@ const TxDetails = () => {
                             );
                         }
                         return <RawData key={idx} label={key} data={value} />;
-                    case "domain":
-                        return decodedTxData ? (
+                    case 'domain':
+                        return decodedTxData && JSON.stringify(decodedTxData) !== '{}' ? (
                             <DecodedData data={decodedTxData} />
                         ) : null;
                     default:
                         return <RawData key={idx} label={key} data={value} />;
                 }
             })}
-
-            {/* TODO: shouldn't gasPrice be multiplied by the gas limit? */}
-            {rawParams.value && rawParams.gasPrice ? (
-                <Price
-                    label="Total Price Estimate"
-                    network={network}
-                    value={BigNumber.from(rawParams.value)
-                        .add(rawParams.gasPrice)
-                        .toString()}
-                />
-            ) : null}
         </>
     );
 };

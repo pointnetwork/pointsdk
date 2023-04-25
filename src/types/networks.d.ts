@@ -1,5 +1,5 @@
 export type Network = {
-    type: "eth" | "solana";
+    type: 'eth' | 'solana';
     name: string;
     currency_name: string;
     currency_code: string;

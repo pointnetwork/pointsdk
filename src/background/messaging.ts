@@ -1,100 +1,88 @@
-import { v4 as uuid } from "uuid";
-import {
-    closeConfirmationWindow,
-    displayConfirmationWindow,
-} from "./confirmationWindowApi";
-import { sign } from "jsonwebtoken";
+import {v4 as uuid} from 'uuid';
+import {closeConfirmationWindow, displayConfirmationWindow} from './confirmationWindowApi';
+import {sign} from 'jsonwebtoken';
 
-const socket = new WebSocket("wss://point/ws");
+const socket = new WebSocket('wss://point/ws');
 
 const responseHandlers: Record<string, (v: unknown) => void> = {};
 
 socket.onopen = () => {
-    console.log("WS Connection with point node established");
+    console.log('WS Connection with point node established');
 };
 
-socket.onmessage = (e) => {
+socket.onmessage = e => {
     const payload = JSON.parse(e.data);
 
-    console.log("Message from node: ", payload);
+    console.log('Message from node: ', payload);
 
     if (!payload?.request?.__point_id) {
-        console.error(
-            "Unexpected message without __point_id from point node: ",
-            payload,
-        );
+        console.error('Unexpected message without __point_id from point node: ', payload);
         return;
     }
     if (!responseHandlers[payload.request.__point_id]) {
-        console.error("No handler for message from point node: ", payload);
+        console.error('No handler for message from point node: ', payload);
         return;
     }
 
     if (payload.data) {
         if (payload.data.reqId) {
             const params =
-                payload.request.method === "solana_sendTransaction" &&
+                payload.request.method === 'solana_sendTransaction' &&
                 Array.isArray(payload.request.params[0].instructions)
                     ? payload.request.params[0].instructions[0]
                     : payload.request.params[0];
-            displayConfirmationWindow(
+            void displayConfirmationWindow(
                 payload.data.reqId,
                 payload.request.__point_id,
                 payload.request.__hostname,
                 payload.data.network,
                 params,
-                payload.data.decodedTxData,
+                payload.data.decodedTxData
             );
         } else {
             responseHandlers[payload.request.__point_id](payload.data);
             delete responseHandlers[payload.request.__point_id];
         }
     } else {
-        console.error(
-            "Unexpected message without data from point node: ",
-            payload,
-        );
+        console.error('Unexpected message without data from point node: ', payload);
     }
 };
 
-socket.onerror = (err) => {
-    console.error("WS error: ", err);
+socket.onerror = err => {
+    console.error('WS error: ', err);
 };
 
 export const rpcListener = async (message: any) => {
     const messageId = uuid();
     let network;
     switch (message.__provider) {
-        case "eth":
-            const globalChainId = (
-                await browser.storage.local.get("chainIdGlobal")
-            ).chainIdGlobal as string;
-            const { host } = new URL(message.__hostname);
-            const hostChainId = (
-                await browser.storage.local.get(`chainId_${host}`)
-            )[`chainId_${host}`] as string;
+        case 'eth':
+            const globalChainId = (await browser.storage.local.get('chainIdGlobal'))
+                .chainIdGlobal as string;
+            const {host} = new URL(message.__hostname);
+            const hostChainId = (await browser.storage.local.get(`chainId_${host}`))[
+                `chainId_${host}`
+            ] as string;
             network = hostChainId ?? globalChainId;
             break;
-        case "solana":
-            network = "solana_devnet"; // TODO
+        case 'solana':
+            network = 'solana_devnet'; // TODO
             break;
         default:
-            throw new Error(
-                `Unknown or missing provider type ${message.__provider}`,
-            );
+            throw new Error(`Unknown or missing provider type ${message.__provider}`);
     }
 
     const msg = {
         ...message,
         network,
-        type: "rpc",
+        type: 'rpc',
         __point_id: messageId,
-        __point_token: (await getAuthToken()).token,
+        __point_token: (await getAuthToken()).token
     };
-    console.log("Sending msg to node: ", msg);
+    console.log('Sending msg to node: ', msg);
     socket.send(JSON.stringify(msg));
 
-    return new Promise<unknown>((resolve) => {
+    return new Promise<unknown>(resolve => {
         responseHandlers[messageId] = resolve;
     });
 };
@@ -102,22 +90,18 @@ export const rpcListener = async (message: any) => {
 export const confirmationWindowListener = async (message: any) => {
     if (message.confirm) {
         const msg = {
-            method: "eth_confirmTransaction",
-            type: "rpc",
+            method: 'eth_confirmTransaction',
+            type: 'rpc',
             __point_id: message.pointId,
             __point_token: (await getAuthToken()).token,
-            params: [
-                {
-                    reqId: message.reqId,
-                },
-            ],
+            params: [{reqId: message.reqId}]
         };
-        console.log("Sending confirmation msg to node, ", msg);
+        console.log('Sending confirmation msg to node, ', msg);
         socket.send(JSON.stringify(msg));
     } else {
         responseHandlers[message.pointId]({
             code: 4001,
-            message: "User rejected the request",
+            message: 'User rejected the request'
         });
         delete responseHandlers[message.pointId];
     }
@@ -125,40 +109,33 @@ export const confirmationWindowListener = async (message: any) => {
 };
 
 export const registerHandlerListener = async (message: any) =>
-    new Promise<unknown>((resolve) => {
+    new Promise<unknown>(resolve => {
         responseHandlers[message.messageId] = resolve;
     });
 
 export const setAuthTokenHandler = async (message: any) => {
-    const oldToken = await browser.storage.local.get("point_token");
+    const oldToken = await browser.storage.local.get('point_token');
     if (oldToken) {
         // Checking if new token is correct, if we are replacing the token,
         // otherwise just inject it
-        const jwt = sign({ payload: "point_token" }, message.token, {
-            expiresIn: "10s",
-        });
-        const res = await fetch("https://point/v1/api/blockchain/networks", {
-            headers: {
-                "X-Point-Token": `Bearer ${jwt}`,
-            },
-        });
+        const jwt = sign({payload: 'point_token'}, message.token, {expiresIn: '10s'});
+        const opts = {headers: {'X-Point-Token': `Bearer ${jwt}`}};
+        const res = await fetch('https://point/v1/api/blockchain/networks', opts);
         if (res.status !== 200) {
             // Not throwing error here, otherwise explorer will not redirect
             // Just ignoring the token instead
-            return { ok: true };
+            return {ok: true};
         }
     }
-    await browser.storage.local.set({ point_token: message.token });
-    return { ok: true };
+    await browser.storage.local.set({point_token: message.token});
+    return {ok: true};
 };
 
 export const getAuthToken = async () => {
-    const { point_token } = await browser.storage.local.get("point_token");
+    const {point_token} = await browser.storage.local.get('point_token');
     if (!point_token) {
-        throw new Error("Point token not set");
+        throw new Error('Point token not set');
     }
-    const jwt = sign({ payload: "point_token" }, point_token, {
-        expiresIn: "10s",
-    });
-    return { token: jwt };
+    const jwt = sign({payload: 'point_token'}, point_token, {expiresIn: '10s'});
+    return {token: jwt};
 };
