@@ -68,6 +68,11 @@ export const rpcListener = async (message: any) => {
         case 'solana':
             network = 'solana_devnet'; // TODO
             break;
+        case 'keplr':
+            // need to improve here
+            network = 'cosmos_testnet';
+            // config here
+            break;
         default:
             throw new Error(`Unknown or missing provider type ${message.__provider}`);
     }

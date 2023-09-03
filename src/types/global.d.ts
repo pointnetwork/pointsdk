@@ -5,5 +5,6 @@ declare global {
         point: any;
         ethereum: any;
         solana: any;
+        keplr: any;
     }
 }

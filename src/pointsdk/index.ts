@@ -3,6 +3,7 @@ import getSdk from 'pointsdk/pointsdk/sdk';
 import getEthProvider from 'pointsdk/pointsdk/ethProvider';
 import getSolanaProvider from 'pointsdk/pointsdk/solanaProvider';
 import NETWORKS from 'pointsdk/constants/networks';
+import getKeplrProvider from './keplrProvider';
 
 const version = browser.runtime.getManifest().version;
 try {
@@ -24,4 +25,10 @@ try {
     window.wrappedJSObject.eval(`window.solana = (${getSolanaProvider.toString()})();`);
 } catch (e) {
     console.error('Failed to inject window.solana: ', e);
+}
+
+try {
+    window.wrappedJSObject.eval(`window.keplr = (${getKeplrProvider.toString()})();`);
+} catch (e) {
+    console.error('Failed to inject window.keplr: ', e);
 }
